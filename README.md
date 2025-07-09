@@ -51,7 +51,8 @@ Now run `cargo-insert-docs`:
 cargo insert-docs
 ```
 
-And documentation will be inserted. 
+And documentation will be inserted. Have a look at the [example-crate](tests/example-crate) to see what the output looks like.
+
 To update the sections just run the command again.
 
 You don't have to add both sections for the tool to work. If it doesn't find a section it will just carry on with a warning. You can turn that warning into an error with the `--strict` flag.
