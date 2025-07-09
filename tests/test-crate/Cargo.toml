@@ -1,0 +1,28 @@
+[package]
+name = "test-crate"
+edition = "2024"
+
+[lib]
+path = "lib.rs"
+
+[features]
+default = ["std"]
+
+## Some docs about std
+std = []
+
+## Some docs about serde
+##
+## Multiple lines work too
+serde = []
+something_undocumented = []
+
+#! Here you can write documentation that goes
+#! between the features
+
+## Wow
+something_else = []
+
+[dependencies]
+fast-glob = "=0.4.5"
+indoc = { git = "https://github.com/dtolnay/indoc", rev = "7be4157c70351d2940073e181f85679296b220a5" }

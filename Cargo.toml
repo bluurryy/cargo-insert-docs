@@ -1,0 +1,57 @@
+[package]
+name = "cargo-insert-docs"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Insert feature docs into your crate docs, and crate docs into your README."
+categories = ["development-tools::cargo-plugins", "command-line-utilities"]
+keywords = ["documentation", "cargo", "crate", "readme"]
+documentation = "https://docs.rs/cargo-insert-docs"
+repository = "https://github.com/bluurryy/cargo-insert-docs"
+readme = "README.md"
+
+[dependencies]
+anstream = "0.6.19"
+anstyle = "1.0.11"
+cargo_metadata = "0.20.0"
+clap = { version = "4.5.40", features = ["derive", "wrap_help"] }
+clap-cargo = "0.15.2"
+color-eyre = "0.6.5"
+proc-macro2 = { version = "1.0.95", default-features = false, features = [
+    "span-locations",
+] }
+pulldown-cmark = { version = "0.13.0", default-features = false }
+rangemap = "1.5.1"
+rustdoc-json = "0.9.6"
+rustdoc-types = "0.53.0"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+syn = { version = "2.0.104", default-features = false, features = [
+    "clone-impls",
+    "extra-traits",
+    "full",
+    "parsing",
+    "printing",
+] }
+toml_edit = "0.22.27"
+
+[dev-dependencies]
+expect-test = "1.5.1"
+indoc = "2.0.6"
+unindent = "0.2.4"
+
+[package.metadata.release]
+allow-branch = ["main"]
+pre-release-commit-message = "release: version {{version}}"
+pre-release-replacements = [
+    { file = "CHANGELOG.md", search = "## \\[Unreleased\\]", replace = "## [{{version}}] - {{date}}", exactly = 1 },
+    { file = "CHANGELOG.md", search = "\\.\\.\\.HEAD", replace = "...{{tag_name}}", min = 0 },
+    { file = "CHANGELOG.md", search = "<!-- next-header -->", replace = "<!-- next-header -->\n## [Unreleased]\n", exactly = 1 },
+    { file = "CHANGELOG.md", search = "<!-- next-url -->", replace = "<!-- next-url -->\n[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/{{tag_name}}...HEAD", exactly = 1 },
+]
+
+[workspace]
+members = ["tests/*"]
+
+[workspace.metadata.release]
+consolidate-commits = false

@@ -1,0 +1,18 @@
+[package]
+name = "example-crate"
+edition = "2024"
+
+[features]
+default = ["std", "jpg"]
+
+## Enables loading [`Image`]s from [`std::io::Read`].
+std = []
+
+#! ## Image formats
+#! Features that enable loading images.
+
+## Enables support for jpg images
+jpg = []
+
+## Enables support for png images
+png = []

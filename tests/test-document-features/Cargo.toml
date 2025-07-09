@@ -1,0 +1,18 @@
+[package]
+name = "test-document-features"
+edition = "2024"
+
+[features]
+default = ["std"]
+
+## Enables some more convenient api.
+std = []
+
+#! ### Nightly features
+#! Or daily features i guess.
+
+## Adds some cool stuff I hope.
+nightly-whatever = []
+
+[dependencies]
+document-features = "0.2.11"
