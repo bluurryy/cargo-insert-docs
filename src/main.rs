@@ -10,6 +10,7 @@ mod style;
 
 use std::{
     collections::HashSet,
+    ffi::OsString,
     fmt, fs, io,
     ops::Deref,
     path::{Path, PathBuf},
@@ -141,8 +142,34 @@ struct Args {
     quiet_cargo: bool,
 }
 
+// see https://github.com/cargo-public-api/cargo-public-api/blob/7bd0f11a057934e281e9aa6c491145e37c1fc7bb/cargo-public-api/src/main.rs#L543
+fn parse_args() -> Args {
+    let subcommand_name = subcommand_name(std::env::args_os().next().unwrap());
+
+    let args_os = std::env::args_os()
+        .enumerate()
+        .filter(|(index, arg)| *index != 1 || Some(arg) != subcommand_name.as_ref())
+        .map(|(_, arg)| arg);
+
+    Args::parse_from(args_os)
+}
+
+// see https://github.com/cargo-public-api/cargo-public-api/blob/7bd0f11a057934e281e9aa6c491145e37c1fc7bb/cargo-public-api/src/main.rs#L558
+fn subcommand_name(bin: OsString) -> Option<OsString> {
+    Some(
+        PathBuf::from(bin)
+            .file_name()?
+            .to_owned()
+            .to_string_lossy()
+            .strip_prefix("cargo-")?
+            .strip_suffix(std::env::consts::EXE_SUFFIX)?
+            .to_owned()
+            .into(),
+    )
+}
+
 fn main() -> ExitCode {
-    let mut args = Args::parse();
+    let mut args = parse_args();
 
     if args.quiet {
         args.quiet_cargo = true;
