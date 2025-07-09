@@ -7,5 +7,5 @@ Some crate description.
 
  #### Nightly features
  Or daily features i guess.
-* **`nightly-whatever`** —  Adds some cool stuff I would hope.
+* **`nightly-whatever`** —  Adds some cool stuff I hope.
 <!-- crate documentation end -->
