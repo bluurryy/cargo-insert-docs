@@ -33,7 +33,7 @@ syn = { version = "2.0.104", default-features = false, features = [
     "parsing",
     "printing",
 ] }
-toml_edit = "0.22.27"
+toml_edit = "0.23.0"
 
 [dev-dependencies]
 expect-test = "1.5.1"

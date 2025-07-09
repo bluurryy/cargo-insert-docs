@@ -18,7 +18,7 @@ enum FeatureDocEntry {
 }
 
 fn parse(toml: &str) -> Result<FeatureDocs> {
-    let doc = toml_edit::ImDocument::parse(toml)?;
+    let doc = toml_edit::Document::parse(toml)?;
 
     let Some(features) = doc.get("features") else {
         return Ok(vec![]);
@@ -53,11 +53,11 @@ fn parse(toml: &str) -> Result<FeatureDocs> {
         let decor = key.leaf_decor();
 
         let prefix = match decor.prefix() {
-            Some(raw_string) => {
-                let span =
-                    raw_string.span().expect("`toml_edit` should return a span for `ImDocument`s");
-                &doc.raw()[span]
-            }
+            Some(raw_string) => match (raw_string.as_str(), raw_string.span()) {
+                (Some(string), _) => string,
+                (None, Some(span)) => &doc.raw()[span],
+                (None, None) => "",
+            },
             None => "",
         };
 

@@ -328,9 +328,9 @@ fn run_package(cx: &Context) {
 }
 
 fn package_name(cargo_toml: &str) -> Result<String> {
-    let doc = toml_edit::ImDocument::parse(cargo_toml)?;
+    let doc = toml_edit::Document::parse(cargo_toml)?;
 
-    fn inner<'a>(doc: &'a toml_edit::ImDocument<&'a str>) -> Option<&'a str> {
+    fn inner<'a>(doc: &'a toml_edit::Document<&'a str>) -> Option<&'a str> {
         doc.get("package")?.as_table_like()?.get("name")?.as_str()
     }
 
