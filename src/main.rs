@@ -68,11 +68,11 @@ struct Args {
     #[arg(long, value_name = "SECTION_NAME", default_value = "crate documentation")]
     crate_docs_section: String,
 
-    /// Disables inserting of the feature documentation from Cargo.toml into the lib.rs
+    /// Disables inserting the feature documentation into the crate documentation
     #[arg(long)]
     no_feature_docs: bool,
 
-    /// Disables inserting of the crate documentation from lib.rs into the README.md
+    /// Disables inserting the crate documentation into the readme
     #[arg(long)]
     no_crate_docs: bool,
 
