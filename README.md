@@ -48,7 +48,7 @@ And add a crate documentation section to your `README.md`:
 
 Now run `cargo-insert-docs`:
 ```sh
-cargo +nightly insert-docs
+cargo insert-docs
 ```
 
 And documentation will be inserted. 
