@@ -26,3 +26,4 @@ something_else = []
 [dependencies]
 fast-glob = "=0.4.5"
 indoc = { git = "https://github.com/dtolnay/indoc", rev = "7be4157c70351d2940073e181f85679296b220a5" }
+phf_macros = "0.12.1"

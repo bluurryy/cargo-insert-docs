@@ -21,8 +21,10 @@ fn test_item_paths() {
     let child_to_parent = child_to_parent(&krate).unwrap();
     let tree = format_child_to_parent(&krate, &child_to_parent);
 
+    // TODO: collapse impl
     expect![[r#"
         test_crate Module
+        ├── MyExternType ExternType
         ├── reexport Module
         │   └── Reexport Struct
         ├── very Module
@@ -30,7 +32,73 @@ fn test_item_paths() {
         │       └── module Module
         ├── ReexportInline Struct
         ├── reexport_inline Module
-        └── ReexportPrivate Struct
+        ├── ReexportPrivate Struct
+        ├── my_module Module
+        ├── alloc ExternCrate
+        ├── MyStruct Struct
+        │   ├── my_field StructField
+        │   ├── _ Impl
+        │   │   └── my_method Function
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   │   └── borrow Function
+        │   ├── _ Impl
+        │   │   └── borrow_mut Function
+        │   ├── _ Impl
+        │   │   └── into Function
+        │   ├── _ Impl
+        │   │   └── from Function
+        │   ├── _ Impl
+        │   │   ├── Error AssocType
+        │   │   └── try_into Function
+        │   ├── _ Impl
+        │   │   ├── Error AssocType
+        │   │   └── try_from Function
+        │   └── _ Impl
+        │       └── type_id Function
+        ├── MyUnion Union
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   └── _ Impl
+        ├── MyEnum Enum
+        │   ├── MyVariant Variant
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   ├── _ Impl
+        │   └── _ Impl
+        ├── my_function Function
+        ├── MyTrait Trait
+        │   ├── MY_ASSOCIATED_CONSTANT AssocConst
+        │   └── MyAssociatedType AssocType
+        ├── MyTraitAlias TraitAlias
+        ├── MyStructAlias TypeAlias
+        ├── MY_CONSTANT Constant
+        ├── MY_STATIC Static
+        └── my_macro Macro
     "#]]
     .assert_eq(&tree);
 }

@@ -359,7 +359,7 @@ impl Tally {
 }
 
 const LEVEL_WIDTH: usize = 14;
-const INDENT_BYTES: &[u8] = &[b' '; LEVEL_WIDTH];
+const INDENT_BYTES: &[u8] = &[b' '; LEVEL_WIDTH + 2];
 const INDENT: &str = match str::from_utf8(INDENT_BYTES) {
     Ok(ok) => ok,
     Err(_) => unreachable!(),
@@ -387,8 +387,7 @@ fn format_message(message: &str) -> String {
 fn format_field(name: &str, value: &str) -> String {
     let mut out = String::new();
     out.push_str(&format_property_key(name, BOLD));
-    out.push_str(value);
-    out.push('\n');
+    out.push_str(&format_message(value));
     out
 }
 

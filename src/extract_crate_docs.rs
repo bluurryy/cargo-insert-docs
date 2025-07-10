@@ -3,7 +3,7 @@ mod child_to_parent;
 use std::{collections::HashMap, fs};
 
 use cargo_metadata::PackageId;
-use color_eyre::eyre::{Context as _, OptionExt as _, Result, bail};
+use color_eyre::eyre::{Context as _, OptionExt as _, Report, Result, bail, eyre};
 use rustdoc_types::{Crate, Id, Item, ItemEnum, ItemKind};
 use serde::Deserialize;
 
@@ -172,28 +172,18 @@ impl Resolve<'_> {
 
         let mut url = String::new();
 
+        // TODO: if url ends with / add index.html
         for (i, NameKind { name, kind }) in path.into_iter().enumerate() {
-            let kind = if i == 0 { BasicItemKind::Crate } else { kind };
+            let name = name.as_str();
 
-            url.push_str(&match kind {
-                BasicItemKind::Module => format!("{name}/"),
+            let segment = if i == 0 {
+                // we expect this to be a crate
+                self.crate_doc_url(name)
+            } else {
+                kind.to_path_segment(name)?
+            };
 
-                BasicItemKind::Struct => format!("struct.{name}.html"),
-                BasicItemKind::Enum => format!("enum.{name}.html"),
-                BasicItemKind::Union => format!("union.{name}.html"),
-                BasicItemKind::Macro => format!("macro.{name}.html"),
-                BasicItemKind::Function => format!("fn.{name}.html"),
-                BasicItemKind::Trait => format!("trait.{name}.html"),
-                BasicItemKind::Primitive => format!("primitive.{name}.html"),
-
-                BasicItemKind::StructField => format!("#structfield.{name}"),
-                BasicItemKind::Method => format!("#method.{name}"),
-                BasicItemKind::Crate => self.crate_doc_url(&name),
-
-                BasicItemKind::Impl | BasicItemKind::Use => String::new(),
-
-                _ => bail!("url path segment for '{kind:?}' ({name}) is not yet implemented"),
-            });
+            url.push_str(&segment);
         }
 
         Ok(url)
@@ -351,7 +341,52 @@ enum BasicItemKind {
 
     // custom
     Method,
-    Crate,
+}
+
+impl BasicItemKind {
+    fn to_path_segment(self, name: &str) -> Result<String> {
+        Ok(match self {
+            BasicItemKind::Module => format!("{name}/"),
+            BasicItemKind::ExternCrate => {
+                // Rustdoc doesn't link to an extern crate at the moment, just to an entry in `$.paths`.
+                return Err(unexpected_path_segment(self, name));
+            }
+            BasicItemKind::Use => String::new(),
+            BasicItemKind::Union => format!("union.{name}.html"),
+            BasicItemKind::Struct => format!("struct.{name}.html"),
+            BasicItemKind::StructField => format!("#structfield.{name}"),
+            BasicItemKind::Enum => format!("enum.{name}.html"),
+            BasicItemKind::Variant => format!("#variant.{name}"),
+            BasicItemKind::Function => format!("fn.{name}.html"),
+            BasicItemKind::Trait => format!("trait.{name}.html"),
+            BasicItemKind::TraitAlias => format!("traitalias.{name}.html"),
+            BasicItemKind::Impl => String::new(),
+            BasicItemKind::TypeAlias => format!("type.{name}.html"),
+            BasicItemKind::Constant => format!("constant.{name}.html"),
+            BasicItemKind::Static => format!("static.{name}.html"),
+            BasicItemKind::ExternType => format!("foreigntype.{name}.html"),
+            BasicItemKind::Macro => format!("macro.{name}.html"),
+            BasicItemKind::ProcMacro => format!("macro.{name}.html"),
+            BasicItemKind::Primitive => format!("primitive.{name}.html"),
+            BasicItemKind::AssocConst => format!("#associatedconstant.{name}"),
+            BasicItemKind::AssocType => format!("#associatedtype.{name}"),
+            BasicItemKind::ProcAttribute => format!("attr.{name}.html"),
+            BasicItemKind::ProcDerive => format!("derive.{name}.html"),
+            BasicItemKind::Keyword => {
+                return Err(unexpected_path_segment(self, name));
+            }
+            BasicItemKind::Method => format!("#method.{name}"),
+        })
+    }
+}
+
+fn unexpected_path_segment(kind: BasicItemKind, name: &str) -> Report {
+    eyre!(
+        "encountered unexpected url path segment '{kind:?}' with the name '{name}'\n\
+            This is a bug! please report it at:\n\
+            https://github.com/bluurryy/cargo-insert-docs\
+        "
+    )
 }
 
 #[allow(clippy::unneeded_struct_pattern)]
