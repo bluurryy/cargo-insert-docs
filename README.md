@@ -15,6 +15,10 @@ You can use either task on its own by disabling the other with `--no-feature-doc
 ## Installation
 
 ```sh
+# If you have `cargo-binstall` installed:
+cargo binstall cargo-insert-docs
+
+# Otherwise
 cargo install cargo-insert-docs
 ```
 
