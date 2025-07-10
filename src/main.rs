@@ -56,15 +56,17 @@ struct Args {
     #[arg(long, short = 'F', value_delimiter = ',')]
     features: Vec<String>,
 
-    /// Formatting of the feature label when inserting feature documentation
+    /// Formatting of the feature label
+    ///
+    /// When inserting feature documentation into the crate documentation.
     #[arg(long, default_value = "**`{feature}`**")]
     feature_label: String,
 
-    /// Name of the feature documentation section inside the crate documentation
+    /// Name of the feature documentation section
     #[arg(long, value_name = "SECTION_NAME", default_value = "feature documentation")]
     feature_docs_section: String,
 
-    /// Name of the crate documentation section inside the readme
+    /// Name of the crate documentation section
     #[arg(long, value_name = "SECTION_NAME", default_value = "crate documentation")]
     crate_docs_section: String,
 
@@ -112,7 +114,7 @@ struct Args {
     ///
     /// With this argument you can choose a nightly version that is guaranteed to be compatible
     /// with the current version of this tool, like `nightly-2025-06-26`.
-    #[arg(long, default_value = "nightly")]
+    #[arg(long, default_value = "nightly", verbatim_doc_comment)]
     toolchain: String,
 
     /// Target triple to document
@@ -124,9 +126,11 @@ struct Args {
     document_private_items: bool,
 
     #[expect(rustdoc::bare_urls)]
-    /// Link to the "latest" version on docs.rs like https://docs.rs/my-crate/latest/my_crate/.
+    /// Link to the "latest" version on docs.rs
+    ///
+    /// For example https://docs.rs/my-crate/latest/my_crate/.
     /// This only affects workspace crates.
-    #[arg(long)]
+    #[arg(long, verbatim_doc_comment)]
     link_to_latest: bool,
 
     /// Print more verbose messages
@@ -142,10 +146,10 @@ struct Args {
     quiet_cargo: bool,
 
     /// Runs in 'check' mode.
+    ///
     /// Exits with 0 if the documentation is up to date.
-    /// Exits with 1 if the documentation is stale or if any errors
-    /// occured.
-    #[arg(long)]
+    /// Exits with 1 if the documentation is stale or if any errors occured.
+    #[arg(long, verbatim_doc_comment)]
     check: bool,
 }
 
