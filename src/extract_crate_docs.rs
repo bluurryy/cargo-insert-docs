@@ -348,7 +348,7 @@ impl BasicItemKind {
         Ok(match self {
             BasicItemKind::Module => format!("{name}/"),
             BasicItemKind::ExternCrate => {
-                // Rustdoc doesn't link to an extern crate at the moment, just to an entry in `$.paths`.
+                // Rustdoc doesn't link to an extern crate at the moment, just to an entry in `$.paths` of type `Module`.
                 return Err(unexpected_path_segment(self, name));
             }
             BasicItemKind::Use => String::new(),
