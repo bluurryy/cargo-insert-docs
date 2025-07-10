@@ -9,6 +9,7 @@ keywords = ["documentation", "cargo", "crate", "readme"]
 documentation = "https://docs.rs/cargo-insert-docs"
 repository = "https://github.com/bluurryy/cargo-insert-docs"
 readme = "README.md"
+exclude = [".github"]
 
 [dependencies]
 anstream = "0.6.19"
