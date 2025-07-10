@@ -30,7 +30,7 @@ use crate::error_sink::{ErrorSink, Level};
     version,
     about = "Inserts crate docs into a readme file and feature docs into the crate docs.",
     long_about = "\
-        Inserts feature documentation into the crate documentation and then the crate documentation into the readme.\n\n\
+        Inserts feature documentation into the crate documentation and the crate documentation into the readme.\n\n\
         Website: https://github.com/bluurryy/cargo-insert-docs",
     bin_name = "cargo insert-docs",
     styles = CLAP_STYLING
