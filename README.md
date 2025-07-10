@@ -4,11 +4,9 @@
 [![License](https://img.shields.io/crates/l/cargo-insert-docs)](#license)
 [![Build Status](https://github.com/bluurryy/cargo-insert-docs/workflows/Release/badge.svg)](https://github.com/bluurryy/cargo-insert-docs/actions/workflows/release.yml)
 
-`cargo-insert-docs` does two independent tasks
+`cargo-insert-docs` helps you keep your documentation in sync by doing two jobs, it:
 1. Inserts feature documentation from `Cargo.toml` into your crate docs.
 2. Inserts crate documentation from `lib.rs` into your `README.md`.
-
-You can use either task on its own by disabling the other with `--no-feature-docs` or `--no-crate-docs`.
 
 - [Installation](#installation)
 - [Usage](#usage)
@@ -28,7 +26,7 @@ cargo binstall cargo-insert-docs
 cargo install cargo-insert-docs
 ```
 
-For the *"crate docs → readme"*-part of `cargo-insert-docs`, you need to have a recent nightly toolchain installed. See [Compatibility](#compatibility).
+Inserting crate documentation into the `README.md` requires a nightly toolchain to be installed. See [Compatibility](#compatibility). Inserting the feature documentation into the crate or compiling `cargo-insert-docs` does not require a nightly toolchain.
 
 ```sh
 rustup install nightly --profile minimal
@@ -93,7 +91,8 @@ Then your `lib.rs` will end up looking like this:
 //!
 //! # Feature Flags
 //! <!-- feature documentation start -->
-//! - **`std`** *(enabled by default)* — Enables loading [`Image`]s from [`std::io::Read`].
+//! - **`std`** *(enabled by default)* — Enables loading [`Image`]s
+//!   from [`std::io::Read`].
 //!
 //! ## Image formats
 //! The following formats are supported.
@@ -110,7 +109,7 @@ Then your `lib.rs` will end up looking like this:
 //! ```
 ```
 
-And your `README.md` will look like that: ([tests/example-crate/README.md](tests/example-crate/README.md))
+And your `README.md` will look like that:
 ````md
 # my-crate-name
 
@@ -121,7 +120,8 @@ Use the [Image](https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.h
 
 ## Feature Flags
 <!-- feature documentation start -->
-- **`std`** *(enabled by default)* — Enables loading [`Image`](https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html)s from [`std::io::Read`](https://doc.rust-lang.org/std/io/trait.Read.html).
+- **`std`** *(enabled by default)* — Enables loading [`Image`](https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html)s
+  from [`std::io::Read`](https://doc.rust-lang.org/std/io/trait.Read.html).
 
 ### Image formats
 The following formats are supported.
@@ -139,6 +139,14 @@ let image = Image::load("cat.png");
 License goes there.
 ````
 
+You can see the rendered version [here](tests/example-crate/README.md).
+
+Notice how:
+- doc-links like `Image` and `std::io::Read` get resolved to links to `docs.rs` or `docs.rust-lang.org`
+- the code block loses the hidden (`#` prefixed) lines
+- the code block gets marked as `rust`; if the code block already had a marking that is considered rust like `rust`, `compile_fail`, `ignore`, `should_panic` and such, that would also be rewritten to `rust`
+- headers get one `#` added
+
 To update the sections just run the command again.
 
 You don't have to add both sections for the tool to work. If it doesn't find a section it will just carry on with a warning. You can turn that warning into an error with the `--strict` flag.
@@ -149,10 +157,9 @@ If you'd like to see what it looks like when used by a real crate then have a lo
 
 ## FAQ
 
-- **Why don't I just insert the readme into the crate docs with `#![doc = include_str!("../README.md")]`?**
+- **Why not just use `#![doc = include_str!("../README.md")]`?**
  
-  `cargo-insert-docs` does not just extract the raw markdown from the crate documentation, it also resolves doc links and processes
-  code sections to remove `#` prefixed lines and add `rust` to the start. If you included the readme you would have to write any doc links yourself and code blocks with hidden lines or `compile_fail` annotations would not render right in the readme.
+  `cargo-insert-docs` does not just extract the raw markdown from the crate documentation, it also resolves doc links and removes `#` prefixed lines from code sections and adds `rust` to their start. If you included the readme you would have to write any doc links yourself and code blocks with hidden lines or `compile_fail` annotations would not render right in the readme.
 
   Furthermore the readme might include things like a header, badges, license that you wouldn't want to include in the crate documentation.
 

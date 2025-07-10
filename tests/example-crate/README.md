@@ -7,7 +7,8 @@ Use the [Image](https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.h
 
 ## Feature Flags
 <!-- feature documentation start -->
-- **`std`** *(enabled by default)* — Enables loading [`Image`](https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html)s from [`std::io::Read`](https://doc.rust-lang.org/std/io/trait.Read.html).
+- **`std`** *(enabled by default)* — Enables loading [`Image`](https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html)s
+  from [`std::io::Read`](https://doc.rust-lang.org/std/io/trait.Read.html).
 
 ### Image formats
 The following formats are supported.

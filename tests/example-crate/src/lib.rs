@@ -2,7 +2,8 @@
 //!
 //! # Feature Flags
 //! <!-- feature documentation start -->
-//! - **`std`** *(enabled by default)* — Enables loading [`Image`]s from [`std::io::Read`].
+//! - **`std`** *(enabled by default)* — Enables loading [`Image`]s
+//!   from [`std::io::Read`].
 //!
 //! ## Image formats
 //! The following formats are supported.
