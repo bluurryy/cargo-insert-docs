@@ -4,8 +4,13 @@
 [![License](https://img.shields.io/crates/l/cargo-insert-docs)](#license)
 [![Build Status](https://github.com/bluurryy/cargo-insert-docs/workflows/Release/badge.svg)](https://github.com/bluurryy/cargo-insert-docs/actions/workflows/release.yml)
 
-Insert feature documentation into the crate documentation and
-crate documentation into the readme.
+## Overview
+
+`cargo-insert-docs` does two independent tasks
+1. Inserts feature documentation from `Cargo.toml` into your crate docs.
+2. Inserts crate documentation from `lib.rs` into your `README.md`.
+
+You can use either task on its own by disabling the other with `--no-feature-docs` or `--no-crate-docs`.
 
 ## Installation
 
@@ -15,9 +20,7 @@ cargo install cargo-insert-docs
 
 ## Compatibility
 
-This tool does two separate jobs, either can be turned off with `--no-feature-docs` and `--no-crate-docs`.
-
-The "insert crate documentation into readme" part of the tool requires a nightly toolchain and uses the unstable rustdoc json output. A new nightly version may no longer be compatible with the tool and the tool will need to be updated. Alternatively you can choose a specific nightly version using the `--toolchain` argument.
+The "insert crate documentation into readme" part of the tool requires a nightly toolchain to be installed and uses the unstable rustdoc json output. A new nightly version may no longer be compatible and `cargo-insert-docs` will need to be updated. Alternatively you can choose a specific nightly version using the `--toolchain` argument.
 
 |crate version|rust version|
 |---|---|
