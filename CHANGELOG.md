@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Changed
+
+- Make github builds target `x86_64-unknown-linux-musl` instead of `x86_64-unknown-linux-gnu`
+
 ## [0.1.2] - 2025-07-10
 
 ### Added
