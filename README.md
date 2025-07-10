@@ -14,6 +14,7 @@ You can use either task on its own by disabling the other with `--no-feature-doc
 - [Usage](#usage)
 - [FAQ](#faq)
 - [Compatibility](#compatibility)
+- [Acknowledgements](#acknowledgements)
 - [Similar projects](#similar-projects)
 - [License](#license)
 
@@ -166,6 +167,13 @@ A new nightly release may no longer be compatible with the current version and `
 |Version|Understands the rustdoc JSON output of|
 |---|---|
 |0.1.x|nightly-2025-06-22 — ?|
+
+## Acknowledgements
+
+The comment format for adding feature documentation comes from [`document-features`](https://docs.rs/document-features/latest/document_features/). `document-features` is a great tool that allows you to insert feature documentation using a macro like this: 
+```rs
+#![doc = document_features::document_features!()]
+```
 
 ## Similar projects
 - **`document-features`**: <https://crates.io/crates/document-features>
