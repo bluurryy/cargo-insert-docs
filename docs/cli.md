@@ -45,10 +45,10 @@ Options:
           [default: "crate documentation"]
 
       --no-feature-docs
-          Disables inserting of the feature documentation from Cargo.toml into the lib.rs
+          Disables inserting the feature documentation into the crate documentation
 
       --no-crate-docs
-          Disables inserting of the crate documentation from lib.rs into the README.md
+          Disables inserting the crate documentation into the readme
 
       --strict
           Errors instead of printing a warning when a documentation section was not found.
@@ -56,7 +56,8 @@ Options:
           Implies `--strict-feature-docs` and `--strict-crate-docs`.
 
       --strict-feature-docs
-          Errors instead of printing a warning when a feature documentation section was not found in the crate documentation
+          Errors instead of printing a warning when a feature documentation section was not found in the crate
+          documentation
 
       --strict-crate-docs
           Errors instead of printing a warning when a crate documentation section was not found in the readme
@@ -75,8 +76,8 @@ Options:
           
           Whenever you update your nightly toolchain this tool may also need to be updated to be compatible.
           
-          With this argument you can choose a nightly version that is guaranteed to be compatible with the current version of
-          this tool, like `nightly-2025-06-26`.
+          With this argument you can choose a nightly version that is guaranteed to be compatible with the
+          current version of this tool, like `nightly-2025-06-26`.
           
           [default: nightly]
 
@@ -87,8 +88,8 @@ Options:
           Document private items
 
       --link-to-latest
-          Link to the "latest" version on docs.rs like https://docs.rs/my-crate/latest/my_crate/. This only affects workspace
-          crates
+          Link to the "latest" version on docs.rs like https://docs.rs/my-crate/latest/my_crate/. This only
+          affects workspace crates
 
   -v, --verbose
           Print more verbose messages
@@ -104,4 +105,5 @@ Options:
 
   -V, --version
           Print version
+
 ```
