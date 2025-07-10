@@ -10,7 +10,7 @@ mod style;
 
 use std::{
     collections::HashSet,
-    ffi::OsString,
+    ffi::{OsStr, OsString},
     fmt, fs, io,
     ops::Deref,
     path::{Path, PathBuf},
@@ -153,28 +153,40 @@ struct Args {
     check: bool,
 }
 
-// see https://github.com/cargo-public-api/cargo-public-api/blob/7bd0f11a057934e281e9aa6c491145e37c1fc7bb/cargo-public-api/src/main.rs#L543
+/// https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands
+///
+/// When executing `cargo-insert-docs` as a cargo subcommand
+/// the first argument will be filename as usual.
+///
+/// The second argument will be `insert-docs`.
+///
+/// To be able to run `cargo-insert-docs` directly and as subcommand
+/// we need to filter out that extra `insert-docs` argument.
+///
+/// To support any executable name and not just the hardcoded "insert-docs"
+/// we parse the filename, remove the "cargo-" prefix and the ".exe" suffix
+/// to get the name of the second argument.
 fn parse_args() -> Args {
-    let subcommand_name = subcommand_name(std::env::args_os().next().unwrap());
+    let command = std::env::args_os().next().expect("first argument is missing");
+    let command = subcommand_name(command.as_os_str());
+    let command = command.as_ref();
 
     let args_os = std::env::args_os()
         .enumerate()
-        .filter(|(index, arg)| *index != 1 || Some(arg) != subcommand_name.as_ref())
+        .filter(|(index, arg)| *index != 1 || Some(arg) != command)
         .map(|(_, arg)| arg);
 
     Args::parse_from(args_os)
 }
 
-// see https://github.com/cargo-public-api/cargo-public-api/blob/7bd0f11a057934e281e9aa6c491145e37c1fc7bb/cargo-public-api/src/main.rs#L558
-fn subcommand_name(bin: OsString) -> Option<OsString> {
+fn subcommand_name(bin: &OsStr) -> Option<OsString> {
     Some(
-        PathBuf::from(bin)
+        Path::new(bin)
             .file_name()?
-            .to_owned()
             .to_string_lossy()
             .strip_prefix("cargo-")?
             .strip_suffix(std::env::consts::EXE_SUFFIX)?
-            .to_owned()
+            .to_string()
             .into(),
     )
 }
