@@ -3,7 +3,7 @@ mod tests;
 
 use std::collections::{BTreeMap, btree_map::Entry};
 
-use color_eyre::eyre::{Context as _, Result};
+use color_eyre::eyre::Result;
 use rustdoc_types::{Crate, Id, Item, ItemEnum, StructKind, VariantKind, Visibility};
 
 pub fn child_to_parent(krate: &Crate) -> Result<BTreeMap<Id, Id>> {
@@ -85,7 +85,7 @@ fn child_to_parent_struct_build(
     let parent = Parent {
         id: parent_id,
         depth,
-        is_non_inline_use: is_use && !doc_attributes(parent_item)?.inline,
+        is_non_inline_use: is_use && !doc_attributes(parent_item).inline,
     };
 
     for child_id in children(parent_item) {
@@ -155,11 +155,11 @@ fn syn_parse_attr_str(str: &str) -> syn::Result<syn::Attribute> {
     Ok(syn::parse_str::<Helper>(str)?.0)
 }
 
-fn doc_attributes(item: &Item) -> Result<DocAttributes> {
+fn doc_attributes(item: &Item) -> DocAttributes {
     let mut doc = DocAttributes { inline: false };
 
     for attr in &item.attrs {
-        if let Ok(attr) = syn_parse_attr_str(attr).wrap_err("failed to parse attribute")
+        if let Ok(attr) = syn_parse_attr_str(attr)
             && attr.path().is_ident("doc")
             && let syn::Meta::List(list) = attr.meta
         {
@@ -171,7 +171,7 @@ fn doc_attributes(item: &Item) -> Result<DocAttributes> {
         }
     }
 
-    Ok(doc)
+    doc
 }
 
 macro_rules! chain {
