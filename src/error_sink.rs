@@ -124,7 +124,9 @@ impl ErrorSink {
                 .unwrap();
         }
 
-        out.push('\n');
+        if errors != 0 || warnings != 0 {
+            out.push('\n');
+        }
 
         self.write(out);
     }
