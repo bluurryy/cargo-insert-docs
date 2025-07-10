@@ -2,7 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/cargo-insert-docs.svg)](https://crates.io/crates/cargo-insert-docs)
 [![License](https://img.shields.io/crates/l/cargo-insert-docs)](#license)
-[![Build Status](https://github.com/bluurryy/cargo-insert-docs/workflows/Rust/badge.svg)](https://github.com/bluurryy/cargo-insert-docs/actions/workflows/rust.yml)
+[![Build Status](https://github.com/bluurryy/cargo-insert-docs/workflows/Release/badge.svg)](https://github.com/bluurryy/cargo-insert-docs/actions/workflows/release.yml)
 
 Insert feature documentation into the crate documentation and
 crate documentation into the readme.
