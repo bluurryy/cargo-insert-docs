@@ -139,6 +139,8 @@ You don't have to add both sections for the tool to work. If it doesn't find a s
 
 You can find details about all the available arguments in [docs/cli.md](docs/cli.md).
 
+If you'd like to see what it looks like when used by a real crate then have a look at `bump-scope`'s [docs.rs](https://docs.rs/bump-scope/latest/bump_scope/) and [README.md](https://github.com/bluurryy/bump-scope/blob/main/README.md).
+
 ## Compatibility
 
 To extract the crate documentation `cargo-insert-docs` relies on the unstable [rustdoc JSON](https://github.com/rust-lang/rust/issues/76578) format, which requires a recent Rust nightly toolchain to be installed.
