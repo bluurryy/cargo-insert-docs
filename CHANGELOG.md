@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Add `--check` flag to check if the documentation is up to date.
+
 ## [0.2.0] - 2025-07-10
 
 ### Added

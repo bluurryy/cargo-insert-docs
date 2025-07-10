@@ -140,6 +140,13 @@ struct Args {
     /// Do not print cargo log messages
     #[arg(long)]
     quiet_cargo: bool,
+
+    /// Runs in 'check' mode.
+    /// Exits with 0 if the documentation is up to date.
+    /// Exits with 1 if the documentation is stale or if any errors
+    /// occured.
+    #[arg(long)]
+    check: bool,
 }
 
 // see https://github.com/cargo-public-api/cargo-public-api/blob/7bd0f11a057934e281e9aa6c491145e37c1fc7bb/cargo-public-api/src/main.rs#L543
@@ -315,15 +322,11 @@ fn run_package(cx: &Context) {
     let _span = cx.package.is_explicit.then(|| cx.log.span("package", &cx.package.name));
 
     if !cx.args.no_feature_docs {
-        operation(
-            cx,
-            "insert feature documentation into crate documentation",
-            insert_features_into_docs,
-        );
+        operation(cx, "feature documentation", "crate documentation", insert_features_into_docs);
     }
 
     if !cx.args.no_crate_docs {
-        operation(cx, "insert crate documentation into readme", insert_docs_into_readme);
+        operation(cx, "crate documentation", "readme", insert_docs_into_readme);
     }
 }
 
@@ -437,8 +440,14 @@ impl fmt::Display for RelativePath {
     }
 }
 
-fn operation(cx: &Context, name: &str, f: fn(&Context) -> Result<()>) {
-    let _span = cx.log.span("operation", name);
+fn operation(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
+    let operation_name = if cx.args.check {
+        format!("checking {from} in {to}")
+    } else {
+        format!("could not insert {from} into {to}")
+    };
+
+    let _span = cx.log.span("operation", &operation_name);
 
     if cx.args.verbose {
         cx.log.info("starting operation");
@@ -447,7 +456,13 @@ fn operation(cx: &Context, name: &str, f: fn(&Context) -> Result<()>) {
     let start = Instant::now();
 
     if let Err(report) = f(cx) {
-        cx.log.report(&report.wrap_err(format!("could not {name}")));
+        let context = if cx.args.check {
+            format!("checking {from} failed")
+        } else {
+            format!("could not {operation_name}")
+        };
+
+        cx.log.report(&report.wrap_err(context));
     }
 
     if cx.args.verbose {
@@ -492,6 +507,10 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
     let new_lib_content = feature_docs_section.replace(&feature_docs)?;
 
     if new_lib_content != lib_content {
+        if cx.args.check {
+            bail!("feature documentation is stale");
+        }
+
         write(lib_path, new_lib_content.as_bytes())?;
     }
 
@@ -500,9 +519,10 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
 
 fn insert_docs_into_readme(cx: &Context) -> Result<()> {
     let readme_path = cx.package.manifest_path.relative(&cx.args.readme_path);
-    let mut readme = readme_path.read_to_string()?;
+    let readme = readme_path.read_to_string()?;
+    let mut new_readme = readme.clone();
 
-    let Some(section) = markdown::find_section(&readme, &cx.args.crate_docs_section) else {
+    let Some(section) = markdown::find_section(&new_readme, &cx.args.crate_docs_section) else {
         return cx
             .log
             .span("path", readme_path.full_path.display())
@@ -516,9 +536,17 @@ fn insert_docs_into_readme(cx: &Context) -> Result<()> {
 
     let crate_docs = extract_crate_docs::extract(cx)?;
 
-    readme.replace_range(section, &format!("\n{crate_docs}\n"));
+    new_readme.replace_range(section, &format!("\n{crate_docs}\n"));
 
-    readme_path.write(&readme)
+    if readme != new_readme {
+        if cx.args.check {
+            bail!("crate documentation is stale");
+        }
+
+        readme_path.write(&new_readme)?;
+    }
+
+    Ok(())
 }
 
 fn read_to_string(path: &Path) -> Result<String> {

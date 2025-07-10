@@ -3,7 +3,8 @@
 ```console
 $ cargo insert-docs --help
 
-Inserts feature documentation into the crate documentation and then the crate documentation into the readme.
+Inserts feature documentation into the crate documentation and then the crate
+documentation into the readme.
 
 Website: https://github.com/bluurryy/cargo-insert-docs
 
@@ -56,11 +57,12 @@ Options:
           Implies `--strict-feature-docs` and `--strict-crate-docs`.
 
       --strict-feature-docs
-          Errors instead of printing a warning when a feature documentation section was not found in the crate
-          documentation
+          Errors instead of printing a warning when a feature documentation section was
+          not found in the crate documentation
 
       --strict-crate-docs
-          Errors instead of printing a warning when a crate documentation section was not found in the readme
+          Errors instead of printing a warning when a crate documentation section was not
+          found in the readme
 
   -p, --package <PACKAGE>
           Package(s) to document
@@ -74,10 +76,11 @@ Options:
       --toolchain <TOOLCHAIN>
           Which rustup toolchain to use when invoking rustdoc.
           
-          Whenever you update your nightly toolchain this tool may also need to be updated to be compatible.
+          Whenever you update your nightly toolchain this tool may also need to be updated
+          to be compatible.
           
-          With this argument you can choose a nightly version that is guaranteed to be compatible with the
-          current version of this tool, like `nightly-2025-06-26`.
+          With this argument you can choose a nightly version that is guaranteed to be
+          compatible with the current version of this tool, like `nightly-2025-06-26`.
           
           [default: nightly]
 
@@ -88,8 +91,8 @@ Options:
           Document private items
 
       --link-to-latest
-          Link to the "latest" version on docs.rs like https://docs.rs/my-crate/latest/my_crate/. This only
-          affects workspace crates
+          Link to the "latest" version on docs.rs like
+          https://docs.rs/my-crate/latest/my_crate/. This only affects workspace crates
 
   -v, --verbose
           Print more verbose messages
@@ -100,10 +103,13 @@ Options:
       --quiet-cargo
           Do not print cargo log messages
 
+      --check
+          Runs in 'check' mode. Exits with 0 if the documentation is up to date. Exits
+          with 1 if the documentation is stale or if any errors occured
+
   -h, --help
           Print help (see a summary with '-h')
 
   -V, --version
           Print version
-
 ```
