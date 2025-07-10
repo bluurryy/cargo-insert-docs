@@ -145,7 +145,7 @@ To extract the crate documentation `cargo-insert-docs` relies on the unstable [r
 
 A new nightly release may no longer be compatible with the current version and `cargo-insert-docs` will need to be updated. Alternatively you can choose a specific nightly version that is known to be compatible using the [`--toolchain`](docs/cli.md) argument.
 
-#### Compatiblity Matrix
+#### Compatibility Matrix
 
 |Version|Understands the rustdoc JSON output of|
 |---|---|
