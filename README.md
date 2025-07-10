@@ -169,7 +169,7 @@ If you'd like to see what it looks like when used by a real crate then have a lo
 
 To extract the crate documentation `cargo-insert-docs` relies on the unstable [rustdoc JSON](https://github.com/rust-lang/rust/issues/76578) format, which requires a recent Rust nightly toolchain to be installed.
 
-A new nightly release may no longer be compatible with the current version and `cargo-insert-docs` will need to be updated. Alternatively you can choose a specific nightly version that is known to be compatible using the [`--toolchain`](docs/cli.md) argument.
+A new nightly release may no longer be compatible with the current version and `cargo-insert-docs` will need to be updated. Alternatively you can choose a specific nightly version that is known to be compatible using the `--toolchain` argument.
 
 #### Compatibility Matrix
 
