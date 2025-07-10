@@ -32,23 +32,48 @@ rustup install nightly --profile minimal
 
 Add feature documentation to your `Cargo.toml` using `##` for documentation of individual features and `#!` to add documentation between features:
 ```toml
-#! ### Optional features
+[features]
+default = ["std", "jpg"]
 
-## Adds serde implementations for crate types.
-serde = []
+## Enables loading [`Image`]s from [`std::io::Read`].
+std = []
+
+#! ## Image formats
+#! The following formats are supported.
+
+## Enables support for jpg images
+jpg = []
+
+## Enables support for png images
+png = []
 ```
 
 Then add a feature documentation section to your `lib.rs` file:
 ```rs
+//! Use the [Image] type to load images.
+//!
 //! # Feature Flags
 //! <!-- feature documentation start -->
 //! <!-- feature documentation end -->
+//!
+//! # Examples
+//! ```
+//! # use example_crate::Image;
+//! let image = Image::load("cat.png");
+//! # println!("this won't show up in the readme");
+//! ```
 ```
 
 And add a crate documentation section to your `README.md`:
 ```md
+# my-crate-name
+
+Badges go here.
+
 <!-- crate documentation start -->
 <!-- crate documentation end -->
+
+License goes there.
 ```
 
 Now run `cargo-insert-docs`:
@@ -56,7 +81,62 @@ Now run `cargo-insert-docs`:
 cargo insert-docs
 ```
 
-And documentation will be inserted. Have a look at the [example-crate](tests/example-crate) to see what the output looks like.
+Then your `lib.rs` will end up looking like this:
+```rs
+//! Use the [Image] type to load images.
+//!
+//! # Feature Flags
+//! <!-- feature documentation start -->
+//! - **`std`** *(enabled by default)* — Enables loading [`Image`]s from [`std::io::Read`].
+//!
+//! ## Image formats
+//! The following formats are supported.
+//!
+//! - **`jpg`** *(enabled by default)* — Enables support for jpg images
+//! - **`png`** — Enables support for png images
+//! <!-- feature documentation end -->
+//!
+//! # Examples
+//! ```
+//! # use example_crate::Image;
+//! let image = Image::load("cat.png");
+//! # println!("this won't show up in the readme");
+//! ```
+```
+
+And your `README.md` will look like that: ([tests/example-crate/README.md](tests/example-crate/README.md))
+````md
+# my-crate-name
+
+Badges go here.
+
+<!-- crate documentation start -->
+# my-crate-name
+
+Badges go here.
+
+<!-- crate documentation start -->
+Use the [Image](https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html) type to load images.
+
+## Feature Flags
+<!-- feature documentation start -->
+- **`std`** *(enabled by default)* — Enables loading [`Image`](https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html)s from [`std::io::Read`](https://doc.rust-lang.org/std/io/trait.Read.html).
+
+### Image formats
+The following formats are supported.
+
+- **`jpg`** *(enabled by default)* — Enables support for jpg images
+- **`png`** — Enables support for png images
+<!-- feature documentation end -->
+
+## Examples
+```rust
+let image = Image::load("cat.png");
+```
+<!-- crate documentation end -->
+
+License goes there.
+````
 
 To update the sections just run the command again.
 

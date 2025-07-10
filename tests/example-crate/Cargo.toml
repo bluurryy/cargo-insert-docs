@@ -9,7 +9,7 @@ default = ["std", "jpg"]
 std = []
 
 #! ## Image formats
-#! Features that enable loading images.
+#! The following formats are supported.
 
 ## Enables support for jpg images
 jpg = []

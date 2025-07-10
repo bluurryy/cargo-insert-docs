@@ -1,11 +1,11 @@
-//! This is an example crate.
+//! Use the [Image] type to load images.
 //!
-//! # Cargo features
+//! # Feature Flags
 //! <!-- feature documentation start -->
 //! - **`std`** *(enabled by default)* — Enables loading [`Image`]s from [`std::io::Read`].
 //!
 //! ## Image formats
-//! Features that enable loading images.
+//! The following formats are supported.
 //!
 //! - **`jpg`** *(enabled by default)* — Enables support for jpg images
 //! - **`png`** — Enables support for png images
@@ -13,8 +13,15 @@
 //!
 //! # Examples
 //! ```
+//! # use example_crate::Image;
+//! let image = Image::load("cat.png");
 //! # println!("this won't show up in the readme");
-//! assert!(1 + 2, 3);
 //! ```
 
 pub struct Image;
+
+impl Image {
+    pub fn load(_: &str) -> Image {
+        Image
+    }
+}
