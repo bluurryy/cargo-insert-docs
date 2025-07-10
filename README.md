@@ -20,11 +20,14 @@ cargo install cargo-insert-docs
 
 ## Compatibility
 
-The "insert crate documentation into readme" part of the tool requires a nightly toolchain to be installed and uses the unstable rustdoc json output. A new nightly version may no longer be compatible and `cargo-insert-docs` will need to be updated. Alternatively you can choose a specific nightly version using the `--toolchain` argument.
+The *Inserts crate documentation from `lib.rs` into your `README.md`.* part of `cargo-insert-docs` relies on the unstable 
+[rustdoc JSON](https://github.com/rust-lang/rust/issues/76578) of a recent Rust nightly toolchain. A new nightly release may no longer be compatible with the current version and `cargo-insert-docs` will need to be updated. Alternatively you can choose a specific nightly version that is known to be compatible using the `--toolchain` argument.
 
-|crate version|rust version|
+#### Compatiblity Matrix
+
+|Version|Understands the rustdoc JSON output of|
 |---|---|
-|0.1.x|nightly-2025-06-22 - ?|
+|0.1.x|nightly-2025-06-22 — ?|
 
 ## Usage
 
