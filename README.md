@@ -27,7 +27,7 @@ cargo binstall cargo-insert-docs
 cargo install cargo-insert-docs
 ```
 
-For the *"Inserts crate documentation from `lib.rs` into your `README.md`"*-part of `cargo-insert-docs`, you need to have a recent nightly toolchain installed. See [Compatibility](#compatibility).
+For the *"crate docs → readme"*-part of `cargo-insert-docs`, you need to have a recent nightly toolchain installed. See [Compatibility](#compatibility).
 
 ```sh
 rustup install nightly --profile minimal
