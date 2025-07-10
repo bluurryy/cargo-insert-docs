@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Improve cli documentation.
+
+### Changed
+
+- Upgrade `toml_edit` dependency to version 0.23.0
+
 ## [0.1.1] - 2025-07-09
 
 ### Fixed
