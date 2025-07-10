@@ -149,7 +149,7 @@ Notice how:
 
 To update the sections just run the command again.
 
-You don't have to add both sections for the tool to work. If it doesn't find a section it will just carry on with a warning. You can turn that warning into an error with the `--strict` flag.
+You don't have to add both sections for the tool to work. If it doesn't find a section it will carry on with a warning. You can turn that warning into an error with the `--strict` flag or disable either job with `--no-feature-docs` and `--no-crate-docs`.
 
 You can find details about all the available arguments in [docs/cli.md](docs/cli.md).
 
