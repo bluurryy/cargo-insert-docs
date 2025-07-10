@@ -2,6 +2,7 @@ mod child_to_parent;
 
 use std::{collections::HashMap, fs};
 
+use cargo_metadata::PackageId;
 use color_eyre::eyre::{Context as _, OptionExt as _, Result, bail};
 use rustdoc_types::{Crate, Id, Item, ItemEnum, ItemKind};
 use serde::Deserialize;
@@ -9,12 +10,8 @@ use serde::Deserialize;
 use crate::{Context, markdown};
 
 pub fn extract(cx: &Context) -> Result<String> {
-    let crate_to_package: HashMap<String, String> = cx
-        .metadata
-        .packages
-        .iter()
-        .map(|p| (p.name.as_ref().replace('-', "_"), p.name.as_ref().to_string()))
-        .collect();
+    let crate_to_package: HashMap<String, &PackageId> =
+        cx.metadata.packages.iter().map(|p| (p.name.as_ref().replace('-', "_"), &p.id)).collect();
 
     let krate = rustdoc_json(cx)?;
     let root = krate.index.get(&krate.root).ok_or_eyre("crate index has no root")?;
@@ -165,7 +162,7 @@ struct Resolve<'a> {
     krate: &'a Crate,
     child_to_parent: HashMap<Id, Id>,
     path_to_kind: HashMap<&'a [String], ItemKind>,
-    crate_to_package: HashMap<String, String>,
+    crate_to_package: HashMap<String, &'a PackageId>,
 }
 
 impl Resolve<'_> {
@@ -191,37 +188,7 @@ impl Resolve<'_> {
 
                 BasicItemKind::StructField => format!("#structfield.{name}"),
                 BasicItemKind::Method => format!("#method.{name}"),
-
-                BasicItemKind::Crate => {
-                    if matches!(name.as_str(), "core" | "alloc" | "std") {
-                        format!("https://doc.rust-lang.org/{name}/")
-                    } else {
-                        let package = self.crate_to_package.get(&name).unwrap_or(&name);
-
-                        let use_latest_version = self.cx.args.link_to_latest
-                            && self
-                                .cx
-                                .metadata
-                                .workspace_members
-                                .iter()
-                                .any(|i| self.cx.metadata[i].name.as_str() == package);
-
-                        let version = if !use_latest_version
-                            && let Some(p) = self
-                                .cx
-                                .metadata
-                                .packages
-                                .iter()
-                                .find(|p| p.name.as_ref() == package)
-                        {
-                            p.version.to_string()
-                        } else {
-                            "latest".to_string()
-                        };
-
-                        format!("https://docs.rs/{package}/{version}/{name}/")
-                    }
-                }
+                BasicItemKind::Crate => self.crate_doc_url(&name),
 
                 BasicItemKind::Impl | BasicItemKind::Use => String::new(),
 
@@ -230,6 +197,29 @@ impl Resolve<'_> {
         }
 
         Ok(url)
+    }
+
+    fn crate_doc_url(&self, name: &str) -> String {
+        if matches!(name, "core" | "alloc" | "std") {
+            format!("https://doc.rust-lang.org/{name}/")
+        } else {
+            let metadata = &self.cx.metadata;
+            let package_id = self.crate_to_package.get(name);
+            let package = package_id.map(|&p| &metadata[p]);
+            let package_name = package.map(|p| p.name.as_str()).unwrap_or(name);
+            let from_workspace = package_id.map(|&p| metadata.workspace_members.contains(p));
+            let link_to_latest = self.cx.args.link_to_latest && from_workspace.unwrap_or(false);
+
+            let version = if let Some(package) = package
+                && !link_to_latest
+            {
+                package.version.to_string()
+            } else {
+                "latest".to_string()
+            };
+
+            format!("https://docs.rs/{package_name}/{version}/{name}/")
+        }
     }
 
     fn item_path(&self, id: Id) -> Result<Vec<NameKind>> {
