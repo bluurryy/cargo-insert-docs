@@ -111,11 +111,6 @@ And your `README.md` will look like that: ([tests/example-crate/README.md](tests
 Badges go here.
 
 <!-- crate documentation start -->
-# my-crate-name
-
-Badges go here.
-
-<!-- crate documentation start -->
 Use the [Image](https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html) type to load images.
 
 ## Feature Flags
