@@ -1,6 +1,10 @@
 default:
     @just --list
 
+pre-release:
+    cargo run -- --workspace --check
+    just update-cli-md
+
 update-cli-md:
     #!/usr/bin/env nu
     ^stty cols 110
