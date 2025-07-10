@@ -4,13 +4,18 @@
 [![License](https://img.shields.io/crates/l/cargo-insert-docs)](#license)
 [![Build Status](https://github.com/bluurryy/cargo-insert-docs/workflows/Release/badge.svg)](https://github.com/bluurryy/cargo-insert-docs/actions/workflows/release.yml)
 
-## Overview
-
 `cargo-insert-docs` does two independent tasks
 1. Inserts feature documentation from `Cargo.toml` into your crate docs.
 2. Inserts crate documentation from `lib.rs` into your `README.md`.
 
 You can use either task on its own by disabling the other with `--no-feature-docs` or `--no-crate-docs`.
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [FAQ](#faq)
+- [Compatibility](#compatibility)
+- [Similar projects](#similar-projects)
+- [License](#license)
 
 ## Installation
 
@@ -140,6 +145,15 @@ You don't have to add both sections for the tool to work. If it doesn't find a s
 You can find details about all the available arguments in [docs/cli.md](docs/cli.md).
 
 If you'd like to see what it looks like when used by a real crate then have a look at `bump-scope`'s [docs.rs](https://docs.rs/bump-scope/latest/bump_scope/) and [README.md](https://github.com/bluurryy/bump-scope/blob/main/README.md).
+
+## FAQ
+
+- **Why don't I just insert the readme into the crate docs with `#![doc = include_str!("../README.md")]`?**
+ 
+  `cargo-insert-docs` does not just extract the raw markdown from the crate documentation, it also resolves doc links and processes
+  code sections to remove `#` prefixed lines and add `rust` to the start. If you included the readme you would have to write any doc links yourself and code blocks with hidden lines or `compile_fail` annotations would not render right in the readme.
+
+  Furthermore the readme might include things like a header, badges, license that you wouldn't want to include in the crate documentation.
 
 ## Compatibility
 
