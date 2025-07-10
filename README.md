@@ -26,7 +26,7 @@ cargo binstall cargo-insert-docs
 cargo install cargo-insert-docs
 ```
 
-Inserting crate documentation into the `README.md` requires a nightly toolchain to be installed. See [Compatibility](#compatibility). Inserting the feature documentation into the crate or compiling `cargo-insert-docs` does not require a nightly toolchain.
+Inserting crate documentation into the `README.md` requires a nightly toolchain to be installed. See [Compatibility](#compatibility). The active toolchain does not need to be nightly. Inserting the feature documentation into the crate and compiling `cargo-insert-docs` itself does not require a nightly toolchain.
 
 ```sh
 rustup install nightly --profile minimal
