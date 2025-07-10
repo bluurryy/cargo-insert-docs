@@ -28,7 +28,7 @@ The "insert crate documentation into readme" part of the tool requires a nightly
 
 ## Usage
 
-Use `##` in your `Cargo.toml` to add documentation to individual features and `#!` to add documentation between features:
+Add feature documentation to your `Cargo.toml` using `##` for documentation of individual features and `#!` to add documentation between features:
 ```toml
 #! ### Optional features
 
