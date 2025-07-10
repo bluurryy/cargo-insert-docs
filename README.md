@@ -22,16 +22,11 @@ cargo binstall cargo-insert-docs
 cargo install cargo-insert-docs
 ```
 
-## Compatibility
+For the *"Inserts crate documentation from `lib.rs` into your `README.md`"*-part of `cargo-insert-docs`, you need to have a recent nightly toolchain installed. See [Compatibility](#compatibility).
 
-The *Inserts crate documentation from `lib.rs` into your `README.md`.* part of `cargo-insert-docs` relies on the unstable 
-[rustdoc JSON](https://github.com/rust-lang/rust/issues/76578) of a recent Rust nightly toolchain. A new nightly release may no longer be compatible with the current version and `cargo-insert-docs` will need to be updated. Alternatively you can choose a specific nightly version that is known to be compatible using the `--toolchain` argument.
-
-#### Compatiblity Matrix
-
-|Version|Understands the rustdoc JSON output of|
-|---|---|
-|0.1.x|nightly-2025-06-22 — ?|
+```sh
+rustup install nightly --profile minimal
+```
 
 ## Usage
 
@@ -68,6 +63,18 @@ To update the sections just run the command again.
 You don't have to add both sections for the tool to work. If it doesn't find a section it will just carry on with a warning. You can turn that warning into an error with the `--strict` flag.
 
 You can find details about all the available arguments in [docs/cli.md](docs/cli.md).
+
+## Compatibility
+
+To extract the crate documentation `cargo-insert-docs` relies on the unstable [rustdoc JSON](https://github.com/rust-lang/rust/issues/76578) format, which requires a recent Rust nightly toolchain to be installed.
+
+A new nightly release may no longer be compatible with the current version and `cargo-insert-docs` will need to be updated. Alternatively you can choose a specific nightly version that is known to be compatible using the [`--toolchain`](docs/cli.md) argument.
+
+#### Compatiblity Matrix
+
+|Version|Understands the rustdoc JSON output of|
+|---|---|
+|0.1.x|nightly-2025-06-22 — ?|
 
 ## Similar projects
 - **`document-features`**: <https://crates.io/crates/document-features>
