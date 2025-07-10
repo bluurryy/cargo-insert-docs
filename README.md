@@ -5,7 +5,7 @@
 [![Build Status](https://github.com/bluurryy/cargo-insert-docs/workflows/Release/badge.svg)](https://github.com/bluurryy/cargo-insert-docs/actions/workflows/release.yml)
 
 `cargo-insert-docs` helps you keep your documentation in sync by doing two jobs, it:
-1. Inserts feature documentation from `Cargo.toml` into your crate docs.
+1. Inserts feature documentation from `Cargo.toml` into your `lib.rs`.
 2. Inserts crate documentation from `lib.rs` into your `README.md`.
 
 - [Installation](#installation)
