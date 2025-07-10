@@ -57,8 +57,11 @@ impl<'a> FeatureDocsSection<'a> {
             let mut out = String::new();
             out.push('\n');
 
-            for line in section_content.lines() {
+            for mut line in section_content.lines() {
                 out.push_str("//!");
+
+                // rustfmt trims the end of comment lines, so we do too
+                line = line.trim_end();
 
                 // rustfmt makes whitespace lines empty, so we do too
                 if !line.chars().all(char::is_whitespace) {

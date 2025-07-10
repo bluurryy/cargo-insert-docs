@@ -122,7 +122,7 @@ fn block_separate() {
 }
 
 #[test]
-fn escaped_section() {
+fn test_escaped_section() {
     let lib_rs = indoc! {r#"
         //! ```text
         //! <!-- feature documentation start -->
@@ -133,4 +133,28 @@ fn escaped_section() {
     let new_lib_rs = replace_section(lib_rs, "feature documentation", "whatever").unwrap();
 
     assert!(new_lib_rs.is_none());
+}
+
+#[test]
+fn test_trim_end() {
+    let lib_rs = indoc! {r#"
+        //! <!-- feature documentation start -->
+        //! <!-- feature documentation end -->
+    "#};
+
+    let new_lib_rs = replace_section(
+        lib_rs,
+        "feature documentation",
+        "lots of whitespace for some reason:    \t   \u{A0}",
+    )
+    .unwrap()
+    .unwrap();
+
+    assert_eq!(
+        "\
+        //! <!-- feature documentation start -->\n\
+        //! lots of whitespace for some reason:\n\
+        //! <!-- feature documentation end -->\n",
+        new_lib_rs
+    );
 }

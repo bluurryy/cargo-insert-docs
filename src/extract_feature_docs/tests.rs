@@ -1,5 +1,8 @@
+use color_eyre::eyre::Result;
 use expect_test::expect;
 use indoc::indoc;
+
+use crate::extract_feature_docs::comment_line_unprefixed;
 
 use super::{extract, parse};
 
@@ -53,12 +56,40 @@ fn test_feature_syntax_no_space() {
 #[test]
 fn test_feature_syntax_no_space_in_empty_line() {
     assert_eq!(
-        "\
-- my_feature — Good
-  \t \u{A0}
-  docs.
-",
+        "- my_feature — Good\n  \n  docs.\n",
+        extract("[features]\n## Good\n##\n## docs.\nmy_feature = []", "{feature}").unwrap(),
+    );
+
+    assert_eq!(
+        "- my_feature — Good\n  \n  docs.\n",
         extract("[features]\n## Good\n##\t \u{A0}\n## docs.\nmy_feature = []", "{feature}")
             .unwrap(),
     );
+}
+
+#[test]
+fn test_comment_line() {
+    fn try_strip(s: &str) -> Result<&str> {
+        comment_line_unprefixed(s)
+    }
+
+    #[track_caller]
+    fn strip(s: &str) -> &str {
+        try_strip(s).unwrap()
+    }
+
+    assert_eq!(strip(" "), "");
+    assert_eq!(strip("\t"), "");
+    assert_eq!(strip("\u{A0}"), "");
+
+    assert_eq!(strip(" Hello"), "Hello");
+    assert_eq!(strip("  Hello"), " Hello");
+
+    assert!(try_strip("\tHello").is_err());
+    assert!(try_strip("\u{A0}Hello").is_err());
+
+    assert_eq!(strip(" Hello "), "Hello");
+    assert_eq!(strip(" Hello  "), "Hello");
+    assert_eq!(strip(" Hello\t"), "Hello");
+    assert_eq!(strip(" Hello\u{A0}"), "Hello");
 }

@@ -95,23 +95,27 @@ fn comment_line<'a>(line: &'a str, prefix: &str) -> Result<Option<&'a str>> {
         return Ok(None);
     };
 
-    comment_strip_space_for_non_empty_lines(comment).map(Some)
+    comment_line_unprefixed(comment).map(Some)
 }
 
-fn comment_strip_space_for_non_empty_lines(line: &str) -> Result<&str> {
-    if line.chars().all(char::is_whitespace) {
-        return Ok(line);
-    }
-
-    match line.strip_prefix(' ') {
-        Some(line) => Ok(line),
-        None => {
-            // TODO: use miette errors to point to where the error is
-            // and provide a help section that explains that this is to
-            // prevent problems with indentation
-            bail!("a non-empty feature docs comment line must start with a space")
+fn comment_line_unprefixed(mut line: &str) -> Result<&str> {
+    // only full whitespace lines are allowed to not start with a space
+    if !line.chars().all(char::is_whitespace) {
+        line = match line.strip_prefix(' ') {
+            Some(line) => line,
+            None => {
+                // use errors spans to point to where the error is
+                // and provide a help section that explains that this is to
+                // prevent problems with indentation
+                bail!("a non-empty feature docs comment line must start with a space")
+            }
         }
     }
+
+    // we already trim the end when inserting into the crate docs but we might as well do it here too
+    line = line.trim_end();
+
+    Ok(line)
 }
 
 fn format(docs: &FeatureDocs, feature_label: &str) -> String {

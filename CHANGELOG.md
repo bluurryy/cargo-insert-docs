@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Trim whitespace from the end of feature doc lines to satisfy rustfmt
+
 ### Changed
 
 - Make github builds target `x86_64-unknown-linux-musl` instead of `x86_64-unknown-linux-gnu`
