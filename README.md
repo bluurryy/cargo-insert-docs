@@ -159,7 +159,9 @@ If you'd like to see what it looks like when used by a real crate then have a lo
 
 - **Why not just use `#![doc = include_str!("../README.md")]`?**
  
-  `cargo-insert-docs` does not just extract the raw markdown from the crate documentation, it also resolves doc links and removes `#` prefixed lines from code sections and adds `rust` to their start. If you included the readme you would have to write any doc links yourself and code blocks with hidden lines or `compile_fail` annotations would not render right in the readme.
+  If you're using doc-links `cargo-insert-docs` has the advantage that it resolves them for you. Linking to the docs manually by writing `[Image](https://docs.rs/...)` is tedious and rustdoc won't we able to tell you about outdated or otherwise unresolved links.
+
+  Using `cargo-insert-docs` you can also use code sections with `should_panic` and `compile_fail` annotations and [hidden lines](https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html#hiding-portions-of-the-example) without it rendering weird in the readme.
 
   Furthermore the readme might include things like a header, badges, license that you wouldn't want to include in the crate documentation.
 
