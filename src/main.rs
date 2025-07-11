@@ -23,7 +23,7 @@ use clap::Parser;
 use clap_cargo::style::CLAP_STYLING;
 use color_eyre::eyre::{Context as _, OptionExt, Result, bail};
 
-use crate::error_sink::{ErrorSink, Level};
+use crate::error_sink::{ErrorSink, Level, WithLog};
 
 #[derive(Parser)]
 #[command(
@@ -582,8 +582,9 @@ fn insert_features_into_docs_test(cx: &Context) -> Result<()> {
 }
 
 fn insert_docs_into_readme(cx: &Context) -> Result<()> {
+    let not_found_level = if cx.args.strict_crate_docs { Level::Error } else { Level::Warning };
     let readme_path = cx.package.manifest_path.relative(&cx.args.readme_path);
-    let readme = readme_path.read_to_string()?;
+    let readme = readme_path.read_to_string().with_log(cx.log, not_found_level)?;
     let mut new_readme = readme.clone();
 
     let Some(section) = markdown::find_section(&new_readme, &cx.args.crate_docs_section) else {
@@ -592,7 +593,7 @@ fn insert_docs_into_readme(cx: &Context) -> Result<()> {
             .span("path", readme_path.full_path.display())
             .span("section-name", &cx.args.crate_docs_section)
             .log(
-                if cx.args.strict_crate_docs { Level::Error } else { Level::Warning },
+                not_found_level,
                 format_args!("section not found in {}", readme_path.relative_to_manifest.display()),
             )
             .into_report_err();

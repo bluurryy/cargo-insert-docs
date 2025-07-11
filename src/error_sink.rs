@@ -187,7 +187,7 @@ impl Event<'_> {
         })
     }
 
-    pub fn into_report_err(self) -> Result<(), Report> {
+    pub fn into_report_err<T>(self) -> Result<T, Report> {
         Err(self.into_report())
     }
 }
@@ -422,3 +422,29 @@ impl fmt::Display for ReportFields {
 }
 
 impl Error for ReportFields {}
+
+pub trait WithLog<T> {
+    fn with_log(self, log: &ErrorSink, level: Level) -> Result<T, Report>;
+}
+
+impl<T> WithLog<T> for Result<T, Report> {
+    fn with_log(self, log: &ErrorSink, level: Level) -> Result<T, Report> {
+        let err = match self {
+            Ok(ok) => return Ok(ok),
+            Err(err) => err,
+        };
+
+        let mut span = log.empty_span();
+
+        for cause in err.chain().skip(1) {
+            span = span.span("cause", cause);
+        }
+
+        let message: &dyn fmt::Display = match err.chain().next() {
+            Some(some) => some,
+            None => &"<no message>",
+        };
+
+        span.log(level, message).into_report_err()
+    }
+}
