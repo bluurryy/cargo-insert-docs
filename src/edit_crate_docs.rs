@@ -26,7 +26,6 @@ impl<'a> FeatureDocsSection<'a> {
         Ok(Some(FeatureDocsSection { source, docs, section }))
     }
 
-    // TODO: format comments like cargo fmt would, removing whitespace on empty lines (?)
     pub fn replace(&self, section_content: &str) -> Result<String> {
         let Self { source, docs, section } = self;
 
