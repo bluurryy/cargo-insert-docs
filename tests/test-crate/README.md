@@ -23,8 +23,8 @@ Now the crate documentation begins...
 - A link to a struct that is re-exported with `#[doc(inline)]`: [`ReexportInline`](https://docs.rs/test-crate/0.0.0/test_crate/struct.ReexportInline.html).
 - A link to a struct that is re-exported from a private module: [`ReexportPrivate`](https://docs.rs/test-crate/0.0.0/test_crate/struct.ReexportPrivate.html).
 
-- A link to a module: [`my_module`](https://docs.rs/test-crate/0.0.0/test_crate/my_module/)
-- A link to an extern crate: [`alloc`](https://docs.rs//latest//alloc/)
+- A link to a module: [`my_module`](https://docs.rs/test-crate/0.0.0/test_crate/my_module/index.html)
+- A link to an extern crate: [`alloc`](https://docs.rs//latest//alloc/index.html)
 - A link to a use: [`MyStructUse`](https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html)
 - A link to a union: [`MyUnion`](https://docs.rs/test-crate/0.0.0/test_crate/union.MyUnion.html)
 - A link to a struct: [`MyStruct`](https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html)

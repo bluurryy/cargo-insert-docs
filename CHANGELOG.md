@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Module doc links now end in `/index.html` instead of `/`
+
 ## [0.3.0] - 2025-07-11
 
 ### Added

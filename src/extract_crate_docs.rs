@@ -196,7 +196,6 @@ impl Resolve<'_> {
 
         let mut url = String::new();
 
-        // TODO: if url ends with / add index.html
         for (i, NameKind { name, kind }) in path.into_iter().enumerate() {
             let name = name.as_str();
 
@@ -208,6 +207,10 @@ impl Resolve<'_> {
             };
 
             url.push_str(&segment);
+        }
+
+        if url.ends_with('/') {
+            url.push_str("index.html");
         }
 
         Ok(url)
