@@ -4,6 +4,7 @@ use std::{collections::HashMap, fs};
 
 use cargo_metadata::PackageId;
 use color_eyre::eyre::{Context as _, OptionExt as _, Report, Result, bail, eyre};
+use rustdoc_json::Color;
 use rustdoc_types::{Crate, Id, Item, ItemEnum, ItemKind};
 use serde::Deserialize;
 
@@ -94,7 +95,8 @@ fn rustdoc_json(cx: &Context) -> Result<Crate> {
         .all_features(cx.args.all_features)
         .no_default_features(cx.args.no_default_features)
         .features(&cx.package.enabled_features)
-        .document_private_items(cx.args.document_private_items);
+        .document_private_items(cx.args.document_private_items)
+        .color(Color::Always);
 
     if cx.package.is_explicit {
         builder = builder.package(&cx.package.name);
@@ -104,9 +106,11 @@ fn rustdoc_json(cx: &Context) -> Result<Crate> {
         builder = builder.target(target.to_string());
     }
 
-    if cx.args.quiet_cargo {
+    if cx.args.quiet {
         builder = builder.quiet(true).silent(true);
-    } else {
+    }
+
+    if !cx.args.quiet_cargo {
         // write an empty line to separate our messages from the invoked command
         if cx.log.was_written_to() {
             cx.log.write('\n');
@@ -118,7 +122,27 @@ fn rustdoc_json(cx: &Context) -> Result<Crate> {
         cx.log.set_written_to(true);
     }
 
-    let json_path = builder.build()?;
+    let json_path = if cx.args.quiet_cargo && !cx.args.quiet {
+        // if we silence cargo we still want to print stderr if an error occured
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        match builder.build_with_captured_output(&mut stdout, &mut stderr) {
+            Ok(ok) => ok,
+            Err(err) => {
+                // write an empty line to separate our messages from the invoked command
+                if cx.log.was_written_to() {
+                    cx.log.write('\n');
+                }
+
+                cx.log.write(String::from_utf8_lossy(&stderr));
+
+                return Err(err.into());
+            }
+        }
+    } else {
+        builder.build()?
+    };
 
     let json = fs::read_to_string(json_path).context("failed to read generated rustdoc json")?;
 

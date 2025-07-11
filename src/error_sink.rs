@@ -87,7 +87,7 @@ impl ErrorSink {
     }
 
     pub fn write(&self, value: impl fmt::Display) {
-        _ = self.inner.borrow_mut().write.write_fmt(format_args!("{value}"));
+        self.inner.borrow_mut().write_fmt(format_args!("{value}"));
     }
 
     pub fn was_written_to(&self) -> bool {
@@ -243,6 +243,11 @@ struct ErrorSinkInner {
 }
 
 impl ErrorSinkInner {
+    fn write_fmt(&mut self, args: fmt::Arguments) {
+        self.was_written_to = true;
+        _ = self.write.write_fmt(args);
+    }
+
     fn write_str(&mut self, string: &str) {
         self.was_written_to = true;
         _ = self.write.write_all(string.as_bytes());
