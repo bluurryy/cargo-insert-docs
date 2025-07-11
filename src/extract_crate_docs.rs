@@ -4,6 +4,7 @@ use std::{collections::HashMap, fs};
 
 use cargo_metadata::PackageId;
 use color_eyre::eyre::{Context as _, OptionExt as _, Report, Result, bail, eyre};
+use nonempty_collections::NEVec;
 use rustdoc_json::Color;
 use rustdoc_types::{Crate, Id, Item, ItemEnum, ItemKind};
 use serde::Deserialize;
@@ -253,7 +254,7 @@ impl Resolve<'_> {
                     id = parent_id;
                 }
                 Some(Parent::Path(parent_path)) => {
-                    let mut path = parent_path;
+                    let mut path = Vec::from(parent_path);
 
                     loop {
                         let found = self.path_to_kind.get(&*path);
@@ -292,7 +293,9 @@ impl Resolve<'_> {
             return Ok(BasicItem {
                 name: item_summary.path.last().map(|x| x.as_str()).unwrap_or("").to_string(),
                 kind: BasicItemKind::from(item_summary.kind),
-                parent: pop(&item_summary.path).map(|x| x.to_vec()).map(Parent::Path),
+                parent: slice_pop(&item_summary.path)
+                    .and_then(|x| x.to_vec().try_into().ok())
+                    .map(Parent::Path),
             });
         }
 
@@ -300,7 +303,7 @@ impl Resolve<'_> {
     }
 }
 
-fn pop<T>(slice: &[T]) -> Option<&[T]> {
+fn slice_pop<T>(slice: &[T]) -> Option<&[T]> {
     if slice.is_empty() { None } else { slice.get(..slice.len() - 1) }
 }
 
@@ -320,20 +323,23 @@ fn fuse_impl_function_to_method(mut path: Vec<NameKind>) -> Vec<NameKind> {
     path
 }
 
+#[derive(Debug)]
 struct NameKind {
     name: String,
     kind: BasicItemKind,
 }
 
+#[derive(Debug)]
 struct BasicItem {
     name: String,
     kind: BasicItemKind,
     parent: Option<Parent>,
 }
 
+#[derive(Debug)]
 enum Parent {
     Id(Id),
-    Path(Vec<String>),
+    Path(NEVec<String>),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

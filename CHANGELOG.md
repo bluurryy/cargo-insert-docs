@@ -8,10 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
-### Added
+### Fixed
 
 - Module doc links now end in `/index.html` instead of `/`
 - Only warn about missing readme when not `--strict(-crate-docs)`
+- Fix broken doc links to crates containing `//`
 
 ## [0.3.0] - 2025-07-11
 

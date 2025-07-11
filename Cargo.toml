@@ -18,6 +18,7 @@ cargo_metadata = "0.20.0"
 clap = { version = "4.5.40", features = ["derive", "wrap_help"] }
 clap-cargo = "0.15.2"
 color-eyre = "0.6.5"
+nonempty-collections = "1.0.0"
 proc-macro2 = { version = "1.0.95", default-features = false, features = [
     "span-locations",
 ] }
