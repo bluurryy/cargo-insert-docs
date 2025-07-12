@@ -481,7 +481,7 @@ fn operation(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) 
     let operation_name = if cx.args.check {
         format!("checking {from} in {to}")
     } else {
-        format!("could not insert {from} into {to}")
+        format!("insert {from} into {to}")
     };
 
     let _span = cx.log.span("operation", &operation_name);
