@@ -194,6 +194,7 @@ fn code_blocks<'a>(markdown: &'a str) -> Vec<CodeBlock<'a>> {
 
 fn fenced_code_block_is_rust(name: &str) -> bool {
     const STARTS: &[&str] = &[
+        "rust",
         "ignore",
         "should_panic",
         "no_run",
