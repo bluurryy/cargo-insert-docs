@@ -449,23 +449,11 @@ struct RelativePath {
 
 impl RelativePath {
     fn read_to_string(&self) -> Result<String> {
-        let Self { full_path, relative_to_manifest } = self;
-
-        fs::read_to_string(full_path).with_context(|| {
-            let relative_to_manifest = relative_to_manifest.display();
-            let full_path = full_path.display();
-            format!("failed to read {relative_to_manifest} ({full_path})")
-        })
+        fs::read_to_string(&self.full_path).with_context(|| format!("failed to read {self}"))
     }
 
     fn write(&self, contents: &str) -> Result<()> {
-        let Self { full_path, relative_to_manifest } = self;
-
-        fs::write(full_path, contents).with_context(|| {
-            let relative_to_manifest = relative_to_manifest.display();
-            let full_path = full_path.display();
-            format!("failed to write {relative_to_manifest} ({full_path})")
-        })
+        fs::write(&self.full_path, contents).with_context(|| format!("failed to write {self}"))
     }
 }
 
