@@ -496,6 +496,8 @@ fn operation(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) 
 }
 
 fn insert_features_into_docs(cx: &Context) -> Result<()> {
+    let not_found_level = if cx.args.strict_feature_docs { Level::Error } else { Level::Warning };
+
     let lib_path = cx.metadata[&cx.package.id]
         .targets
         .iter()
@@ -513,7 +515,7 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
             .span("path", lib_path.display())
             .span("section-name", &cx.args.feature_docs_section)
             .log(
-                if cx.args.strict_feature_docs { Level::Error } else { Level::Warning },
+                not_found_level,
                 format_args!(
                     "section not found in {}",
                     lib_path
