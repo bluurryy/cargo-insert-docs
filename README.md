@@ -192,6 +192,7 @@ delimit the sections.
 - **`document-features`**: <https://crates.io/crates/document-features>
 - **`cargo-readme`**: <https://crates.io/crates/cargo-readme>
 - **`cargo-rdme`**: <https://crates.io/crates/cargo-rdme>
+- **`cargo-doc2readme`** <https://crates.io/crates/cargo-doc2readme>
 
 ## License
 
