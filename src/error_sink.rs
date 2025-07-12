@@ -423,12 +423,12 @@ impl fmt::Display for ReportFields {
 
 impl Error for ReportFields {}
 
-pub trait WithLog<T> {
-    fn with_log(self, log: &ErrorSink, level: Level) -> Result<T, Report>;
+pub trait WithSpans<T> {
+    fn with_spans(self, log: &ErrorSink, level: Level) -> Result<T, Report>;
 }
 
-impl<T> WithLog<T> for Result<T, Report> {
-    fn with_log(self, log: &ErrorSink, level: Level) -> Result<T, Report> {
+impl<T> WithSpans<T> for Result<T, Report> {
+    fn with_spans(self, log: &ErrorSink, level: Level) -> Result<T, Report> {
         let err = match self {
             Ok(ok) => return Ok(ok),
             Err(err) => err,
