@@ -151,15 +151,6 @@ struct Args {
     /// Exits with 1 if the documentation is stale or if any errors occured.
     #[arg(long, verbatim_doc_comment)]
     check: bool,
-
-    /// Runs in 'test' mode.
-    ///
-    /// Does all the operations even when no sections are present.
-    /// Does not write to any files.
-    ///
-    /// UNSTABLE! WILL BREAK SEMVER WHENEVER IT FEELS LIKE IT!
-    #[arg(long, hide(true))]
-    unstable_dev_test: bool,
 }
 
 /// https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands
@@ -347,23 +338,11 @@ fn run_package(cx: &Context) {
     let _span = cx.package.is_explicit.then(|| cx.log.span("package", &cx.package.name));
 
     if !cx.args.no_feature_docs {
-        let op = if cx.args.unstable_dev_test {
-            insert_features_into_docs_test
-        } else {
-            insert_features_into_docs
-        };
-
-        operation(cx, "feature documentation", "crate documentation", op);
+        operation(cx, "feature documentation", "crate documentation", insert_features_into_docs);
     }
 
     if !cx.args.no_crate_docs {
-        let op = if cx.args.unstable_dev_test {
-            insert_docs_into_readme_test
-        } else {
-            insert_docs_into_readme
-        };
-
-        operation(cx, "crate documentation", "readme", op);
+        operation(cx, "crate documentation", "readme", insert_docs_into_readme);
     }
 }
 
@@ -544,33 +523,6 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
     Ok(())
 }
 
-fn insert_features_into_docs_test(cx: &Context) -> Result<()> {
-    let lib_path = cx.metadata[&cx.package.id]
-        .targets
-        .iter()
-        .find(|target| target.is_lib())
-        .ok_or_eyre("the selected package contains no lib target")?
-        .src_path
-        .as_ref();
-
-    let lib_content = read_to_string(lib_path)?;
-
-    let cargo_toml = cx.package.manifest_path.get().read_to_string()?;
-
-    let feature_docs_section =
-        edit_crate_docs::FeatureDocsSection::find(&lib_content, &cx.args.feature_docs_section)?;
-
-    let feature_docs = extract_feature_docs::extract(&cargo_toml, &cx.args.feature_label)
-        .context("failed to parse Cargo.toml")?;
-
-    if let Some(feature_docs_section) = feature_docs_section {
-        let new_lib_content = feature_docs_section.replace(&feature_docs)?;
-        _ = new_lib_content;
-    };
-
-    Ok(())
-}
-
 fn insert_docs_into_readme(cx: &Context) -> Result<()> {
     let not_found_level = if cx.args.strict_crate_docs { Level::Error } else { Level::Warning };
     let readme_path = cx.package.manifest_path.relative(&cx.args.readme_path);
@@ -599,22 +551,6 @@ fn insert_docs_into_readme(cx: &Context) -> Result<()> {
         }
 
         readme_path.write(&new_readme)?;
-    }
-
-    Ok(())
-}
-
-fn insert_docs_into_readme_test(cx: &Context) -> Result<()> {
-    let readme_path = cx.package.manifest_path.relative(&cx.args.readme_path);
-    let readme = readme_path.read_to_string()?;
-    let mut new_readme = readme.clone();
-
-    let section = markdown::find_section(&new_readme, &cx.args.crate_docs_section);
-
-    let crate_docs = extract_crate_docs::extract(cx)?;
-
-    if let Some(section) = section {
-        new_readme.replace_range(section, &format!("\n{crate_docs}\n"));
     }
 
     Ok(())
