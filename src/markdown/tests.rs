@@ -1,5 +1,7 @@
 use expect_test::expect;
 
+use crate::markdown::fenced_code_block_is_rust;
+
 use super::{clean_code_blocks, code_blocks, find_section};
 
 fn replace_section(markdown: &str, replacement: &str) -> String {
@@ -109,4 +111,27 @@ def square(n):
 fn test_indented_code_blocks() {
     assert_eq!(code_blocks("    block")[0].span.start, 0);
     assert_eq!(code_blocks("\n    block")[0].span.start, 1);
+}
+
+#[test]
+fn test_fenced_code_block_is_rust() {
+    assert!(fenced_code_block_is_rust(""));
+    assert!(fenced_code_block_is_rust("rust"));
+    assert!(fenced_code_block_is_rust("ignore"));
+    assert!(fenced_code_block_is_rust("should_panic"));
+    assert!(fenced_code_block_is_rust("no_run"));
+    assert!(fenced_code_block_is_rust("compile_fail"));
+    assert!(fenced_code_block_is_rust("edition"));
+    assert!(fenced_code_block_is_rust("standalone_crate"));
+    assert!(fenced_code_block_is_rust("ignore"));
+
+    assert!(fenced_code_block_is_rust("edition2015"));
+    assert!(fenced_code_block_is_rust("edition2018"));
+    assert!(fenced_code_block_is_rust("edition2021"));
+    assert!(fenced_code_block_is_rust("edition2024"));
+
+    assert!(fenced_code_block_is_rust("ignore-x86_64"));
+    assert!(fenced_code_block_is_rust("ignore-x86_64,ignore-windows"));
+
+    assert!(!fenced_code_block_is_rust("c"));
 }

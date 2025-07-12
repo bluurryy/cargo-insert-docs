@@ -90,7 +90,11 @@
 //! def square(n):
 //!     n * n
 //! ```
-
+//!
+//! ```custom,{.language-c}
+//! // i don't see what this language could be
+//! int main(void) { return 0; }
+//! ```
 // The docs should not link here because it's not inline.
 pub use reexport::Reexport;
 

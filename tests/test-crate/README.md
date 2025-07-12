@@ -92,6 +92,11 @@ assert_eq!(one + two, 3);
 def square(n):
     n * n
 ```
+
+```custom,{.language-c}
+// i don't see what this language could be
+int main(void) { return 0; }
+```
 <!-- crate documentation end -->
 
 This is after the crate docs.

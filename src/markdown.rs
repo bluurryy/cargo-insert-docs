@@ -201,7 +201,6 @@ fn fenced_code_block_is_rust(name: &str) -> bool {
         "compile_fail",
         "edition",
         "standalone_crate",
-        "ignore",
     ];
 
     if name.is_empty() {
