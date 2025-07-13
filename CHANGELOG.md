@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Upgrade `cargo_metadata` to version 0.21
 - Use `tracing` for logs, errors with span traces
 - Support `RUST_LOG` env var for debugging
 
