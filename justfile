@@ -4,6 +4,7 @@ default:
 pre-release:
     cargo run -- --workspace --check
     just update-cli-md
+    just test
 
 update-cli-md:
     #!/usr/bin/env nu
