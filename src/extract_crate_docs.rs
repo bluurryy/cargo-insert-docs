@@ -126,7 +126,7 @@ fn rustdoc_json(cx: &Context) -> Result<Crate> {
             Err(err) => {
                 // write an empty line to separate our messages from the invoked command
                 cx.log.foreign_write_incoming();
-                eprintln!("{}", String::from_utf8_lossy(&stderr));
+                eprint!("{}", String::from_utf8_lossy(&stderr));
                 return Err(err.into());
             }
         }
