@@ -343,11 +343,11 @@ fn run_package(cx: &Context) {
     let _span = cx.package.is_explicit.then(|| info_span!("", package = cx.package.name).entered());
 
     if !cx.args.no_feature_docs {
-        operation(cx, "feature documentation", "crate documentation", insert_features_into_docs);
+        task(cx, "feature documentation", "crate documentation", insert_features_into_docs);
     }
 
     if !cx.args.no_crate_docs {
-        operation(cx, "crate documentation", "readme", insert_docs_into_readme);
+        task(cx, "crate documentation", "readme", insert_docs_into_readme);
     }
 }
 
@@ -449,16 +449,16 @@ impl fmt::Display for RelativePath {
     }
 }
 
-fn operation(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
-    let operation_name = if cx.args.check {
+fn task(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
+    let task_name = if cx.args.check {
         format!("checking {from} in {to}")
     } else {
         format!("insert {from} into {to}")
     };
 
-    let _span = info_span!("", operation = operation_name).entered();
+    let _span = info_span!("", task = task_name).entered();
 
-    trace!("starting operation");
+    trace!("starting task");
 
     let start = Instant::now();
 
@@ -466,7 +466,7 @@ fn operation(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) 
         let context = if cx.args.check {
             format!("checking {from} failed")
         } else {
-            format!("could not {operation_name}")
+            format!("could not {task_name}")
         };
 
         cx.log.print_report(&report.wrap_err(context));
