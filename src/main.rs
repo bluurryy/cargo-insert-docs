@@ -1,12 +1,10 @@
 #![doc = include_str!("../README.md")]
-#![deny(unsafe_code)]
 
 mod edit_crate_docs;
-mod error_sink;
 mod extract_crate_docs;
 mod extract_feature_docs;
 mod markdown;
-mod style;
+mod pretty_log;
 
 use std::{
     collections::HashSet,
@@ -21,9 +19,10 @@ use std::{
 use cargo_metadata::{Metadata, MetadataCommand, PackageId};
 use clap::Parser;
 use clap_cargo::style::CLAP_STYLING;
-use color_eyre::eyre::{Context as _, OptionExt, Result, bail};
+use color_eyre::eyre::{Context as _, OptionExt, Result, bail, eyre};
+use tracing::{Level, info_span, trace};
 
-use crate::error_sink::{ErrorSink, Level, WithSpans};
+use crate::pretty_log::{PrettyLog, WithResultSeverity as _};
 
 #[derive(Parser)]
 #[command(
@@ -207,10 +206,17 @@ fn main() -> ExitCode {
     args.features =
         args.features.iter().flat_map(|f| f.split(' ').map(|s| s.to_string())).collect();
 
-    let log = if args.quiet { ErrorSink::new(Box::new(io::empty())) } else { ErrorSink::stderr() };
+    let log = PrettyLog::new(if args.quiet {
+        Box::new(io::empty())
+    } else {
+        Box::new(anstream::stderr())
+    });
 
-    if let Err(report) = try_main(&args, &log) {
-        log.report(&report);
+    let log_level = if args.verbose { "trace" } else { "info" };
+    log.install(&format!("cargo_insert_docs={log_level}"));
+
+    if let Err(err) = try_main(&args, &log) {
+        log.print_report(&err);
     }
 
     log.print_tally();
@@ -218,8 +224,7 @@ fn main() -> ExitCode {
     if log.tally().errors == 0 { ExitCode::SUCCESS } else { ExitCode::FAILURE }
 }
 
-fn try_main(args: &Args, log: &ErrorSink) -> Result<()> {
-    color_eyre::install()?;
+fn try_main(args: &Args, log: &PrettyLog) -> Result<()> {
     let mut cmd = MetadataCommand::new();
 
     cmd.manifest_path(&args.manifest_path);
@@ -238,7 +243,7 @@ fn try_main(args: &Args, log: &ErrorSink) -> Result<()> {
 
     let metadata = cmd.exec()?;
 
-    run(&BaseContext { args, metadata, log })
+    run(&BaseContext { args, metadata, log: log.clone() })
 }
 
 fn run(cx: &BaseContext) -> Result<()> {
@@ -335,7 +340,7 @@ fn run(cx: &BaseContext) -> Result<()> {
 }
 
 fn run_package(cx: &Context) {
-    let _span = cx.package.is_explicit.then(|| cx.log.span("package", &cx.package.name));
+    let _span = cx.package.is_explicit.then(|| info_span!("", package = cx.package.name).entered());
 
     if !cx.args.no_feature_docs {
         operation(cx, "feature documentation", "crate documentation", insert_features_into_docs);
@@ -369,7 +374,7 @@ fn find_package_by_name(cx: &BaseContext, package_name: &str) -> Result<PackageI
 struct BaseContext<'a> {
     args: &'a Args,
     metadata: Metadata,
-    log: &'a ErrorSink,
+    log: PrettyLog,
 }
 
 struct Context<'a> {
@@ -451,11 +456,9 @@ fn operation(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) 
         format!("insert {from} into {to}")
     };
 
-    let _span = cx.log.span("operation", &operation_name);
+    let _span = info_span!("", operation = operation_name).entered();
 
-    if cx.args.verbose {
-        cx.log.info("starting operation");
-    }
+    trace!("starting operation");
 
     let start = Instant::now();
 
@@ -466,16 +469,14 @@ fn operation(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) 
             format!("could not {operation_name}")
         };
 
-        cx.log.report(&report.wrap_err(context));
+        cx.log.print_report(&report.wrap_err(context));
     }
 
-    if cx.args.verbose {
-        cx.log.info(format_args!("finished in {:?}", start.elapsed()));
-    }
+    trace!("finished in {:?}", start.elapsed());
 }
 
 fn insert_features_into_docs(cx: &Context) -> Result<()> {
-    let not_found_level = if cx.args.strict_feature_docs { Level::Error } else { Level::Warning };
+    let not_found_level = if cx.args.strict_feature_docs { Level::ERROR } else { Level::WARN };
 
     let lib_path = cx.metadata[&cx.package.id]
         .targets
@@ -486,27 +487,26 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
         .as_ref();
 
     let lib_content = read_to_string(lib_path)?;
+
     let Some(feature_docs_section) =
         edit_crate_docs::FeatureDocsSection::find(&lib_content, &cx.args.feature_docs_section)?
     else {
-        return cx
-            .log
-            .span("path", lib_path.display())
-            .span("section-name", &cx.args.feature_docs_section)
-            .log(
-                not_found_level,
-                format_args!(
-                    "section not found in {}",
-                    lib_path
-                        .file_name()
-                        .map(|n| Path::new(n).display().to_string())
-                        .unwrap_or_else(|| "crate docs".into())
-                ),
-            )
-            .into_report_err();
+        let lib_name = lib_path
+            .file_name()
+            .map(|n| Path::new(n).display().to_string())
+            .unwrap_or_else(|| "crate docs".into());
+
+        let _span = info_span!("",
+            path = %lib_path.display(),
+            section_name = cx.args.feature_docs_section,
+        )
+        .entered();
+
+        return Err(eyre!("section not found in {lib_name}")).with_severity(not_found_level);
     };
 
     let cargo_toml = cx.package.manifest_path.get().read_to_string()?;
+
     let feature_docs = extract_feature_docs::extract(&cargo_toml, &cx.args.feature_label)
         .context("failed to parse Cargo.toml")?;
 
@@ -524,21 +524,21 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
 }
 
 fn insert_docs_into_readme(cx: &Context) -> Result<()> {
-    let not_found_level = if cx.args.strict_crate_docs { Level::Error } else { Level::Warning };
+    let not_found_level = if cx.args.strict_crate_docs { Level::ERROR } else { Level::WARN };
     let readme_path = cx.package.manifest_path.relative(&cx.args.readme_path);
-    let readme = readme_path.read_to_string().with_spans(cx.log, not_found_level)?;
+    let readme = readme_path.read_to_string().with_severity(not_found_level)?;
     let mut new_readme = readme.clone();
 
     let Some(section) = markdown::find_section(&new_readme, &cx.args.crate_docs_section) else {
-        return cx
-            .log
-            .span("path", readme_path.full_path.display())
-            .span("section-name", &cx.args.crate_docs_section)
-            .log(
-                not_found_level,
-                format_args!("section not found in {}", readme_path.relative_to_manifest.display()),
-            )
-            .into_report_err();
+        let relative_path = readme_path.relative_to_manifest.display();
+
+        let _span = info_span!("",
+            path = %readme_path.full_path.display(),
+            section_name = cx.args.crate_docs_section,
+        )
+        .entered();
+
+        return Err(eyre!("section not found in {relative_path}")).with_severity(not_found_level);
     };
 
     let crate_docs = extract_crate_docs::extract(cx)?;

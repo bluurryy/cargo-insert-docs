@@ -8,6 +8,7 @@ use nonempty_collections::NEVec;
 use rustdoc_json::Color;
 use rustdoc_types::{Crate, Id, Item, ItemEnum, ItemKind};
 use serde::Deserialize;
+use tracing::warn;
 
 use crate::{Context, markdown};
 
@@ -43,10 +44,7 @@ pub fn extract(cx: &Context) -> Result<String> {
         let url = match resolver.item_url(item_id) {
             Ok(ok) => Some(ok),
             Err(err) => {
-                cx.log
-                    .span("cause", err)
-                    .span("link", &dest_url)
-                    .warn("failed to resolve doc link");
+                warn!(cause=%err, link=%dest_url, "failed to resolve doc link");
                 None
             }
         };
@@ -112,15 +110,10 @@ fn rustdoc_json(cx: &Context) -> Result<Crate> {
     }
 
     if !cx.args.quiet_cargo {
-        // write an empty line to separate our messages from the invoked command
-        if cx.log.was_written_to() {
-            cx.log.write('\n');
-        }
-
         // the command invocation will write to stdout
         // setting this flag here will make the log insert a newline
         // before the next log message
-        cx.log.set_written_to(true);
+        cx.log.foreign_write_incoming();
     }
 
     let json_path = if cx.args.quiet_cargo && !cx.args.quiet {
@@ -132,12 +125,8 @@ fn rustdoc_json(cx: &Context) -> Result<Crate> {
             Ok(ok) => ok,
             Err(err) => {
                 // write an empty line to separate our messages from the invoked command
-                if cx.log.was_written_to() {
-                    cx.log.write('\n');
-                }
-
-                cx.log.write(String::from_utf8_lossy(&stderr));
-
+                cx.log.foreign_write_incoming();
+                eprintln!("{}", String::from_utf8_lossy(&stderr));
                 return Err(err.into());
             }
         }

@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Use `tracing` for logs, errors with span traces
+- Support `RUST_LOG` env var for debugging
+
 ### Fixed
 
 - Fix "could not could not ..." in logs

@@ -17,7 +17,7 @@ anstyle = "1.0.11"
 cargo_metadata = "0.20.0"
 clap = { version = "4.5.40", features = ["derive", "wrap_help"] }
 clap-cargo = "0.15.2"
-color-eyre = "0.6.5"
+color-eyre = { version = "0.6.5", features = ["capture-spantrace"] }
 nonempty-collections = "1.0.0"
 proc-macro2 = { version = "1.0.95", default-features = false, features = [
     "span-locations",
@@ -36,6 +36,9 @@ syn = { version = "2.0.104", default-features = false, features = [
     "printing",
 ] }
 toml_edit = "0.23.0"
+tracing = "0.1.41"
+tracing-error = "0.2.1"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 
 [dev-dependencies]
 expect-test = "1.5.1"
