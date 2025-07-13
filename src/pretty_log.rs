@@ -14,10 +14,11 @@
 mod pretty_eyre;
 #[cfg(test)]
 pub(crate) mod tests;
+mod visit_str;
 
 use std::{
     any::Any,
-    fmt::{self, Write as _},
+    fmt::Write as _,
     io, mem,
     sync::{Arc, Mutex, MutexGuard, PoisonError},
 };
@@ -36,6 +37,8 @@ use tracing_subscriber::{
     layer::{Context, SubscriberExt as _},
     registry::LookupSpan,
 };
+
+use crate::pretty_log::visit_str::{VisitAsStr, VisitStr};
 
 pub trait AnyWrite: Any + io::Write + Send {}
 
@@ -288,46 +291,6 @@ where
         }
 
         self.print_formatted_event(level, &out);
-    }
-}
-
-trait VisitStr {
-    fn record_str(&mut self, field: &Field, value: &str);
-}
-
-struct VisitAsStr<'a, T>(pub &'a mut T);
-
-impl<T: VisitStr> Visit for VisitAsStr<'_, T> {
-    fn record_debug(&mut self, field: &Field, value: &dyn fmt::Debug) {
-        self.record_str(field, &format!("{value:?}"))
-    }
-
-    fn record_f64(&mut self, field: &Field, value: f64) {
-        self.record_str(field, &format!("{value}"))
-    }
-
-    fn record_i64(&mut self, field: &Field, value: i64) {
-        self.record_str(field, &format!("{value}"))
-    }
-
-    fn record_u64(&mut self, field: &Field, value: u64) {
-        self.record_str(field, &format!("{value}"))
-    }
-
-    fn record_i128(&mut self, field: &Field, value: i128) {
-        self.record_str(field, &format!("{value}"))
-    }
-
-    fn record_u128(&mut self, field: &Field, value: u128) {
-        self.record_str(field, &format!("{value}"))
-    }
-
-    fn record_bool(&mut self, field: &Field, value: bool) {
-        self.record_str(field, &format!("{value}"))
-    }
-
-    fn record_str(&mut self, field: &Field, value: &str) {
-        self.0.record_str(field, value);
     }
 }
 
