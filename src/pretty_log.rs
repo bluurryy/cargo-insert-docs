@@ -410,22 +410,22 @@ fn format_level(out: &mut String, level: Level) {
     };
 
     let style = match level {
-        Level::ERROR => ERROR,
-        Level::WARN => WARNING,
-        Level::INFO => INFO,
-        Level::DEBUG => DEBUG,
-        Level::TRACE => TRACE,
+        Level::ERROR => &ERROR,
+        Level::WARN => &WARNING,
+        Level::INFO => &INFO,
+        Level::DEBUG => &DEBUG,
+        Level::TRACE => &TRACE,
     };
 
     format_field_key(out, name, style)
 }
 
 fn format_field(out: &mut String, name: &str, value: &str) {
-    format_field_key(out, name, BOLD);
+    format_field_key(out, name, &BOLD);
     format_field_value(out, value);
 }
 
-fn format_field_key(out: &mut String, key: &str, style: Style) {
+fn format_field_key(out: &mut String, key: &str, style: &Style) {
     let key_buf;
     let mut key = key;
 
