@@ -10,7 +10,7 @@ use std::{error::Error, panic};
 use color_eyre::eyre::{EyreHandler, Report};
 use tracing::{Level, Span};
 
-pub fn hook(base_hook: HookFunc) -> HookFunc {
+pub fn wrap_hook(base_hook: HookFunc) -> HookFunc {
     Box::new(move |e| {
         Box::new(PrettyHandler { base: base_hook(e), level: Level::ERROR, span: Span::current() })
     })

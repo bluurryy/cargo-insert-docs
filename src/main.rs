@@ -152,7 +152,7 @@ struct Args {
     check: bool,
 }
 
-/// https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands
+/// <https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands>
 ///
 /// When executing `cargo-insert-docs` as a cargo subcommand
 /// the first argument will be filename as usual.

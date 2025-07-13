@@ -40,7 +40,7 @@ fn with_log(pretty_filter: &str, rustlog_filter: &str, f: impl FnOnce(PrettyLog)
         .try_into_hooks()
     {
         panic_hook.install();
-        _ = eyre::set_hook(pretty_eyre::hook(eyre_hook.into_eyre_hook()));
+        _ = eyre::set_hook(pretty_eyre::wrap_hook(eyre_hook.into_eyre_hook()));
     }
 
     let log = PrettyLog::new(Box::new(Vec::<u8>::new()));

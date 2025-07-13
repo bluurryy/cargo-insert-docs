@@ -1,3 +1,16 @@
+//! A logging setup which prints pretty [`tracing`] events
+//! and can print [`eyre::Report`] with spans and a set severity [`tracing::Level`]
+//! using a custom [`eyre`] hook.
+//!
+//! Its [`install`](PrettyLog::install) method:
+//! - Adds an [`ErrorLayer`] for span traces used by [`color_eyre`].
+//!   Our own [`print_report`](PrettyLog::print_report) does not make use of them but records its own
+//!   span traces, see [`pretty_eyre`].
+//! - Adds a [`mod@tracing_subscriber::fmt`] layer with an env filter for regular `RUST_LOG` tracing
+//!   messages. Those won't be shown unless the `RUST_LOG` env var is used.
+//! - Adds our own [`PrettyLog`] as a layer with a filter so only our own crate's message are pretty
+//!   printed.
+
 mod pretty_eyre;
 #[cfg(test)]
 pub(crate) mod tests;
@@ -84,7 +97,7 @@ impl PrettyLog {
 
         panic_hook.install();
 
-        eyre::set_hook(pretty_eyre::hook(eyre_hook.into_eyre_hook()))
+        eyre::set_hook(pretty_eyre::wrap_hook(eyre_hook.into_eyre_hook()))
             .expect("eyre hook already set");
 
         tracing::subscriber::set_global_default(self.subscriber(filter))
