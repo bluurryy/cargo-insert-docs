@@ -83,11 +83,6 @@ pub fn extract(cx: &Context) -> Result<String> {
 }
 
 fn rustdoc_json(cx: &Context) -> Result<Crate> {
-    #[derive(Deserialize)]
-    struct CrateWithJustTheFormatVersion {
-        format_version: u32,
-    }
-
     let mut builder = rustdoc_json::Builder::default()
         .toolchain(&cx.args.toolchain)
         .manifest_path(&cx.args.manifest_path)
@@ -136,8 +131,17 @@ fn rustdoc_json(cx: &Context) -> Result<Crate> {
 
     let json = fs::read_to_string(json_path).context("failed to read generated rustdoc json")?;
 
+    parse_rustdoc_json(&json)
+}
+
+fn parse_rustdoc_json(rustdoc_json: &str) -> Result<Crate, Report> {
+    #[derive(Deserialize)]
+    struct CrateWithJustTheFormatVersion {
+        format_version: u32,
+    }
+
     let krate: CrateWithJustTheFormatVersion =
-        serde_json::from_str(&json).context("failed to parse generated rustdoc json")?;
+        serde_json::from_str(rustdoc_json).context("failed to parse generated rustdoc json")?;
 
     if krate.format_version != rustdoc_types::FORMAT_VERSION {
         let expected = rustdoc_types::FORMAT_VERSION;
@@ -155,10 +159,7 @@ fn rustdoc_json(cx: &Context) -> Result<Crate> {
         );
     }
 
-    let krate: Crate =
-        serde_json::from_str(&json).context("failed to parse generated rustdoc json")?;
-
-    Ok(krate)
+    serde_json::from_str(rustdoc_json).context("failed to parse generated rustdoc json")
 }
 
 fn path_to_kind_map(krate: &Crate) -> HashMap<&[String], ItemKind> {
