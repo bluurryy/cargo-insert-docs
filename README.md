@@ -150,9 +150,9 @@ Notice how:
 
 To update the sections just run the command again.
 
-You don't have to add both sections for the tool to work. If it doesn't find a section it will carry on with a warning. You can turn that warning into an error with the `--strict` flag or disable either job with `--no-feature-docs` and `--no-crate-docs`.
+You don't have to add both sections for the tool to work. If it doesn't find a section it will carry on with a warning. You can turn that warning into an error with the `--strict` flag and disable either job with `--no-feature-docs` and `--no-crate-docs`.
 
-You can find details about all the available arguments in [docs/cli.md](docs/cli.md).
+You can find all the available arguments in [docs/cli.md](docs/cli.md).
 
 If you'd like to see what it looks like when used by a real crate then have a look at `bump-scope`'s [docs.rs](https://docs.rs/bump-scope/latest/bump_scope/) and [README.md](https://github.com/bluurryy/bump-scope/blob/main/README.md).
 
@@ -162,7 +162,7 @@ If you'd like to see what it looks like when used by a real crate then have a lo
  
   If you're using doc-links `cargo-insert-docs` has the advantage that it resolves them for you. Linking to the docs manually by writing `[Image](https://docs.rs/...)` is tedious and rustdoc won't we able to tell you about outdated or otherwise unresolved links.
 
-  Using `cargo-insert-docs` you can also use code sections with `should_panic` and `compile_fail` annotations and [hidden lines](https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html#hiding-portions-of-the-example) without it rendering weird in the readme.
+  Using `cargo-insert-docs` you can also use code sections with `should_panic` and `compile_fail` annotations and [hidden lines](https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html#hiding-portions-of-the-example) with it still rendering nice in the readme.
 
   Furthermore the readme might include things like a header, badges, license that you wouldn't want to include in the crate documentation.
 
@@ -176,7 +176,7 @@ A new nightly release may no longer be compatible with the current version and `
 
 |Version|Understands the rustdoc JSON output of|
 |---|---|
-|0.1.x|nightly-2025-06-22 — ?|
+|0.1 — latest|nightly-2025-06-22 — ?|
 
 ## Acknowledgements
 
