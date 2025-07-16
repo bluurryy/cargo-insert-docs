@@ -8,7 +8,7 @@ use crate::tests::TreeFormatter;
 use super::{Tree, Value};
 
 #[test]
-fn test_item_paths() {
+fn test_tree() {
     const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
 
     let json_path = rustdoc_json::Builder::default()
