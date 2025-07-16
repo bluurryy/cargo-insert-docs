@@ -135,6 +135,7 @@ fn is_doc_inline(item: &Item) -> bool {
     false
 }
 
+/// `Attribute` does not implement `Parse` (WHY NOT?) so we need to do it ourselves.
 fn parse_attr_str(str: &str) -> syn::Result<syn::Attribute> {
     struct Helper(syn::Attribute);
 
