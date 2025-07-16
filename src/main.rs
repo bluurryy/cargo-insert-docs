@@ -5,6 +5,8 @@ mod extract_crate_docs;
 mod extract_feature_docs;
 mod markdown;
 mod pretty_log;
+#[cfg(test)]
+mod tests;
 
 use std::{
     collections::HashSet,

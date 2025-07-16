@@ -122,7 +122,7 @@ enum CommentKind {
 }
 
 #[derive(Debug, Default)]
-pub struct Docs {
+struct Docs {
     value: String,
     source_map: SourceMap,
     frags: Vec<DocFragment>,
