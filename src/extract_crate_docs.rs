@@ -11,6 +11,8 @@ use tracing::warn;
 
 use crate::{Context, markdown};
 
+use resolver::{Resolver, ResolverOptions};
+
 pub fn extract(cx: &Context) -> Result<String> {
     let json = create_rustdoc_json(cx)?;
     let krate = parse_rustdoc_json(&json)?;
@@ -108,9 +110,6 @@ struct ExtractDocsOptions<'a> {
     link_to_latest: bool,
 }
 
-use resolver::Resolver as Resolver2;
-use resolver::ResolverOptions;
-
 fn extract_docs(
     ExtractDocsOptions { krate, metadata, on_not_found, link_to_latest }: ExtractDocsOptions,
 ) -> Result<String, Report> {
@@ -118,7 +117,7 @@ fn extract_docs(
     let docs = root.docs.as_deref().unwrap_or("").to_string();
 
     let resolver_options = ResolverOptions { link_to_latest };
-    let resolver = Resolver2::new(krate, metadata, &resolver_options);
+    let resolver = Resolver::new(krate, metadata, &resolver_options);
 
     let mut new_docs = docs.clone();
 

@@ -1,8 +1,6 @@
 use expect_test::expect;
 
-use crate::markdown::fenced_code_block_is_rust;
-
-use super::{clean_code_blocks, code_blocks, find_section};
+use super::{clean_code_blocks, code_blocks, fenced_code_block_is_rust, find_section};
 
 fn replace_section(markdown: &str, replacement: &str) -> String {
     let range = find_section(markdown, "section").unwrap();

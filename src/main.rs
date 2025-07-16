@@ -24,7 +24,7 @@ use clap_cargo::style::CLAP_STYLING;
 use color_eyre::eyre::{Context as _, OptionExt, Result, bail, eyre};
 use tracing::{Level, info_span, trace};
 
-use crate::pretty_log::{PrettyLog, WithResultSeverity as _};
+use pretty_log::{PrettyLog, WithResultSeverity as _};
 
 #[derive(Parser)]
 #[command(

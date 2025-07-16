@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 use rustdoc_types::{Crate, Id};
 
-use crate::extract_crate_docs::resolver::{Kind, PathItem, index::simple::SimpleItemKind};
+use super::{Kind, PathItem, index::simple::SimpleItemKind};
 
 use simple::SimpleItem;
 

@@ -2,9 +2,7 @@ use color_eyre::eyre::Result;
 use expect_test::expect;
 use indoc::indoc;
 
-use crate::extract_feature_docs::comment_line_unprefixed;
-
-use super::{extract, parse};
+use super::{comment_line_unprefixed, extract, parse};
 
 #[test]
 fn test_extract() {

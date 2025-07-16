@@ -38,7 +38,7 @@ use tracing_subscriber::{
     registry::LookupSpan,
 };
 
-use crate::pretty_log::visit_str::{VisitAsStr, VisitStr};
+use visit_str::{VisitAsStr, VisitStr};
 
 pub trait AnyWrite: Any + io::Write + Send {}
 

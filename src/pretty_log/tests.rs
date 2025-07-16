@@ -16,9 +16,7 @@ use tracing_subscriber::{
 };
 use unindent::unindent;
 
-use crate::pretty_log::{Tally, WithErrorSeverity as _, pretty_eyre};
-
-use super::PrettyLog;
+use super::{PrettyLog, Tally, WithErrorSeverity as _, pretty_eyre};
 
 fn prepend_newline(str: &str) -> String {
     format!("\n{str}")

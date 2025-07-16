@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 use rustdoc_types::{Crate, Id, ItemKind, ItemSummary};
 
-use crate::extract_crate_docs::resolver::{Kind, PathItem};
+use super::{Kind, PathItem};
 
 type Paths = HashMap<Id, ItemSummary>;
 
