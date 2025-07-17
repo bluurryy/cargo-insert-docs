@@ -17,6 +17,9 @@ std = []
 serde = []
 something_undocumented = []
 
+## Actually used feature, enables recursive items that will cause errors.
+recurse = []
+
 #! Here you can write documentation that goes
 #! between the features
 

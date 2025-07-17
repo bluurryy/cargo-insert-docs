@@ -117,7 +117,7 @@ fn extract_docs(
     let docs = root.docs.as_deref().unwrap_or("").to_string();
 
     let resolver_options = ResolverOptions { link_to_latest };
-    let resolver = Resolver::new(krate, metadata, &resolver_options);
+    let resolver = Resolver::new(krate, metadata, &resolver_options)?;
 
     let mut new_docs = docs.clone();
 

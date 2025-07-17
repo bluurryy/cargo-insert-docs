@@ -2,9 +2,11 @@ default:
     @just --list
 
 pre-release:
-    cargo run -- --workspace --check
+    # TODO: --check should not require --force
+    cargo run -- --workspace --check --force
     just update-cli-md
     just test
+    just test-recurse-doesnt-stack-overflow
 
 update-cli-md:
     #!/usr/bin/env nu
@@ -36,4 +38,13 @@ test:
         | get all.0
 
         print $out
+    }
+
+
+test-recurse-doesnt-stack-overflow:
+    #!/usr/bin/env nu
+    let out = (cargo run -- -p test-crate -F recurse -f | complete).stderr
+    if not ($out | str contains "recursed too deep while resolving item paths") {
+        print -e $out
+        exit 1
     }

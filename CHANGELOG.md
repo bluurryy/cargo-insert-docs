@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Breaking:** Return early with an error when any affected file is uncommitted, unless `--force`d
 - Add better support for glob imports
+- Error instead of stack overflow for recursive items
 
 ## [0.5.0] - 2025-07-13
 

@@ -5,28 +5,40 @@ Notice how `lib.rs` does not have to be in the `src` directory for this to work.
 Now the crate documentation begins...
 
 <!-- crate documentation start -->
+#### Link variants
 - A shortcut link: [`Vec`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)!
 - An inline link: [`String`](https://doc.rust-lang.org/alloc/string/struct.String.html)!
 - A reference: [`ThinRope`](https://doc.rust-lang.org/alloc/string/struct.String.html).
 
+#### Link special cases
 - A link with title: [`str`](https://doc.rust-lang.org/std/primitive.str.html "A String!")
 - A http link: [rust](https://www.rust-lang.org/)
 - A link with a hash: [`Vec` examples](https://doc.rust-lang.org/alloc/vec/struct.Vec.html#examples).
 - A broken reference: [goes nowhere]
 - A broken link: [goes somewhere](i lied)
 
+#### Inter-doc links
 - A link to another crate: [`glob_match`](https://docs.rs/fast-glob/0.4.5/fast_glob/fn.glob_match.html).
 - A shortcut to another crate [`fast_glob::glob_match`](https://docs.rs/fast-glob/0.4.5/fast_glob/fn.glob_match.html).
 - A link to a crate from github: [`indoc::indoc!`](https://docs.rs/indoc/2.0.6/indoc/macro.indoc.html).
 
+#### Re-exports
 - A link to a struct that is re-exported: [`Reexport`](https://docs.rs/test-crate/0.0.0/test_crate/reexport/struct.Reexport.html).
 - A link to a struct that is re-exported with `#[doc(inline)]`: [`ReexportInline`](https://docs.rs/test-crate/0.0.0/test_crate/struct.ReexportInline.html).
 - A link to a struct that is re-exported from a private module: [`ReexportPrivate`](https://docs.rs/test-crate/0.0.0/test_crate/struct.ReexportPrivate.html).
+
+#### Glob re-exports
+Rustdoc's json glob uses put the burden of resolving exports on the user.
+This is too hard: <https://github.com/rust-lang/rustdoc-types/issues/51#issuecomment-3071677482>
+But we can have a naive implementation and try to not crash.
+
 - A link to types that are glob-imported: [`MyGlobImportedStruct`](https://docs.rs/test-crate/0.0.0/test_crate/to_be_glob_imported/struct.MyGlobImportedStruct.html), [`my_glob_imported_fn`](https://docs.rs/test-crate/0.0.0/test_crate/to_be_glob_imported/fn.my_glob_imported_fn.html)
 - A link to types that are glob-imported with `#[doc(inline)]`: [`MyInlineGlobImportedStruct`](https://docs.rs/test-crate/0.0.0/test_crate/struct.MyInlineGlobImportedStruct.html), [`my_inline_glob_imported_fn`](https://docs.rs/test-crate/0.0.0/test_crate/fn.my_inline_glob_imported_fn.html)
 - A link to types that are glob-imported from a private module: [`MyGlobImportedStructFromPrivateMod`](https://docs.rs/test-crate/0.0.0/test_crate/struct.MyGlobImportedStructFromPrivateMod.html), [`my_glob_imported_fn_from_private_mod`](https://docs.rs/test-crate/0.0.0/test_crate/fn.my_glob_imported_fn_from_private_mod.html)
 - A link to a struct from a mutually reexporting module: `Batman` (TODO)
+- A link to structs from recursively glob-reexporting modules: `StructInGlobA`, `StructInGlobB`, `StructInGlobC` (TODO)
 
+#### Item variants
 - A link to a module: [`my_module`](https://docs.rs/test-crate/0.0.0/test_crate/my_module/index.html)
 - A link to an extern crate: [`alloc`](https://doc.rust-lang.org/alloc/index.html)
 - A link to a use: [`MyStructUse`](https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html)
@@ -62,6 +74,7 @@ Now the crate documentation begins...
 
   Multiple lines work too
 - **`something_undocumented`**
+- **`recurse`** — Actually used feature, enables recursive items that will cause errors.
 
 Here you can write documentation that goes
 between the features

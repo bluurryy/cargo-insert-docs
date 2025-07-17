@@ -7,6 +7,7 @@ mod tests;
 
 use std::collections::HashMap;
 
+use color_eyre::eyre::Result;
 use rustdoc_types::{Crate, Id};
 
 use super::{Kind, PathItem, index::simple::SimpleItemKind};
@@ -18,14 +19,14 @@ pub struct Tree<'a> {
 }
 
 impl<'a> Tree<'a> {
-    pub fn new(krate: &'a Crate) -> Self {
+    pub fn new(krate: &'a Crate) -> Result<Self> {
         let index =
             krate.index.iter().map(|(k, v)| (*k, SimpleItem::from_item(krate, v))).collect();
         Self::new_simple(&index, krate.root)
     }
 
-    fn new_simple(index: &HashMap<Id, SimpleItem<'a>>, root: Id) -> Self {
-        let parents = parents::parents(index, root);
+    fn new_simple(index: &HashMap<Id, SimpleItem<'a>>, root: Id) -> Result<Self> {
+        let parents = parents::parents(index, root)?;
         let mut inv_tree = HashMap::new();
 
         for &child_id in index.keys() {
@@ -77,7 +78,7 @@ impl<'a> Tree<'a> {
             );
         }
 
-        Self { inv_tree }
+        Ok(Self { inv_tree })
     }
 
     pub fn path_to(&self, mut id: Id) -> Option<Vec<PathItem<'a>>> {

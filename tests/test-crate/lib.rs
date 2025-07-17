@@ -71,6 +71,7 @@
 //!
 //!   Multiple lines work too
 //! - **`something_undocumented`**
+//! - **`recurse`** — Actually used feature, enables recursive items that will cause errors.
 //!
 //! Here you can write documentation that goes
 //! between the features
@@ -173,41 +174,39 @@ pub mod to_be_inline_glob_imported {
 #[doc(inline)]
 pub use to_be_inline_glob_imported::*;
 
-#[cfg(false)]
+#[cfg(feature = "recurse")]
 pub mod a {
     pub use crate::n;
     pub struct Batman;
 }
 
-#[cfg(false)]
+#[cfg(feature = "recurse")]
 pub mod n {
     pub use crate::a;
 }
 
-// TODO: don't let Batman overflow the stack
-#[cfg(false)]
+#[cfg(feature = "recurse")]
 pub use n::a::n::a::n::a::n::a::n::a::n::a::n::a::n::a::Batman;
 
-#[cfg(false)]
+#[cfg(feature = "recurse")]
 pub mod glob_a {
     pub use super::glob_c::*;
     pub struct StructInGlobA;
 }
 
-#[cfg(false)]
+#[cfg(feature = "recurse")]
 pub mod glob_b {
     pub use super::glob_a::*;
     pub struct StructInGlobB;
 }
 
-#[cfg(false)]
+#[cfg(feature = "recurse")]
 pub mod glob_c {
     pub use super::glob_b::*;
     pub struct StructInGlobC;
 }
 
-// TODO: don't let that joker overflow the stack either
-#[cfg(false)]
+#[cfg(feature = "recurse")]
 pub use glob_a::*;
 
 // here come tests to check that we can link to any item kind

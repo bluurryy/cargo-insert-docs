@@ -14,13 +14,12 @@ fn test_tree() {
     let json_path = rustdoc_json::Builder::default()
         .toolchain("nightly")
         .manifest_path(format!("{MANIFEST_DIR}/tests/test-crate/Cargo.toml"))
-        .all_features(true)
         .build()
         .unwrap();
 
     let json = fs::read_to_string(json_path).expect("failed to read generated rustdoc json");
     let krate: Crate = serde_json::from_str(&json).expect("failed to parse generated rustdoc json");
-    let tree = Tree::new(&krate);
+    let tree = Tree::new(&krate).unwrap();
 
     expect![[r#"
         test_crate Module
@@ -29,6 +28,8 @@ fn test_tree() {
         ├── MyEnum Enum
         │   └── MyVariant Variant
         ├── MyExternType ExternType
+        ├── MyGlobImportedStructFromPrivateMod Struct
+        ├── MyInlineGlobImportedStruct Struct
         ├── MyStruct Struct
         │   ├── Error AssocType
         │   ├── Error AssocType
@@ -50,14 +51,21 @@ fn test_tree() {
         ├── ReexportInline Struct
         ├── ReexportPrivate Struct
         ├── my_function Function
+        ├── my_glob_imported_fn_from_private_mod Function
+        ├── my_inline_glob_imported_fn Function
         ├── my_macro Macro
         ├── my_module Module
         ├── reexport Module
         │   └── Reexport Struct
         ├── reexport_inline Module
+        ├── to_be_glob_imported Module
+        │   ├── MyGlobImportedStruct Struct
+        │   └── my_glob_imported_fn Function
+        ├── to_be_inline_glob_imported Module
         └── very Module
             └── nested Module
                 └── module Module
+        to_be_glob_imported_private Module
     "#]]
     .assert_eq(&tree.to_string());
 }

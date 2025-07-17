@@ -20,10 +20,14 @@ pub struct ResolverOptions {
 }
 
 impl<'a> Resolver<'a> {
-    pub fn new(krate: &'a Crate, metadata: &'a Metadata, options: &'a ResolverOptions) -> Self {
-        Self {
+    pub fn new(
+        krate: &'a Crate,
+        metadata: &'a Metadata,
+        options: &'a ResolverOptions,
+    ) -> Result<Self> {
+        Ok(Self {
             metadata,
-            index: index::Tree::new(krate),
+            index: index::Tree::new(krate)?,
             paths: paths::Tree::new(krate),
             crate_to_package: metadata
                 .packages
@@ -31,7 +35,7 @@ impl<'a> Resolver<'a> {
                 .map(|p| (p.name.as_ref().replace('-', "_"), &p.id))
                 .collect(),
             options,
-        }
+        })
     }
 
     pub fn item_url(&self, id: Id) -> Result<String> {
