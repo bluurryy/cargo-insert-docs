@@ -13,7 +13,7 @@ type FeatureDocs = Vec<FeatureDocEntry>;
 
 #[derive(Debug)]
 enum FeatureDocEntry {
-    Other { docs: String },
+    InBetween { docs: String },
     Feature { name: String, docs: String, is_default: bool },
 }
 
@@ -61,13 +61,13 @@ fn parse(toml: &str) -> Result<FeatureDocs> {
             None => "",
         };
 
-        let mut other_docs = String::new();
+        let mut in_between_docs = String::new();
         let mut feature_docs = String::new();
 
         for line in prefix.lines() {
-            if let Some(other_comment) = comment_line(line, "#!")? {
-                other_docs.push_str(other_comment);
-                other_docs.push('\n');
+            if let Some(in_between_comment) = comment_line(line, "#!")? {
+                in_between_docs.push_str(in_between_comment);
+                in_between_docs.push('\n');
             }
 
             if let Some(feature_comment) = comment_line(line, "##")? {
@@ -76,8 +76,8 @@ fn parse(toml: &str) -> Result<FeatureDocs> {
             }
         }
 
-        if !other_docs.is_empty() {
-            vec.push(FeatureDocEntry::Other { docs: other_docs });
+        if !in_between_docs.is_empty() {
+            vec.push(FeatureDocEntry::InBetween { docs: in_between_docs });
         }
 
         vec.push(FeatureDocEntry::Feature {
@@ -123,7 +123,7 @@ fn format(docs: &FeatureDocs, feature_label: &str) -> String {
 
     for doc in docs {
         match doc {
-            FeatureDocEntry::Other { docs } => {
+            FeatureDocEntry::InBetween { docs } => {
                 let start_pad = if out.is_empty() { "" } else { "\n" };
                 writeln!(out, "{start_pad}{docs}").unwrap();
             }
