@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+## [0.6.0] - 2025-07-17
+
 ### Added
 
 - **Breaking:** Return early with an error when any affected file is uncommitted, unless `--force`d
@@ -80,7 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-07-09
 
 <!-- next-url -->
-[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.6.0
 [0.5.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.5.0
 [0.4.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.4.0
 [0.3.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.3.0
