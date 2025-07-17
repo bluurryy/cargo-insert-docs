@@ -16,7 +16,7 @@ const RECURSION_LIMIT: usize = 64;
 
 pub fn parents(index: &HashMap<Id, SimpleItem>, root: Id) -> Result<HashMap<Id, Id>> {
     let mut parents = HashMap::new();
-    parents_recurse(index, &mut parents, root, 0, &mut vec![])?;
+    parents_recurse(index, &mut parents, root, 0, PathList::EMPTY)?;
     Ok(parents.into_iter().map(|(child_id, parent)| (child_id, parent.id)).collect())
 }
 
@@ -25,24 +25,25 @@ fn parents_recurse<'a>(
     parents: &mut HashMap<Id, Parent>,
     parent_id: Id,
     depth: usize,
-    path_for_error: &mut Vec<&'a str>,
+    path_for_error: PathList<'a>,
 ) -> Result<()> {
-    if path_for_error.len() > RECURSION_LIMIT {
+    if path_for_error.len > RECURSION_LIMIT {
         let item_path = path_for_error
             .iter()
-            .filter_map(|&s| (!s.is_empty()).then_some(s))
+            .filter(|name| !name.is_empty())
+            .collect::<Vec<_>>()
+            .into_iter()
+            .rev()
             .collect::<Vec<_>>()
             .join("::");
 
-        let _span = error_span!("", %item_path).entered();
+        let _span = error_span!("", item_path).entered();
         bail!("recursed too deep while resolving item paths ({RECURSION_LIMIT})");
     }
 
     let Some(parent_item) = index.get(&parent_id) else {
         return Ok(());
     };
-
-    path_for_error.push(parent_item.name);
 
     let parent_is_use = matches!(&parent_item.kind, SimpleItemKind::Use { .. });
 
@@ -77,11 +78,44 @@ fn parents_recurse<'a>(
         // A `use` does not count towards depth.
         let child_depth = if parent_is_use || child_is_use { depth } else { depth + 1 };
 
-        parents_recurse(index, parents, child_id, child_depth, path_for_error)?;
-        path_for_error.pop();
+        parents_recurse(
+            index,
+            parents,
+            child_id,
+            child_depth,
+            path_for_error.append(parent_item.name),
+        )?;
     }
 
     Ok(())
+}
+
+struct PathList<'a> {
+    node: Option<PathNode<'a>>,
+    len: usize,
+}
+
+impl<'a> PathList<'a> {
+    const EMPTY: Self = PathList { node: None, len: 0 };
+
+    fn append(&'a self, name: &'a str) -> PathList<'a> {
+        PathList { node: Some(PathNode { prev: self.node.as_ref(), name }), len: self.len + 1 }
+    }
+
+    fn iter(&self) -> impl Iterator<Item = &'a str> {
+        let mut next = self.node.as_ref();
+
+        std::iter::from_fn(move || {
+            let node = next?;
+            next = node.prev;
+            Some(node.name)
+        })
+    }
+}
+
+struct PathNode<'a> {
+    prev: Option<&'a PathNode<'a>>,
+    name: &'a str,
 }
 
 #[derive(Clone, Copy)]
