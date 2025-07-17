@@ -40,3 +40,8 @@ jobs:
           bin: cargo-insert-docs
           target: ${{ matrix.target }}
           token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          CARGO_PROFILE_RELEASE_CODEGEN_UNITS: 1
+          CARGO_PROFILE_RELEASE_LTO: true
+          CARGO_TERM_COLOR: always
+          CARGO_INCREMENTAL: 0
