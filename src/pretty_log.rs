@@ -268,11 +268,8 @@ where
 {
     fn on_new_span(&self, attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
         let mut fmt = PrettyFields::new();
-
         fmt.span(attrs.metadata().name());
-
         attrs.record(&mut fmt.visit());
-
         ctx.span(id).unwrap().extensions_mut().insert(FormattedField(fmt.out()));
     }
 
@@ -421,7 +418,8 @@ fn format_level(out: &mut String, level: Level) {
 }
 
 fn format_field(out: &mut String, name: &str, value: &str) {
-    format_field_key(out, name, &BOLD);
+    let style = if name == "help" { &DEBUG } else { &BOLD };
+    format_field_key(out, name, style);
     format_field_value(out, value);
 }
 

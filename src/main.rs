@@ -24,7 +24,7 @@ use clap::Parser;
 use clap_cargo::style::CLAP_STYLING;
 use color_eyre::eyre::{Context as _, OptionExt, Result, bail, eyre};
 use relative_path::PathExt;
-use tracing::{Level, info_span, trace};
+use tracing::{Level, error_span, info_span, trace};
 
 use pretty_log::{PrettyLog, WithResultSeverity as _};
 
@@ -354,6 +354,12 @@ fn run(cx: &BaseContext) -> Result<()> {
         }
 
         if !dirty.is_empty() {
+            let _span = error_span!(
+                "",
+                info = "this is to prevent overwriting changes you may have made to a section",
+                help = "use the `--force` argument to insert docs anyway",
+            )
+            .entered();
             bail!("uncommitted changes detected in affected files:\n{}", dirty.join("\n"))
         }
     }
