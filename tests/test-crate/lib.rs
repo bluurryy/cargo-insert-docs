@@ -71,7 +71,8 @@
 //!
 //!   Multiple lines work too
 //! - **`something_undocumented`**
-//! - **`recurse`** — Actually used feature, enables recursive items that will cause errors.
+//! - **`recurse`** — Actually used feature, enables recursive imports that will cause errors.
+//! - **`recurse-glob`** — Actually used feature, enables recursive glob imports that will cause errors.
 //!
 //! Here you can write documentation that goes
 //! between the features
@@ -188,25 +189,25 @@ pub mod n {
 #[cfg(feature = "recurse")]
 pub use n::a::n::a::n::a::n::a::n::a::n::a::n::a::n::a::Batman;
 
-#[cfg(feature = "recurse")]
+#[cfg(feature = "recurse-glob")]
 pub mod glob_a {
     pub use super::glob_c::*;
     pub struct StructInGlobA;
 }
 
-#[cfg(feature = "recurse")]
+#[cfg(feature = "recurse-glob")]
 pub mod glob_b {
     pub use super::glob_a::*;
     pub struct StructInGlobB;
 }
 
-#[cfg(feature = "recurse")]
+#[cfg(feature = "recurse-glob")]
 pub mod glob_c {
     pub use super::glob_b::*;
     pub struct StructInGlobC;
 }
 
-#[cfg(feature = "recurse")]
+#[cfg(feature = "recurse-glob")]
 pub use glob_a::*;
 
 // here come tests to check that we can link to any item kind

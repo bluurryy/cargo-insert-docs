@@ -17,8 +17,11 @@ std = []
 serde = []
 something_undocumented = []
 
-## Actually used feature, enables recursive items that will cause errors.
+## Actually used feature, enables recursive imports that will cause errors.
 recurse = []
+
+## Actually used feature, enables recursive glob imports that will cause errors.
+recurse-glob = []
 
 #! Here you can write documentation that goes
 #! between the features
