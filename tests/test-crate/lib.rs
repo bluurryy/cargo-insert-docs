@@ -2,28 +2,40 @@
 #![allow(rustdoc::broken_intra_doc_links)]
 #![feature(trait_alias)]
 #![feature(extern_types)]
+//! ### Link variants
 //! - A shortcut link: [`Vec`]!
 //! - An inline link: [`String`](std::string::String)!
 //! - A reference: [`ThinRope`].
 //!
+//! ### Link special cases
 //! - A link with title: [`str`](str "A String!")
 //! - A http link: [rust](https://www.rust-lang.org/)
 //! - A link with a hash: [`Vec` examples](Vec#examples).
 //! - A broken reference: [goes nowhere]
 //! - A broken link: [goes somewhere](i lied)
 //!
+//! ### Inter-doc links
 //! - A link to another crate: [`glob_match`](fast_glob::glob_match).
 //! - A shortcut to another crate [`fast_glob::glob_match`].
 //! - A link to a crate from github: [`indoc::indoc!`].
 //!
+//! ### Re-exports
 //! - A link to a struct that is re-exported: [`Reexport`].
 //! - A link to a struct that is re-exported with `#[doc(inline)]`: [`ReexportInline`].
 //! - A link to a struct that is re-exported from a private module: [`ReexportPrivate`].
+//!
+//! ### Glob re-exports
+//! Rustdoc's json glob uses put the burden of resolving exports on the user.
+//! This is too hard: <https://github.com/rust-lang/rustdoc-types/issues/51#issuecomment-3071677482>
+//! But we can have a naive implementation and try to not crash.
+//!
 //! - A link to types that are glob-imported: [`MyGlobImportedStruct`], [`my_glob_imported_fn`]
 //! - A link to types that are glob-imported with `#[doc(inline)]`: [`MyInlineGlobImportedStruct`], [`my_inline_glob_imported_fn`]
 //! - A link to types that are glob-imported from a private module: [`MyGlobImportedStructFromPrivateMod`], [`my_glob_imported_fn_from_private_mod`]
 //! - A link to a struct from a mutually reexporting module: `Batman` (TODO)
+//! - A link to structs from recursively glob-reexporting modules: `StructInGlobA`, `StructInGlobB`, `StructInGlobC` (TODO)
 //!
+//! ### Item variants
 //! - A link to a module: [`my_module`]
 //! - A link to an extern crate: [`alloc`]
 //! - A link to a use: [`MyStructUse`]
@@ -175,6 +187,28 @@ pub mod n {
 // TODO: don't let Batman overflow the stack
 #[cfg(false)]
 pub use n::a::n::a::n::a::n::a::n::a::n::a::n::a::n::a::Batman;
+
+#[cfg(false)]
+pub mod glob_a {
+    pub use super::glob_c::*;
+    pub struct StructInGlobA;
+}
+
+#[cfg(false)]
+pub mod glob_b {
+    pub use super::glob_a::*;
+    pub struct StructInGlobB;
+}
+
+#[cfg(false)]
+pub mod glob_c {
+    pub use super::glob_b::*;
+    pub struct StructInGlobC;
+}
+
+// TODO: don't let that joker overflow the stack either
+#[cfg(false)]
+pub use glob_a::*;
 
 // here come tests to check that we can link to any item kind
 
