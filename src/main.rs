@@ -282,14 +282,14 @@ fn run(cx: &BaseContext) -> Result<()> {
     // resolve package ids
     for package_name in package_names {
         let id = find_package_by_name(cx, &package_name)?;
-        packages.push((id, package_name));
+        packages.push(id);
     }
 
     // error if a feature is not available in any selected package
     {
         let all_available_features = packages
             .iter()
-            .flat_map(|(id, _)| cx.metadata[id].features.keys())
+            .flat_map(|id| cx.metadata[id].features.keys())
             .map(|s| s.as_str())
             .collect::<HashSet<&str>>();
 
@@ -312,13 +312,13 @@ fn run(cx: &BaseContext) -> Result<()> {
     }
 
     // error if no package has a lib target
-    if !packages.iter().any(|(id, _)| cx.metadata[id].targets.iter().any(|t| t.is_lib())) {
+    if !packages.iter().any(|id| cx.metadata[id].targets.iter().any(|t| t.is_lib())) {
         bail!("no selected package contains a lib target");
     }
 
     let mut contexts = vec![];
 
-    for (id, name) in packages {
+    for id in packages {
         let package = &cx.metadata[&id];
         let manifest_path = ManifestPath::new(package.manifest_path.as_ref())?;
         let enabled_features = cx
@@ -339,7 +339,6 @@ fn run(cx: &BaseContext) -> Result<()> {
             package: PackageContext {
                 id,
                 enabled_features,
-                name,
                 manifest_path,
                 is_explicit: is_explicit_package,
             },
@@ -399,7 +398,10 @@ fn dirty_files(cx: &Context) -> Result<Vec<String>> {
 }
 
 fn run_package(cx: &Context) {
-    let _span = cx.package.is_explicit.then(|| info_span!("", package = cx.package.name).entered());
+    let _span = cx
+        .package
+        .is_explicit
+        .then(|| info_span!("", package = cx.metadata[&cx.package.id].name.as_str()).entered());
 
     if !cx.args.no_feature_docs {
         task(cx, "feature documentation", "crate documentation", insert_features_into_docs);
@@ -467,7 +469,6 @@ impl<'a> Deref for Context<'a> {
 
 struct PackageContext {
     id: PackageId,
-    name: String,
     enabled_features: Vec<String>,
     manifest_path: ManifestPath,
     is_explicit: bool,

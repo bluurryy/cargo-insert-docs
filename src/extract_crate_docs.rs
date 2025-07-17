@@ -36,7 +36,7 @@ fn create_rustdoc_json(cx: &Context) -> Result<String> {
         .color(Color::Always);
 
     if cx.package.is_explicit {
-        builder = builder.package(&cx.package.name);
+        builder = builder.package(&cx.metadata[&cx.package.id].name);
     }
 
     if let Some(target) = cx.args.target.as_ref() {
