@@ -89,7 +89,7 @@ fn parse_rustdoc_json(rustdoc_json: &str) -> Result<Crate, Report> {
         let actual = krate.format_version;
 
         let help = if actual > expected {
-            "update `cargo-insert-docs` or use `--toolchain nightly-2025-06-26`"
+            "update `cargo-insert-docs` or use `--toolchain nightly-2025-07-15`"
         } else {
             "upgrade your nightly toolchain"
         };
