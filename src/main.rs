@@ -23,10 +23,14 @@ use cargo_metadata::{Metadata, MetadataCommand, PackageId};
 use clap::Parser;
 use clap_cargo::style::CLAP_STYLING;
 use color_eyre::eyre::{Context as _, OptionExt, Result, bail, eyre};
+use mimalloc::MiMalloc;
 use relative_path::PathExt;
 use tracing::{Level, error_span, info_span, trace};
 
 use pretty_log::{PrettyLog, WithResultSeverity as _};
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 #[derive(Parser)]
 #[command(

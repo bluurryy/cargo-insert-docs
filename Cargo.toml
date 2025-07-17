@@ -19,6 +19,7 @@ clap = { version = "4.5.41", features = ["derive", "wrap_help"] }
 clap-cargo = "0.16.0"
 color-eyre = { version = "0.6.5", features = ["capture-spantrace"] }
 git2 = { version = "0.20.2", default-features = false }
+mimalloc = "0.1.47"
 nonempty-collections = "1.0.0"
 proc-macro2 = { version = "1.0.95", default-features = false, features = [
     "span-locations",
