@@ -19,7 +19,8 @@ pub struct Tree<'a> {
 
 impl<'a> Tree<'a> {
     pub fn new(krate: &'a Crate) -> Self {
-        let index = krate.index.iter().map(|(k, v)| (*k, SimpleItem::from_item(v))).collect();
+        let index =
+            krate.index.iter().map(|(k, v)| (*k, SimpleItem::from_item(krate, v))).collect();
         Self::new_simple(&index, krate.root)
     }
 

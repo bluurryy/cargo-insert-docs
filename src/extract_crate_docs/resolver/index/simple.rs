@@ -1,6 +1,6 @@
 //! Parses `.index` into a simpler representation fitting our use case.
 
-use rustdoc_types::{Id, Item, ItemEnum, StructKind, VariantKind};
+use rustdoc_types::{Crate, Id, Item, ItemEnum, StructKind, VariantKind};
 
 pub struct SimpleItem<'a> {
     pub name: &'a str,
@@ -9,8 +9,8 @@ pub struct SimpleItem<'a> {
 }
 
 impl<'a> SimpleItem<'a> {
-    pub fn from_item(item: &'a Item) -> Self {
-        Self { name: name(item), kind: kind(item), children: children(item) }
+    pub fn from_item(krate: &'a Crate, item: &'a Item) -> Self {
+        Self { name: name(item), kind: kind(item), children: children(krate, item) }
     }
 }
 
@@ -84,11 +84,22 @@ macro_rules! chain {
 }
 
 #[allow(clippy::unneeded_struct_pattern)]
-pub fn children(item: &Item) -> Vec<Id> {
+pub fn children(krate: &Crate, item: &Item) -> Vec<Id> {
     match &item.inner {
         ItemEnum::Module(inner) => chain!(&inner.items),
         ItemEnum::ExternCrate { .. } => chain!(),
-        ItemEnum::Use(inner) => chain!(&inner.id),
+        ItemEnum::Use(inner) => {
+            if inner.is_glob {
+                inner
+                    .id
+                    .and_then(|id| krate.index.get(&id))
+                    .into_iter()
+                    .flat_map(|item| children(krate, item))
+                    .collect()
+            } else {
+                chain!(&inner.id)
+            }
+        }
         ItemEnum::Union(inner) => chain!(&inner.fields, &inner.impls),
         ItemEnum::Struct(inner) => match &inner.kind {
             StructKind::Unit => chain!(),

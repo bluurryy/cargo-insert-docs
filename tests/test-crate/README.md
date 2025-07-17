@@ -22,6 +22,9 @@ Now the crate documentation begins...
 - A link to a struct that is re-exported: [`Reexport`](https://docs.rs/test-crate/0.0.0/test_crate/reexport/struct.Reexport.html).
 - A link to a struct that is re-exported with `#[doc(inline)]`: [`ReexportInline`](https://docs.rs/test-crate/0.0.0/test_crate/struct.ReexportInline.html).
 - A link to a struct that is re-exported from a private module: [`ReexportPrivate`](https://docs.rs/test-crate/0.0.0/test_crate/struct.ReexportPrivate.html).
+- A link to types that are glob-imported: [`MyGlobImportedStruct`](https://docs.rs/test-crate/0.0.0/test_crate/to_be_glob_imported/struct.MyGlobImportedStruct.html), [`my_glob_imported_fn`](https://docs.rs/test-crate/0.0.0/test_crate/to_be_glob_imported/fn.my_glob_imported_fn.html)
+- A link to types that are glob-imported with `#[doc(inline)]`: [`MyInlineGlobImportedStruct`](https://docs.rs/test-crate/0.0.0/test_crate/struct.MyInlineGlobImportedStruct.html), [`my_inline_glob_imported_fn`](https://docs.rs/test-crate/0.0.0/test_crate/fn.my_inline_glob_imported_fn.html)
+- A link to types that are glob-imported from a private module: [`MyGlobImportedStructFromPrivateMod`](https://docs.rs/test-crate/0.0.0/test_crate/struct.MyGlobImportedStructFromPrivateMod.html), [`my_glob_imported_fn_from_private_mod`](https://docs.rs/test-crate/0.0.0/test_crate/fn.my_glob_imported_fn_from_private_mod.html)
 
 - A link to a module: [`my_module`](https://docs.rs/test-crate/0.0.0/test_crate/my_module/index.html)
 - A link to an extern crate: [`alloc`](https://doc.rust-lang.org/alloc/index.html)

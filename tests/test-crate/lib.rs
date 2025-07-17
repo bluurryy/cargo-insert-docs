@@ -19,6 +19,9 @@
 //! - A link to a struct that is re-exported: [`Reexport`].
 //! - A link to a struct that is re-exported with `#[doc(inline)]`: [`ReexportInline`].
 //! - A link to a struct that is re-exported from a private module: [`ReexportPrivate`].
+//! - A link to types that are glob-imported: [`MyGlobImportedStruct`], [`my_glob_imported_fn`]
+//! - A link to types that are glob-imported with `#[doc(inline)]`: [`MyInlineGlobImportedStruct`], [`my_inline_glob_imported_fn`]
+//! - A link to types that are glob-imported from a private module: [`MyGlobImportedStructFromPrivateMod`], [`my_glob_imported_fn_from_private_mod`]
 //!
 //! - A link to a module: [`my_module`]
 //! - A link to an extern crate: [`alloc`]
@@ -125,6 +128,37 @@ pub use reexport_private::ReexportPrivate;
 mod reexport_private {
     pub struct ReexportPrivate;
 }
+
+pub mod to_be_glob_imported {
+    pub struct MyGlobImportedStruct;
+    pub fn my_glob_imported_fn() {}
+
+    #[expect(dead_code)]
+    fn my_private_fn() {}
+}
+
+pub use to_be_glob_imported::*;
+
+mod to_be_glob_imported_private {
+    pub struct MyGlobImportedStructFromPrivateMod;
+    pub fn my_glob_imported_fn_from_private_mod() {}
+
+    #[expect(dead_code)]
+    fn my_private_fn() {}
+}
+
+pub use to_be_glob_imported_private::*;
+
+pub mod to_be_inline_glob_imported {
+    pub struct MyInlineGlobImportedStruct;
+    pub fn my_inline_glob_imported_fn() {}
+
+    #[expect(dead_code)]
+    fn my_private_fn() {}
+}
+
+#[doc(inline)]
+pub use to_be_inline_glob_imported::*;
 
 // here come tests to check that we can link to any item kind
 
