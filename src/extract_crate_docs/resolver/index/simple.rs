@@ -90,6 +90,9 @@ pub fn children(krate: &Crate, item: &Item) -> Vec<Id> {
         ItemEnum::ExternCrate { .. } => chain!(),
         ItemEnum::Use(inner) => {
             if inner.is_glob {
+                // This won't recurse.
+                // A glob `Use` won't ever point to another `Use` but rather a `Module` which may contain more glob `Use`s.
+                // So for recursive glob uses the path will be "use/use/use/use/..." which will then cause problems in `parents.rs` but here it's fine.
                 inner
                     .id
                     .and_then(|id| krate.index.get(&id))
