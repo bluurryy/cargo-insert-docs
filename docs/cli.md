@@ -105,8 +105,11 @@ Options:
       --quiet-cargo
           Do not print cargo log messages
 
+  -f, --force
+          Insert documentation even if an affected file is uncommitted
+
       --check
-          Runs in 'check' mode.
+          Runs in 'check' mode
           
           Exits with 0 if the documentation is up to date.
           Exits with 1 if the documentation is stale or if any errors occured.

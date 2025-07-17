@@ -3,6 +3,7 @@
 mod edit_crate_docs;
 mod extract_crate_docs;
 mod extract_feature_docs;
+mod git;
 mod markdown;
 mod pretty_log;
 #[cfg(test)]
@@ -22,6 +23,7 @@ use cargo_metadata::{Metadata, MetadataCommand, PackageId};
 use clap::Parser;
 use clap_cargo::style::CLAP_STYLING;
 use color_eyre::eyre::{Context as _, OptionExt, Result, bail, eyre};
+use relative_path::PathExt;
 use tracing::{Level, info_span, trace};
 
 use pretty_log::{PrettyLog, WithResultSeverity as _};
@@ -146,7 +148,11 @@ struct Args {
     #[arg(long)]
     quiet_cargo: bool,
 
-    /// Runs in 'check' mode.
+    /// Insert documentation even if an affected file is uncommitted
+    #[arg(long, short = 'f')]
+    force: bool,
+
+    /// Runs in 'check' mode
     ///
     /// Exits with 0 if the documentation is up to date.
     /// Exits with 1 if the documentation is stale or if any errors occured.
@@ -310,6 +316,8 @@ fn run(cx: &BaseContext) -> Result<()> {
         bail!("no selected package contains a lib target");
     }
 
+    let mut contexts = vec![];
+
     for (id, name) in packages {
         let package = &cx.metadata[&id];
         let manifest_path = ManifestPath::new(package.manifest_path.as_ref())?;
@@ -326,7 +334,7 @@ fn run(cx: &BaseContext) -> Result<()> {
             continue;
         }
 
-        run_package(&Context {
+        contexts.push(Context {
             base: cx,
             package: PackageContext {
                 id,
@@ -335,10 +343,59 @@ fn run(cx: &BaseContext) -> Result<()> {
                 manifest_path,
                 is_explicit: is_explicit_package,
             },
-        });
+        })
+    }
+
+    // Exit early if any affected file is dirty.
+    if !cx.args.force {
+        let mut dirty = vec![];
+
+        for cx in &contexts {
+            dirty.extend(dirty_files(cx)?);
+        }
+
+        if !dirty.is_empty() {
+            bail!("uncommitted changes detected in affected files:\n{}", dirty.join("\n"))
+        }
+    }
+
+    for cx in &contexts {
+        run_package(cx);
     }
 
     Ok(())
+}
+
+fn dirty_files(cx: &Context) -> Result<Vec<String>> {
+    let mut dirty = vec![];
+
+    if !cx.args.no_feature_docs {
+        let lib_path = cx.lib_path()?;
+
+        if git::is_file_dirty(lib_path).unwrap_or(false) {
+            dirty.push(
+                lib_path
+                    .relative_to(cx.metadata.workspace_root.as_std_path())
+                    .map(|p| p.to_string())
+                    .unwrap_or_else(|_| lib_path.display().to_string()),
+            );
+        }
+    }
+
+    if !cx.args.no_crate_docs {
+        let readme_path = cx.readme_path().full_path;
+
+        if git::is_file_dirty(&readme_path).unwrap_or(false) {
+            dirty.push(
+                readme_path
+                    .relative_to(cx.metadata.workspace_root.as_std_path())
+                    .map(|p| p.to_string())
+                    .unwrap_or_else(|_| readme_path.display().to_string()),
+            );
+        }
+    }
+
+    Ok(dirty)
 }
 
 fn run_package(cx: &Context) {
@@ -382,6 +439,22 @@ struct BaseContext<'a> {
 struct Context<'a> {
     base: &'a BaseContext<'a>,
     package: PackageContext,
+}
+
+impl Context<'_> {
+    fn lib_path(&self) -> Result<&Path> {
+        Ok(self.metadata[&self.package.id]
+            .targets
+            .iter()
+            .find(|target| target.is_lib())
+            .ok_or_eyre("the selected package contains no lib target")?
+            .src_path
+            .as_ref())
+    }
+
+    fn readme_path(&self) -> RelativePath {
+        self.package.manifest_path.relative(&self.args.readme_path)
+    }
 }
 
 impl<'a> Deref for Context<'a> {
@@ -480,14 +553,7 @@ fn task(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
 fn insert_features_into_docs(cx: &Context) -> Result<()> {
     let not_found_level = if cx.args.strict_feature_docs { Level::ERROR } else { Level::WARN };
 
-    let lib_path = cx.metadata[&cx.package.id]
-        .targets
-        .iter()
-        .find(|target| target.is_lib())
-        .ok_or_eyre("the selected package contains no lib target")?
-        .src_path
-        .as_ref();
-
+    let lib_path = cx.lib_path()?;
     let lib_content = read_to_string(lib_path)?;
 
     let Some(feature_docs_section) =

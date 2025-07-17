@@ -185,7 +185,7 @@ The comment format for adding feature documentation comes from [`document-featur
 #![doc = document_features::document_features!()]
 ```
 
-The idea with the html comment tags to delimit sections comes from `cargo-rdme`. Thank you!
+The idea with the html comment tags to delimit sections comes from `cargo-rdme`.
 
 ## Similar projects
 - [`document-features`](https://crates.io/crates/document-features)
