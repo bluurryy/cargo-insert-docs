@@ -22,6 +22,7 @@
 //! - A link to types that are glob-imported: [`MyGlobImportedStruct`], [`my_glob_imported_fn`]
 //! - A link to types that are glob-imported with `#[doc(inline)]`: [`MyInlineGlobImportedStruct`], [`my_inline_glob_imported_fn`]
 //! - A link to types that are glob-imported from a private module: [`MyGlobImportedStructFromPrivateMod`], [`my_glob_imported_fn_from_private_mod`]
+//! - A link to a struct from a mutually reexporting module: `Batman` (TODO)
 //!
 //! - A link to a module: [`my_module`]
 //! - A link to an extern crate: [`alloc`]
@@ -159,6 +160,21 @@ pub mod to_be_inline_glob_imported {
 
 #[doc(inline)]
 pub use to_be_inline_glob_imported::*;
+
+#[cfg(false)]
+pub mod a {
+    pub use crate::n;
+    pub struct Batman;
+}
+
+#[cfg(false)]
+pub mod n {
+    pub use crate::a;
+}
+
+// TODO: don't let Batman overflow the stack
+#[cfg(false)]
+pub use n::a::n::a::n::a::n::a::n::a::n::a::n::a::n::a::Batman;
 
 // here come tests to check that we can link to any item kind
 
