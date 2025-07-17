@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support rustdoc json version 54 (nightly-2025-07-16)
 - Better help message when rustdoc format doesn't match
 
 ## [0.6.0] - 2025-07-17

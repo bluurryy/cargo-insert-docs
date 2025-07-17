@@ -1,6 +1,6 @@
 //! Parses `.index` into a simpler representation fitting our use case.
 
-use rustdoc_types::{Crate, Id, Item, ItemEnum, StructKind, VariantKind};
+use rustdoc_types::{Attribute, Crate, Id, Item, ItemEnum, StructKind, VariantKind};
 
 pub struct SimpleItem<'a> {
     pub name: &'a str,
@@ -130,8 +130,9 @@ pub fn children(krate: &Crate, item: &Item) -> Vec<Id> {
 }
 
 fn is_doc_inline(item: &Item) -> bool {
-    for attr_str in &item.attrs {
-        if let Ok(attr) = parse_attr_str(attr_str)
+    for attr in &item.attrs {
+        if let Attribute::Other(attr_str) = attr
+            && let Ok(attr) = parse_attr_str(attr_str)
             && attr.path().is_ident("doc")
             && let syn::Meta::List(list) = attr.meta
         {
