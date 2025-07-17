@@ -7,7 +7,7 @@ use color_eyre::eyre::{Context as _, OptionExt as _, Report, Result, bail};
 use rustdoc_json::Color;
 use rustdoc_types::Crate;
 use serde::Deserialize;
-use tracing::warn;
+use tracing::{error_span, warn};
 
 use crate::{Context, markdown};
 
@@ -87,16 +87,18 @@ fn parse_rustdoc_json(rustdoc_json: &str) -> Result<Crate, Report> {
     if krate.format_version != rustdoc_types::FORMAT_VERSION {
         let expected = rustdoc_types::FORMAT_VERSION;
         let actual = krate.format_version;
-        let what_to_do = if actual > expected {
-            "update `cargo-insert-docs` or use an older nightly toolchain"
+
+        let help = if actual > expected {
+            "update `cargo-insert-docs` or use `--toolchain nightly-2025-06-26`"
         } else {
             "upgrade your nightly toolchain"
         };
 
+        let _span = error_span!("", %help).entered();
+
         bail!(
             "`cargo-insert-docs` requires rustdoc json format version {expected} \
-            but rustdoc produced version {actual}\n\
-            {what_to_do} to be able to use this tool"
+            but rustdoc produced version {actual}"
         );
     }
 
