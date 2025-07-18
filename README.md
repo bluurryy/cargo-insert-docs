@@ -143,7 +143,7 @@ License goes there.
 You can see the rendered version [here](tests/example-crate/README.md).
 
 Notice how:
-- doc-links like `Image` and `std::io::Read` get resolved to links to `docs.rs` or `docs.rust-lang.org`
+- doc-links like `Image` and `std::io::Read` get resolved to links to `docs.rs` and `doc.rust-lang.org`
 - the code block loses the hidden (`#` prefixed) lines
 - the code block gets marked as `rust`; if the code block already had a marking that is considered rust like `compile_fail`, `ignore`, `should_panic` and such, that would also be replaced by `rust`
 - headers get one `#` added
