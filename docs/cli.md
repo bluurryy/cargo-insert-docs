@@ -105,8 +105,11 @@ Options:
       --quiet-cargo
           Do not print cargo log messages
 
-  -f, --allow-dirty
-          Insert documentation even if an affected file is uncommitted
+      --allow-dirty
+          Insert documentation even if the affected file is dirty or has staged changes
+
+      --allow-staged
+          Insert documentation even if the affected file has staged changes
 
       --check
           Runs in 'check' mode

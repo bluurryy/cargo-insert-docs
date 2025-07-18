@@ -152,9 +152,13 @@ struct Args {
     #[arg(long)]
     quiet_cargo: bool,
 
-    /// Insert documentation even if an affected file is uncommitted
-    #[arg(long, short = 'f')]
+    /// Insert documentation even if the affected file is dirty or has staged changes
+    #[arg(long)]
     allow_dirty: bool,
+
+    /// Insert documentation even if the affected file has staged changes
+    #[arg(long)]
+    allow_staged: bool,
 
     /// Runs in 'check' mode
     ///
@@ -212,6 +216,10 @@ fn main() -> ExitCode {
     if args.strict {
         args.strict_feature_docs = true;
         args.strict_crate_docs = true;
+    }
+
+    if args.allow_dirty {
+        args.allow_staged = true;
     }
 
     // features are already comma separated, we still need to make them space separated
@@ -325,7 +333,7 @@ fn run(cx: &BaseContext) -> Result<()> {
         bail!("no selected package contains a lib target");
     }
 
-    let mut contexts = vec![];
+    let mut cxs = vec![];
 
     for id in packages {
         let package = &cx.metadata[&id];
@@ -343,7 +351,7 @@ fn run(cx: &BaseContext) -> Result<()> {
             continue;
         }
 
-        contexts.push(Context {
+        cxs.push(Context {
             base: cx,
             package: PackageContext {
                 id,
@@ -355,61 +363,108 @@ fn run(cx: &BaseContext) -> Result<()> {
     }
 
     // Exit early if any affected file is dirty.
-    if !cx.args.check && !cx.args.allow_dirty {
-        let mut dirty = vec![];
+    check_version_control(cx, &cxs)?;
 
-        for cx in &contexts {
-            dirty.extend(dirty_files(cx)?);
-        }
-
-        if !dirty.is_empty() {
-            let _span = error_span!(
-                "",
-                info = "this is to prevent overwriting changes you may have made to a section",
-                help = "use the `--allow-dirty` argument to insert docs anyway",
-            )
-            .entered();
-            bail!("uncommitted changes detected in affected files:\n{}", dirty.join("\n"))
-        }
-    }
-
-    for cx in &contexts {
+    for cx in &cxs {
         run_package(cx);
     }
 
     Ok(())
 }
 
-fn dirty_files(cx: &Context) -> Result<Vec<String>> {
-    let mut dirty = vec![];
+// Modified from `fn check_version_control` in `rust-lang/cargo/src/cargo/ops/fix/mod.rs`.
+fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
+    if cx.args.check || cx.args.allow_dirty {
+        return Ok(());
+    }
 
-    if !cx.args.no_feature_docs {
-        let lib_path = cx.lib_path()?;
+    let mut dirty_files = vec![];
+    let mut staged_files = vec![];
 
-        if git::is_file_dirty(lib_path).unwrap_or(false) {
-            dirty.push(
-                lib_path
-                    .relative_to(cx.metadata.workspace_root.as_std_path())
-                    .map(|p| p.to_string())
-                    .unwrap_or_else(|_| lib_path.display().to_string()),
-            );
+    for cx in cxs {
+        if !cx.args.no_feature_docs {
+            let lib_path = cx.lib_path()?;
+            let lib_path_display = lib_path
+                .relative_to(cx.metadata.workspace_root.as_std_path())
+                .map(|p| p.to_string())
+                .unwrap_or_else(|_| lib_path.display().to_string());
+
+            if let Some(status) = git::file_status(lib_path) {
+                match status {
+                    git2::Status::CURRENT => (),
+                    git2::Status::INDEX_NEW
+                    | git2::Status::INDEX_MODIFIED
+                    | git2::Status::INDEX_DELETED
+                    | git2::Status::INDEX_RENAMED
+                    | git2::Status::INDEX_TYPECHANGE => {
+                        if !cx.args.allow_staged {
+                            staged_files.push(lib_path_display);
+                        }
+                    }
+                    _ => {
+                        if !cx.args.allow_dirty {
+                            dirty_files.push(lib_path_display);
+                        }
+                    }
+                }
+            }
+        }
+
+        if !cx.args.no_crate_docs {
+            let readme_path = cx.readme_path().full_path;
+            let readme_path_display = readme_path
+                .relative_to(cx.metadata.workspace_root.as_std_path())
+                .map(|p| p.to_string())
+                .unwrap_or_else(|_| readme_path.display().to_string());
+
+            if let Some(status) = git::file_status(&readme_path) {
+                match status {
+                    git2::Status::CURRENT => (),
+                    git2::Status::INDEX_NEW
+                    | git2::Status::INDEX_MODIFIED
+                    | git2::Status::INDEX_DELETED
+                    | git2::Status::INDEX_RENAMED
+                    | git2::Status::INDEX_TYPECHANGE => {
+                        if !cx.args.allow_staged {
+                            staged_files.push(readme_path_display);
+                        }
+                    }
+                    _ => {
+                        if !cx.args.allow_dirty {
+                            dirty_files.push(readme_path_display);
+                        }
+                    }
+                }
+            }
         }
     }
 
-    if !cx.args.no_crate_docs {
-        let readme_path = cx.readme_path().full_path;
-
-        if git::is_file_dirty(&readme_path).unwrap_or(false) {
-            dirty.push(
-                readme_path
-                    .relative_to(cx.metadata.workspace_root.as_std_path())
-                    .map(|p| p.to_string())
-                    .unwrap_or_else(|_| readme_path.display().to_string()),
-            );
-        }
+    if dirty_files.is_empty() && staged_files.is_empty() {
+        return Ok(());
     }
 
-    Ok(dirty)
+    let mut files_list = String::new();
+
+    for file in dirty_files {
+        files_list.push_str("  * ");
+        files_list.push_str(&file);
+        files_list.push_str(" (dirty)\n");
+    }
+    for file in staged_files {
+        files_list.push_str("  * ");
+        files_list.push_str(&file);
+        files_list.push_str(" (staged)\n");
+    }
+
+    bail!(
+        "the working directory of this package has uncommitted changes, and \n\
+            `cargo fix` can potentially perform destructive changes; if you'd \n\
+            like to suppress this error pass `--allow-dirty`, \n\
+            or commit the changes to these files:\n\
+            \n\
+            {files_list}\n\
+         "
+    );
 }
 
 fn run_package(cx: &Context) {

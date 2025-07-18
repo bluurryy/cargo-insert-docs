@@ -206,9 +206,9 @@ at your option.
 ---
 
 This project includes code adapted from the Rust standard library 
-(<https://github.com/rust-lang/rust>),  
-Copyright © The Rust Project Developers.
-Such code is also licensed under MIT OR Apache-2.0.
+(<https://github.com/rust-lang/rust>), 
+Copyright © The Rust Project Developers and cargo (<https://github.com/rust-lang/cargo>).
+Those projects are also licensed under MIT OR Apache-2.0.
 
 ### Your contributions
 
