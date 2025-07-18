@@ -259,9 +259,10 @@ fn try_main(args: &Args, log: &PrettyLog) -> Result<()> {
 }
 
 fn run(cx: &BaseContext) -> Result<()> {
-    let mut is_explicit_package = true;
+    let is_explicit_package;
 
     let mut package_names: Vec<String> = if cx.args.workspace {
+        is_explicit_package = true;
         cx.metadata
             .workspace_members
             .iter()
@@ -275,6 +276,7 @@ fn run(cx: &BaseContext) -> Result<()> {
             .context("tried to read Cargo.toml to figure out package name")?;
         vec![package]
     } else {
+        is_explicit_package = true;
         cx.args.package.clone()
     };
 
