@@ -2,8 +2,7 @@ default:
     @just --list
 
 pre-release:
-    # TODO: --check should not require --force
-    cargo run -- --workspace --check --force
+    cargo run -- --workspace --check
     just update-cli-md
     just test
     just test-recurse recurse
