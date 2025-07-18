@@ -12,7 +12,7 @@ mod tests;
 use std::{
     collections::HashSet,
     ffi::{OsStr, OsString},
-    fmt, fs, io,
+    fs, io,
     ops::Deref,
     path::{Path, PathBuf},
     process::ExitCode,
@@ -524,19 +524,17 @@ struct RelativePath {
 
 impl RelativePath {
     fn read_to_string(&self) -> Result<String> {
-        fs::read_to_string(&self.full_path).with_context(|| format!("failed to read {self}"))
+        let _span = error_span!("", path = %self.full_path.display()).entered();
+        let relative_path = self.relative_to_manifest.display();
+        fs::read_to_string(&self.full_path)
+            .with_context(|| format!("failed to read {relative_path}"))
     }
 
     fn write(&self, contents: &str) -> Result<()> {
-        fs::write(&self.full_path, contents).with_context(|| format!("failed to write {self}"))
-    }
-}
-
-impl fmt::Display for RelativePath {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let relative = &self.relative_to_manifest.display();
-        let full = &self.full_path.display();
-        write!(f, "{relative} ({full})")
+        let _span = error_span!("", path = %self.full_path.display()).entered();
+        let relative_path = self.relative_to_manifest.display();
+        fs::write(&self.full_path, contents)
+            .with_context(|| format!("failed to write {relative_path}"))
     }
 }
 
@@ -642,15 +640,25 @@ fn insert_docs_into_readme(cx: &Context) -> Result<()> {
 }
 
 fn read_to_string(path: &Path) -> Result<String> {
-    fs::read_to_string(path).with_context(|| {
-        let path = path.display();
-        format!("failed to read {path}")
-    })
+    let _span = error_span!("", path = %path.display()).entered();
+
+    let file_name = path
+        .file_name()
+        .and_then(|s| s.to_str())
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| path.display().to_string());
+
+    fs::read_to_string(path).with_context(|| format!("failed to read {file_name}"))
 }
 
 fn write(path: &Path, content: &[u8]) -> Result<()> {
-    fs::write(path, content).with_context(|| {
-        let path = path.display();
-        format!("failed to write to {path}")
-    })
+    let _span = error_span!("", path = %path.display()).entered();
+
+    let file_name = path
+        .file_name()
+        .and_then(|s| s.to_str())
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| path.display().to_string());
+
+    fs::write(path, content).with_context(|| format!("failed to write to {file_name}"))
 }
