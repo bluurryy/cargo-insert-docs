@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Don't error on uncommitted changes when running with `--check`
+
 ## [0.7.0] - 2025-07-17
 
 ### Added

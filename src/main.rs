@@ -355,7 +355,7 @@ fn run(cx: &BaseContext) -> Result<()> {
     }
 
     // Exit early if any affected file is dirty.
-    if !cx.args.force {
+    if !cx.args.check && !cx.args.force {
         let mut dirty = vec![];
 
         for cx in &contexts {
