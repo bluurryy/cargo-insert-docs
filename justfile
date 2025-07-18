@@ -29,15 +29,13 @@ test:
     print -e $"(ansi cyan_bold)NOW RUNNING PREVIOUSLY IGNORED TESTS(ansi reset)"
 
     for test in $tests_that_need_to_be_run_separately {
-        let out = cargo test --package cargo-insert-docs --bin cargo-insert-docs --all-features -- $test --color always --exact --show-output --ignored 
+        cargo test --package cargo-insert-docs --bin cargo-insert-docs --all-features -- $test --color always --exact --show-output --ignored 
         | complete 
         | get stdout
         | parse -r '(?m)(?<all>^test (?<name>.*)? \.\.\. (?<result>.*)$)' 
-        | get all.0
-
-        print $out
+        | get all
+        | each { print }
     }
-
 
 test-recurse feature:
     #!/usr/bin/env nu
