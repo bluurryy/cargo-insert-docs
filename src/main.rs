@@ -308,12 +308,15 @@ fn run(cx: &BaseContext) -> Result<()> {
             .collect::<Vec<&str>>();
 
         if !unavailable_features.is_empty() {
-            let this_feature =
-                if unavailable_features.len() == 1 { "this feature" } else { "these features" };
+            let contain_these_features = if unavailable_features.len() == 1 {
+                "contains this feature"
+            } else {
+                "contain these features"
+            };
 
-            let comma_separated = unavailable_features.join(", ");
+            let unavailable_features = unavailable_features.join(", ");
 
-            bail!("none of the selected packages contains {this_feature}: {comma_separated}");
+            bail!("none of the selected packages {contain_these_features}: {unavailable_features}");
         }
     }
 
