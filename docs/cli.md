@@ -105,7 +105,7 @@ Options:
       --quiet-cargo
           Do not print cargo log messages
 
-  -f, --force
+  -f, --allow-dirty
           Insert documentation even if an affected file is uncommitted
 
       --check

@@ -154,7 +154,7 @@ struct Args {
 
     /// Insert documentation even if an affected file is uncommitted
     #[arg(long, short = 'f')]
-    force: bool,
+    allow_dirty: bool,
 
     /// Runs in 'check' mode
     ///
@@ -355,7 +355,7 @@ fn run(cx: &BaseContext) -> Result<()> {
     }
 
     // Exit early if any affected file is dirty.
-    if !cx.args.check && !cx.args.force {
+    if !cx.args.check && !cx.args.allow_dirty {
         let mut dirty = vec![];
 
         for cx in &contexts {
@@ -366,7 +366,7 @@ fn run(cx: &BaseContext) -> Result<()> {
             let _span = error_span!(
                 "",
                 info = "this is to prevent overwriting changes you may have made to a section",
-                help = "use the `--force` argument to insert docs anyway",
+                help = "use the `--allow-dirty` argument to insert docs anyway",
             )
             .entered();
             bail!("uncommitted changes detected in affected files:\n{}", dirty.join("\n"))

@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Don't error on uncommitted changes when running with `--check`
 
+### Changed
+
+- **Breaking:** Rename `--force` to `--allow-dirty`
+
 ## [0.7.0] - 2025-07-17
 
 ### Added
