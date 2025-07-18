@@ -74,7 +74,8 @@ But we can have a naive implementation and try to not crash.
 
   Multiple lines work too
 - **`something_undocumented`**
-- **`recurse`** — Actually used feature, enables recursive items that will cause errors.
+- **`recurse`** — Actually used feature, enables recursive imports that will cause errors.
+- **`recurse-glob`** — Actually used feature, enables recursive glob imports that will cause errors.
 
 Here you can write documentation that goes
 between the features
