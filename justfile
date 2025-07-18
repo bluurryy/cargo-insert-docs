@@ -41,7 +41,7 @@ test:
 
 test-recurse feature:
     #!/usr/bin/env nu
-    let out = (cargo run -- -p test-crate -F {{feature}} -f | complete).stderr | tee { print }
+    let out = (cargo run -- -p test-crate -F {{feature}} --allow-dirty | complete).stderr | tee { print }
     if not ($out | str contains "recursed too deep while resolving item paths") {
         print -e $out
         exit 1
