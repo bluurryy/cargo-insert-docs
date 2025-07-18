@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Breaking:** Rename `--force` and `-f` to `--allow-dirty`
+- **Breaking:** Rename `--force` to `--allow-dirty`
+- **Breaking:** Remove `-f` shorthand
 
 ## [0.7.0] - 2025-07-17
 
