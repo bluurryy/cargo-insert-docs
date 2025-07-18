@@ -271,7 +271,7 @@ fn run(cx: &BaseContext) -> Result<()> {
     } else if cx.args.package.is_empty() {
         is_explicit_package = false;
         let cargo_toml = ManifestPath::new(&cx.args.manifest_path)?.get().read_to_string()?;
-        let package = package_name(&cargo_toml)
+        let package = manifest_package_name(&cargo_toml)
             .context("tried to read Cargo.toml to figure out package name")?;
         vec![package]
     } else {
@@ -422,7 +422,7 @@ fn run_package(cx: &Context) {
     }
 }
 
-fn package_name(cargo_toml: &str) -> Result<String> {
+fn manifest_package_name(cargo_toml: &str) -> Result<String> {
     let doc = toml_edit::Document::parse(cargo_toml)?;
 
     fn inner<'a>(doc: &'a toml_edit::Document<&'a str>) -> Option<&'a str> {
@@ -565,10 +565,10 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
     let not_found_level = if cx.args.strict_feature_docs { Level::ERROR } else { Level::WARN };
 
     let lib_path = cx.lib_path()?;
-    let lib_content = read_to_string(lib_path)?;
+    let lib = read_to_string(lib_path)?;
 
     let Some(feature_docs_section) =
-        edit_crate_docs::FeatureDocsSection::find(&lib_content, &cx.args.feature_docs_section)?
+        edit_crate_docs::FeatureDocsSection::find(&lib, &cx.args.feature_docs_section)?
     else {
         let lib_name = lib_path
             .file_name()
@@ -589,14 +589,14 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
     let feature_docs = extract_feature_docs::extract(&cargo_toml, &cx.args.feature_label)
         .context("failed to parse Cargo.toml")?;
 
-    let new_lib_content = feature_docs_section.replace(&feature_docs)?;
+    let new_lib = feature_docs_section.replace(&feature_docs)?;
 
-    if new_lib_content != lib_content {
+    if new_lib != lib {
         if cx.args.check {
             bail!("feature documentation is stale");
         }
 
-        write(lib_path, new_lib_content.as_bytes())?;
+        write(lib_path, new_lib.as_bytes())?;
     }
 
     Ok(())
@@ -604,11 +604,11 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
 
 fn insert_docs_into_readme(cx: &Context) -> Result<()> {
     let not_found_level = if cx.args.strict_crate_docs { Level::ERROR } else { Level::WARN };
+
     let readme_path = cx.package.manifest_path.relative(&cx.args.readme_path);
     let readme = readme_path.read_to_string().with_severity(not_found_level)?;
-    let mut new_readme = readme.clone();
 
-    let Some(section) = markdown::find_section(&new_readme, &cx.args.crate_docs_section) else {
+    let Some(section) = markdown::find_section(&readme, &cx.args.crate_docs_section) else {
         let relative_path = readme_path.relative_to_manifest.display();
 
         let _span = info_span!("",
@@ -622,6 +622,7 @@ fn insert_docs_into_readme(cx: &Context) -> Result<()> {
 
     let crate_docs = extract_crate_docs::extract(cx)?;
 
+    let mut new_readme = readme.clone();
     new_readme.replace_range(section, &format!("\n{crate_docs}\n"));
 
     if readme != new_readme {
