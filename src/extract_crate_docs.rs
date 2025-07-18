@@ -3,7 +3,7 @@ mod resolver;
 use std::fs;
 
 use cargo_metadata::Metadata;
-use color_eyre::eyre::{Context as _, OptionExt as _, Report, Result, bail};
+use color_eyre::eyre::{OptionExt as _, Report, Result, WrapErr as _, bail};
 use rustdoc_json::Color;
 use rustdoc_types::Crate;
 use serde::Deserialize;
@@ -72,7 +72,7 @@ fn create_rustdoc_json(cx: &Context) -> Result<String> {
         builder.build()?
     };
 
-    fs::read_to_string(json_path).context("failed to read generated rustdoc json")
+    fs::read_to_string(json_path).wrap_err("failed to read generated rustdoc json")
 }
 
 fn parse_rustdoc_json(rustdoc_json: &str) -> Result<Crate, Report> {
@@ -82,7 +82,7 @@ fn parse_rustdoc_json(rustdoc_json: &str) -> Result<Crate, Report> {
     }
 
     let krate: CrateWithJustTheFormatVersion =
-        serde_json::from_str(rustdoc_json).context("failed to parse generated rustdoc json")?;
+        serde_json::from_str(rustdoc_json).wrap_err("failed to parse generated rustdoc json")?;
 
     if krate.format_version != rustdoc_types::FORMAT_VERSION {
         let expected = rustdoc_types::FORMAT_VERSION;
@@ -102,7 +102,7 @@ fn parse_rustdoc_json(rustdoc_json: &str) -> Result<Crate, Report> {
         );
     }
 
-    serde_json::from_str(rustdoc_json).context("failed to parse generated rustdoc json")
+    serde_json::from_str(rustdoc_json).wrap_err("failed to parse generated rustdoc json")
 }
 
 struct ExtractDocsOptions<'a> {

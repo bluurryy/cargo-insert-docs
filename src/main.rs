@@ -22,7 +22,7 @@ use std::{
 use cargo_metadata::{Metadata, MetadataCommand, PackageId};
 use clap::Parser;
 use clap_cargo::style::CLAP_STYLING;
-use color_eyre::eyre::{Context as _, OptionExt, Result, bail, eyre};
+use color_eyre::eyre::{OptionExt, Result, WrapErr as _, bail, eyre};
 use mimalloc::MiMalloc;
 use relative_path::PathExt;
 use tracing::{Level, error_span, info_span, trace};
@@ -273,7 +273,7 @@ fn run(cx: &BaseContext) -> Result<()> {
         is_explicit_package = false;
         let cargo_toml = ManifestPath::new(&cx.args.manifest_path)?.get().read_to_string()?;
         let package = manifest_package_name(&cargo_toml)
-            .context("tried to read Cargo.toml to figure out package name")?;
+            .wrap_err("tried to read Cargo.toml to figure out package name")?;
         vec![package]
     } else {
         is_explicit_package = true;
@@ -590,7 +590,7 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
     let cargo_toml = cx.package.manifest_path.get().read_to_string()?;
 
     let feature_docs = extract_feature_docs::extract(&cargo_toml, &cx.args.feature_label)
-        .context("failed to parse Cargo.toml")?;
+        .wrap_err("failed to parse Cargo.toml")?;
 
     let new_lib = feature_docs_section.replace(&feature_docs)?;
 
