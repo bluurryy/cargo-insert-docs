@@ -19,9 +19,7 @@ update-cli-md:
 
 test:
     #!/usr/bin/env nu
-    let out = cargo test --color always -- --color always
-
-    print $out
+    let out = cargo test --color always -- --color always | tee { print }
 
     let tests_that_need_to_be_run_separately = $out
     | ansi strip
@@ -44,7 +42,7 @@ test:
 
 test-recurse feature:
     #!/usr/bin/env nu
-    let out = (cargo run -- -p test-crate -F {{feature}} -f | complete).stderr
+    let out = (cargo run -- -p test-crate -F {{feature}} -f | complete).stderr | tee { print }
     if not ($out | str contains "recursed too deep while resolving item paths") {
         print -e $out
         exit 1
