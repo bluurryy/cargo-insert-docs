@@ -8,13 +8,14 @@
 1. Insert feature documentation from `Cargo.toml` into your `lib.rs`.
 2. Insert crate documentation from `lib.rs` into your `README.md`.
 
+## Table of Contents
+
 - [Installation](#installation)
 - [Usage](#usage)
 - [FAQ](#faq)
 - [Compatibility](#compatibility)
 - [Acknowledgements](#acknowledgements)
 - [Similar projects](#similar-projects)
-- [License](#license)
 
 ## Installation
 
