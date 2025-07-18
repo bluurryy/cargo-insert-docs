@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add `--allow-staged`
-- Don't check git status when running `--check`
+- Don't check whether file is dirty when running `--check`
 
 ### Changed
 
