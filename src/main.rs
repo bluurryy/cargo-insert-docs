@@ -33,6 +33,19 @@ use pretty_log::{PrettyLog, WithResultSeverity as _};
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
 
+mod heading {
+    pub const PACKAGE_SELECTION: &str = "Package Selection";
+    #[expect(dead_code)] // TODO
+    pub const TARGET_SELECTION: &str = "Target Selection";
+    pub const FEATURE_SELECTION: &str = "Feature Selection";
+    pub const COMPILATION_OPTIONS: &str = "Compilation Options";
+    pub const MANIFEST_OPTIONS: &str = "Manifest Options";
+    pub const ERROR_BEHAVIOR: &str = "Error Behavior";
+    pub const MESSAGE_OPTIONS: &str = "Message Options";
+    pub const MODE_SELECTION: &str = "Mode Selection";
+    pub const CARGO_DOC_OPTIONS: &str = "Cargo Doc Options";
+}
+
 #[derive(Parser)]
 #[command(
     version,
@@ -44,25 +57,9 @@ static GLOBAL: MiMalloc = MiMalloc;
     styles = CLAP_STYLING
 )]
 struct Args {
-    /// Path to Cargo.toml
-    #[arg(long, value_name = "PATH")]
-    manifest_path: Option<PathBuf>,
-
     /// Readme path relative to the package manifest
     #[arg(long, value_name = "PATH", default_value = "README.md")]
     readme_path: PathBuf,
-
-    /// Activate all available features
-    #[arg(long)]
-    all_features: bool,
-
-    /// Do not activate the `default` feature
-    #[arg(long)]
-    no_default_features: bool,
-
-    /// Space or comma separated list of features to activate
-    #[arg(long, short = 'F', value_delimiter = ',')]
-    features: Vec<String>,
 
     /// Formatting of the feature label
     ///
@@ -78,61 +75,6 @@ struct Args {
     #[arg(long, value_name = "SECTION_NAME", default_value = "crate documentation")]
     crate_docs_section: String,
 
-    /// Disables inserting the feature documentation into the crate documentation
-    #[arg(long)]
-    no_feature_docs: bool,
-
-    /// Disables inserting the crate documentation into the readme
-    #[arg(long)]
-    no_crate_docs: bool,
-
-    /// Errors instead of printing a warning when a documentation section was
-    /// not found.
-    ///
-    /// Implies `--strict-feature-docs` and `--strict-crate-docs`.
-    #[arg(long)]
-    strict: bool,
-
-    /// Errors instead of printing a warning when a feature documentation section
-    /// was not found in the crate documentation.
-    #[arg(long)]
-    strict_feature_docs: bool,
-
-    /// Errors instead of printing a warning when a crate documentation section
-    /// was not found in the readme.
-    #[arg(long)]
-    strict_crate_docs: bool,
-
-    /// Package(s) to document
-    #[arg(long, short = 'p', value_name = "PACKAGE")]
-    package: Vec<String>,
-
-    /// Document all packages in the workspace
-    #[arg(long)]
-    workspace: bool,
-
-    /// Exclude package(s) from documenting
-    #[arg(long, value_name = "PACKAGE")]
-    exclude: Vec<String>,
-
-    /// Which rustup toolchain to use when invoking rustdoc.
-    ///
-    /// Whenever you update your nightly toolchain this tool may also need to be
-    /// updated to be compatible.
-    ///
-    /// With this argument you can choose a nightly version that is guaranteed to be compatible
-    /// with the current version of this tool, like `nightly-2025-07-16`.
-    #[arg(long, default_value = "nightly", verbatim_doc_comment)]
-    toolchain: String,
-
-    /// Target triple to document
-    #[arg(long, value_name = "TRIPLE")]
-    target: Option<String>,
-
-    /// Document private items
-    #[arg(long)]
-    document_private_items: bool,
-
     #[expect(rustdoc::bare_urls)]
     /// Link to the "latest" version on docs.rs
     ///
@@ -141,32 +83,100 @@ struct Args {
     #[arg(long, verbatim_doc_comment)]
     link_to_latest: bool,
 
-    /// Print more verbose messages
-    #[arg(long, short = 'v')]
-    verbose: bool,
+    /// Document private items
+    #[arg(help_heading = heading::CARGO_DOC_OPTIONS, long)]
+    document_private_items: bool,
 
-    /// Do not print log messages
-    #[arg(long, short = 'q')]
-    quiet: bool,
-
-    /// Do not print cargo log messages
-    #[arg(long)]
-    quiet_cargo: bool,
-
-    /// Insert documentation even if the affected file is dirty or has staged changes
-    #[arg(long)]
-    allow_dirty: bool,
-
-    /// Insert documentation even if the affected file has staged changes
-    #[arg(long)]
-    allow_staged: bool,
-
-    /// Runs in 'check' mode
+    /// Runs in 'check' mode, erroring if something is out of date
     ///
     /// Exits with 0 if the documentation is up to date.
     /// Exits with 1 if the documentation is stale or if any errors occured.
-    #[arg(long, verbatim_doc_comment)]
+    #[arg(help_heading = heading::MODE_SELECTION, long, verbatim_doc_comment)]
     check: bool,
+
+    /// Disables inserting the feature documentation into the crate documentation
+    #[arg(help_heading = heading::MODE_SELECTION, long)]
+    no_feature_docs: bool,
+
+    /// Disables inserting the crate documentation into the readme
+    #[arg(help_heading = heading::MODE_SELECTION, long)]
+    no_crate_docs: bool,
+
+    /// Error when a section is missing
+    ///
+    /// Implies `--strict-feature-docs` and `--strict-crate-docs`.
+    #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
+    strict: bool,
+
+    /// Error when a feature documentation section is missing
+    #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
+    strict_feature_docs: bool,
+
+    /// Error when a crate documentation section is missing
+    #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
+    strict_crate_docs: bool,
+
+    /// Insert documentation even if the affected file is dirty or has staged changes
+    #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
+    allow_dirty: bool,
+
+    /// Insert documentation even if the affected file has staged changes
+    #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
+    allow_staged: bool,
+
+    /// Print more verbose messages
+    #[arg(help_heading = heading::MESSAGE_OPTIONS, long, short = 'v')]
+    verbose: bool,
+
+    /// Do not print anything
+    #[arg(help_heading = heading::MESSAGE_OPTIONS, long, short = 'q')]
+    quiet: bool,
+
+    /// Do not print cargo log messages
+    #[arg(help_heading = heading::MESSAGE_OPTIONS, long)]
+    quiet_cargo: bool,
+
+    /// Package(s) to document
+    #[arg(help_heading = heading::PACKAGE_SELECTION, long, short = 'p', value_name = "SPEC")]
+    package: Vec<String>,
+
+    /// Document all packages in the workspace
+    #[arg(help_heading = heading::PACKAGE_SELECTION, long)]
+    workspace: bool,
+
+    /// Exclude package(s) from documenting
+    #[arg(help_heading = heading::PACKAGE_SELECTION, long, value_name = "SPEC")]
+    exclude: Vec<String>,
+
+    /// Space or comma separated list of features to activate
+    #[arg(help_heading = heading::FEATURE_SELECTION, long, short = 'F', value_delimiter = ',')]
+    features: Vec<String>,
+
+    /// Activate all available features
+    #[arg(help_heading = heading::FEATURE_SELECTION, long)]
+    all_features: bool,
+
+    /// Do not activate the `default` feature
+    #[arg(help_heading = heading::FEATURE_SELECTION, long)]
+    no_default_features: bool,
+
+    /// Which rustup toolchain to use when invoking rustdoc.
+    ///
+    /// Whenever you update your nightly toolchain this tool may also need to be
+    /// updated to be compatible.
+    ///
+    /// With this argument you can choose a nightly version that is guaranteed to be compatible
+    /// with the current version of this tool, like `nightly-2025-07-16`.
+    #[arg(help_heading = heading::COMPILATION_OPTIONS, long, default_value = "nightly", verbatim_doc_comment)]
+    toolchain: String,
+
+    /// Target triple to document
+    #[arg(help_heading = heading::COMPILATION_OPTIONS, long, value_name = "TRIPLE")]
+    target: Option<String>,
+
+    /// Path to Cargo.toml
+    #[arg(help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
+    manifest_path: Option<PathBuf>,
 }
 
 /// <https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands>

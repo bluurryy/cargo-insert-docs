@@ -10,22 +10,10 @@ Website: https://github.com/bluurryy/cargo-insert-docs
 Usage: cargo insert-docs [OPTIONS]
 
 Options:
-      --manifest-path <PATH>
-          Path to Cargo.toml
-
       --readme-path <PATH>
           Readme path relative to the package manifest
           
           [default: README.md]
-
-      --all-features
-          Activate all available features
-
-      --no-default-features
-          Do not activate the `default` feature
-
-  -F, --features <FEATURES>
-          Space or comma separated list of features to activate
 
       --feature-label <FEATURE_LABEL>
           Formatting of the feature label
@@ -44,33 +32,84 @@ Options:
           
           [default: "crate documentation"]
 
+      --link-to-latest
+          Link to the "latest" version on docs.rs
+          
+          For example https://docs.rs/my-crate/latest/my_crate/.
+          This only affects workspace crates.
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
+
+Cargo Doc Options:
+      --document-private-items
+          Document private items
+
+Mode Selection:
+      --check
+          Runs in 'check' mode, erroring if something is out of date
+          
+          Exits with 0 if the documentation is up to date.
+          Exits with 1 if the documentation is stale or if any errors occured.
+
       --no-feature-docs
           Disables inserting the feature documentation into the crate documentation
 
       --no-crate-docs
           Disables inserting the crate documentation into the readme
 
+Error Behavior:
       --strict
-          Errors instead of printing a warning when a documentation section was not found.
+          Error when a section is missing
           
           Implies `--strict-feature-docs` and `--strict-crate-docs`.
 
       --strict-feature-docs
-          Errors instead of printing a warning when a feature documentation section was not found in the crate
-          documentation
+          Error when a feature documentation section is missing
 
       --strict-crate-docs
-          Errors instead of printing a warning when a crate documentation section was not found in the readme
+          Error when a crate documentation section is missing
 
-  -p, --package <PACKAGE>
+      --allow-dirty
+          Insert documentation even if the affected file is dirty or has staged changes
+
+      --allow-staged
+          Insert documentation even if the affected file has staged changes
+
+Message Options:
+  -v, --verbose
+          Print more verbose messages
+
+  -q, --quiet
+          Do not print anything
+
+      --quiet-cargo
+          Do not print cargo log messages
+
+Package Selection:
+  -p, --package <SPEC>
           Package(s) to document
 
       --workspace
           Document all packages in the workspace
 
-      --exclude <PACKAGE>
+      --exclude <SPEC>
           Exclude package(s) from documenting
 
+Feature Selection:
+  -F, --features <FEATURES>
+          Space or comma separated list of features to activate
+
+      --all-features
+          Activate all available features
+
+      --no-default-features
+          Do not activate the `default` feature
+
+Compilation Options:
       --toolchain <TOOLCHAIN>
           Which rustup toolchain to use when invoking rustdoc.
           
@@ -85,39 +124,7 @@ Options:
       --target <TRIPLE>
           Target triple to document
 
-      --document-private-items
-          Document private items
-
-      --link-to-latest
-          Link to the "latest" version on docs.rs
-          
-          For example https://docs.rs/my-crate/latest/my_crate/.
-          This only affects workspace crates.
-
-  -v, --verbose
-          Print more verbose messages
-
-  -q, --quiet
-          Do not print log messages
-
-      --quiet-cargo
-          Do not print cargo log messages
-
-      --allow-dirty
-          Insert documentation even if the affected file is dirty or has staged changes
-
-      --allow-staged
-          Insert documentation even if the affected file has staged changes
-
-      --check
-          Runs in 'check' mode
-          
-          Exits with 0 if the documentation is up to date.
-          Exits with 1 if the documentation is stale or if any errors occured.
-
-  -h, --help
-          Print help (see a summary with '-h')
-
-  -V, --version
-          Print version
+Manifest Options:
+      --manifest-path <PATH>
+          Path to Cargo.toml
 ```
