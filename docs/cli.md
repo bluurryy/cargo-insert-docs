@@ -12,8 +12,6 @@ Usage: cargo insert-docs [OPTIONS]
 Options:
       --manifest-path <PATH>
           Path to Cargo.toml
-          
-          [default: Cargo.toml]
 
       --readme-path <PATH>
           Readme path relative to the package manifest

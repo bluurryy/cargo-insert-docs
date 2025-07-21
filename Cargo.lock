@@ -124,7 +124,8 @@ version = "0.8.0"
 dependencies = [
  "anstream",
  "anstyle",
- "cargo_metadata 0.21.0",
+ "camino",
+ "cargo_metadata",
  "clap",
  "clap-cargo",
  "color-eyre",
@@ -137,7 +138,6 @@ dependencies = [
  "pulldown-cmark",
  "rangemap",
  "relative-path",
- "rustdoc-json",
  "rustdoc-types",
  "serde",
  "serde_json",
@@ -147,26 +147,6 @@ dependencies = [
  "tracing-error",
  "tracing-subscriber",
  "unindent",
-]
-
-[[package]]
-name = "cargo-manifest"
-version = "0.19.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1d8af896b707212cd0e99c112a78c9497dd32994192a463ed2f7419d29bd8c6"
-dependencies = [
- "serde",
- "thiserror",
- "toml",
-]
-
-[[package]]
-name = "cargo-platform"
-version = "0.1.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e35af189006b9c0f00a064685c727031e3ed2d8020f7ba284d78cc2671bd36ea"
-dependencies = [
- "serde",
 ]
 
 [[package]]
@@ -196,26 +176,12 @@ dependencies = [
 
 [[package]]
 name = "cargo_metadata"
-version = "0.19.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd5eb614ed4c27c5d706420e4320fbe3216ab31fa1c33cd8246ac36dae4479ba"
-dependencies = [
- "camino",
- "cargo-platform 0.1.9",
- "semver",
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "cargo_metadata"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5cfca2aaa699835ba88faf58a06342a314a950d2b9686165e038286c30316868"
 dependencies = [
  "camino",
- "cargo-platform 0.2.0",
+ "cargo-platform",
  "cargo-util-schemas",
  "semver",
  "serde",
@@ -953,20 +919,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "989e6739f80c4ad5b13e0fd7fe89531180375b18520cc8c82080e4dc4035b84f"
 
 [[package]]
-name = "rustdoc-json"
-version = "0.9.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df2651f0825c500d39b0471dd502356ee74f069b60de1d7c87e9b13bf41c68f8"
-dependencies = [
- "cargo-manifest",
- "cargo_metadata 0.19.2",
- "serde",
- "thiserror",
- "toml",
- "tracing",
-]
-
-[[package]]
 name = "rustdoc-types"
 version = "0.54.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1198,7 +1150,6 @@ version = "0.8.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dc1beb996b9d83529a9e75c17a1686767d148d70663143c7854d8b4a09ced362"
 dependencies = [
- "indexmap",
  "serde",
  "serde_spanned",
  "toml_datetime 0.6.11",

@@ -6,6 +6,7 @@ mod extract_feature_docs;
 mod git;
 mod markdown;
 mod pretty_log;
+mod rustdoc_json;
 #[cfg(test)]
 mod tests;
 
@@ -44,8 +45,8 @@ static GLOBAL: MiMalloc = MiMalloc;
 )]
 struct Args {
     /// Path to Cargo.toml
-    #[arg(long, value_name = "PATH", default_value = "Cargo.toml")]
-    manifest_path: PathBuf,
+    #[arg(long, value_name = "PATH")]
+    manifest_path: Option<PathBuf>,
 
     /// Readme path relative to the package manifest
     #[arg(long, value_name = "PATH", default_value = "README.md")]
@@ -247,7 +248,9 @@ fn main() -> ExitCode {
 fn try_main(args: &Args, log: &PrettyLog) -> Result<()> {
     let mut cmd = MetadataCommand::new();
 
-    cmd.manifest_path(&args.manifest_path);
+    if let Some(manifest_path) = args.manifest_path.as_deref() {
+        cmd.manifest_path(manifest_path);
+    }
 
     if args.no_default_features {
         cmd.features(cargo_metadata::CargoOpt::NoDefaultFeatures);
@@ -263,41 +266,43 @@ fn try_main(args: &Args, log: &PrettyLog) -> Result<()> {
 
     let metadata = cmd.exec()?;
 
-    run(&BaseContext { args, metadata, log: log.clone() })
+    run(&BaseContext {
+        args,
+        metadata,
+        log: log.clone(),
+        uses_default_packages: !args.workspace && args.package.is_empty(),
+    })
 }
 
 fn run(cx: &BaseContext) -> Result<()> {
-    let is_explicit_package;
-
-    let mut package_names: Vec<String> = if cx.args.workspace {
-        is_explicit_package = true;
-        cx.metadata
-            .workspace_members
-            .iter()
-            .map(|id| &cx.metadata[id])
-            .map(|p| p.name.to_string())
-            .collect()
+    let mut packages: Vec<PackageId> = if cx.args.workspace {
+        cx.metadata.workspace_members.clone()
     } else if cx.args.package.is_empty() {
-        is_explicit_package = false;
-        let cargo_toml = ManifestPath::new(&cx.args.manifest_path)?.get().read_to_string()?;
-        let package = manifest_package_name(&cargo_toml)
-            .wrap_err("tried to read Cargo.toml to figure out package name")?;
-        vec![package]
+        assert!(
+            cx.metadata.workspace_default_members.is_available(),
+            "to infer the current package, cargo of rust version 1.71 or higher is required"
+        );
+
+        if cx.metadata.workspace_default_members.is_available() {
+            (*cx.metadata.workspace_default_members).to_vec()
+        } else {
+            let cargo_toml = ManifestPath::new("Cargo.toml".as_ref())?.get().read_to_string()?;
+            let package_name = manifest_package_name(&cargo_toml)
+                .wrap_err("tried to read Cargo.toml to figure out package name")?;
+            vec![find_package_by_name(cx, &package_name)?]
+        }
     } else {
-        is_explicit_package = true;
-        cx.args.package.clone()
+        find_packages_by_name(cx, &cx.args.package)?
     };
 
-    let excluded_package_names = cx.args.exclude.iter().collect::<HashSet<_>>();
-    package_names.retain(|name| !excluded_package_names.contains(name));
+    let excluded_packages = cx
+        .args
+        .exclude
+        .iter()
+        .map(|name| find_package_by_name(cx, name))
+        .collect::<Result<HashSet<_>, _>>()?;
 
-    let mut packages = vec![];
-
-    // resolve package ids
-    for package_name in package_names {
-        let id = find_package_by_name(cx, &package_name)?;
-        packages.push(id);
-    }
+    packages.retain(|id| !excluded_packages.contains(id));
 
     // error if a feature is not available in any selected package
     {
@@ -353,12 +358,7 @@ fn run(cx: &BaseContext) -> Result<()> {
 
         cxs.push(Context {
             base: cx,
-            package: PackageContext {
-                id,
-                enabled_features,
-                manifest_path,
-                is_explicit: is_explicit_package,
-            },
+            package: PackageContext { id, enabled_features, manifest_path },
         })
     }
 
@@ -468,9 +468,7 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
 }
 
 fn run_package(cx: &Context) {
-    let _span = cx
-        .package
-        .is_explicit
+    let _span = (!cx.uses_default_packages || (*cx.metadata.workspace_default_members).len() > 1)
         .then(|| info_span!("", package = cx.metadata[&cx.package.id].name.as_str()).entered());
 
     if !cx.args.no_feature_docs {
@@ -492,6 +490,14 @@ fn manifest_package_name(cargo_toml: &str) -> Result<String> {
     inner(&doc).map(|s| s.to_string()).ok_or_eyre("Cargo.toml has no `package.name` field")
 }
 
+fn find_packages_by_name(
+    cx: &BaseContext,
+    package_names: impl IntoIterator<Item = impl AsRef<str>>,
+) -> Result<Vec<PackageId>> {
+    package_names.into_iter().map(|name| find_package_by_name(cx, name.as_ref())).collect()
+}
+
+// support package SPECs
 fn find_package_by_name(cx: &BaseContext, package_name: &str) -> Result<PackageId> {
     for workspace_member in &cx.metadata.workspace_members {
         if cx.metadata[workspace_member].name.as_str() == package_name {
@@ -504,8 +510,9 @@ fn find_package_by_name(cx: &BaseContext, package_name: &str) -> Result<PackageI
 
 struct BaseContext<'a> {
     args: &'a Args,
-    metadata: Metadata,
     log: PrettyLog,
+    metadata: Metadata,
+    uses_default_packages: bool,
 }
 
 struct Context<'a> {
@@ -541,7 +548,6 @@ struct PackageContext {
     id: PackageId,
     enabled_features: Vec<String>,
     manifest_path: ManifestPath,
-    is_explicit: bool,
 }
 
 struct ManifestPath(PathBuf);

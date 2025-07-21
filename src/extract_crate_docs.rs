@@ -1,21 +1,22 @@
 mod resolver;
 
-use std::fs;
-
 use cargo_metadata::Metadata;
-use color_eyre::eyre::{OptionExt as _, Report, Result, WrapErr as _, bail};
-use rustdoc_json::Color;
+use color_eyre::eyre::{OptionExt as _, Report, Result, bail};
 use rustdoc_types::Crate;
-use serde::Deserialize;
-use tracing::{error_span, warn};
+use tracing::warn;
 
-use crate::{Context, markdown};
+use crate::{
+    Context, markdown, read_to_string,
+    rustdoc_json::{self, CommandOutput},
+};
 
 use resolver::{Resolver, ResolverOptions};
 
 pub fn extract(cx: &Context) -> Result<String> {
-    let json = create_rustdoc_json(cx)?;
-    let krate = parse_rustdoc_json(&json)?;
+    generate_rustdoc_json(cx)?;
+    let path = rustdoc_json::path(&cx.metadata, &cx.package.id)?;
+    let json = read_to_string(path.as_std_path())?;
+    let krate = rustdoc_json::parse(&json)?;
 
     extract_docs(ExtractDocsOptions {
         krate: &krate,
@@ -25,84 +26,51 @@ pub fn extract(cx: &Context) -> Result<String> {
     })
 }
 
-fn create_rustdoc_json(cx: &Context) -> Result<String> {
-    let mut builder = rustdoc_json::Builder::default()
-        .toolchain(&cx.args.toolchain)
-        .manifest_path(&cx.args.manifest_path)
-        .all_features(cx.args.all_features)
-        .no_default_features(cx.args.no_default_features)
-        .features(&cx.package.enabled_features)
-        .document_private_items(cx.args.document_private_items)
-        .color(Color::Always);
+fn generate_rustdoc_json(cx: &Context) -> Result<()> {
+    let command_output = if cx.args.quiet {
+        CommandOutput::Ignore
+    } else if cx.args.quiet_cargo {
+        CommandOutput::Collect
+    } else {
+        CommandOutput::Inherit
+    };
 
-    if cx.package.is_explicit {
-        builder = builder.package(&cx.metadata[&cx.package.id].name);
-    }
-
-    if let Some(target) = cx.args.target.as_ref() {
-        builder = builder.target(target.to_string());
-    }
-
-    if cx.args.quiet {
-        builder = builder.quiet(true).silent(true);
-    }
-
-    if !cx.args.quiet_cargo {
-        // the command invocation will write to stdout
+    if matches!(command_output, CommandOutput::Inherit) {
+        // the command invocation will write directly to the terminal
         // setting this flag here will make the log insert a newline
         // before the next log message
         cx.log.foreign_write_incoming();
     }
 
-    let json_path = if cx.args.quiet_cargo && !cx.args.quiet {
-        // if we silence cargo we still want to print stderr if an error occured
-        let mut stdout = Vec::new();
-        let mut stderr = Vec::new();
+    let output = rustdoc_json::generate(
+        &cx.metadata,
+        &cx.package.id,
+        rustdoc_json::Options {
+            toolchain: Some(&cx.args.toolchain),
+            all_features: cx.args.all_features,
+            no_default_features: cx.args.no_default_features,
+            features: &mut cx.package.enabled_features.iter().map(|s| &**s),
+            manifest_path: cx.args.manifest_path.as_deref(),
+            target: cx.args.target.as_deref(),
+            quiet: cx.args.quiet,
+            document_private_items: cx.args.document_private_items,
+            output: command_output,
+        },
+    )?;
 
-        match builder.build_with_captured_output(&mut stdout, &mut stderr) {
-            Ok(ok) => ok,
-            Err(err) => {
-                // write an empty line to separate our messages from the invoked command
-                cx.log.foreign_write_incoming();
-                eprint!("{}", String::from_utf8_lossy(&stderr));
-                return Err(err.into());
-            }
+    if !output.status.success() {
+        if command_output == CommandOutput::Collect {
+            // write an empty line to separate our messages from the invoked command
+            cx.log.foreign_write_incoming();
+            eprint!("{}", String::from_utf8_lossy(&output.stderr));
         }
-    } else {
-        builder.build()?
-    };
 
-    fs::read_to_string(json_path).wrap_err("failed to read generated rustdoc json")
-}
+        let see = if command_output != CommandOutput::Ignore { " (see stderr above)" } else { "" };
 
-fn parse_rustdoc_json(rustdoc_json: &str) -> Result<Crate, Report> {
-    #[derive(Deserialize)]
-    struct CrateWithJustTheFormatVersion {
-        format_version: u32,
+        bail!("Failed to build rustdoc JSON{see}");
     }
 
-    let krate: CrateWithJustTheFormatVersion =
-        serde_json::from_str(rustdoc_json).wrap_err("failed to parse generated rustdoc json")?;
-
-    if krate.format_version != rustdoc_types::FORMAT_VERSION {
-        let expected = rustdoc_types::FORMAT_VERSION;
-        let actual = krate.format_version;
-
-        let help = if actual > expected {
-            "update `cargo-insert-docs` or use `--toolchain nightly-2025-07-16`"
-        } else {
-            "upgrade your nightly toolchain"
-        };
-
-        let _span = error_span!("", %help).entered();
-
-        bail!(
-            "`cargo-insert-docs` requires rustdoc json format version {expected} \
-            but rustdoc produced version {actual}"
-        );
-    }
-
-    serde_json::from_str(rustdoc_json).wrap_err("failed to parse generated rustdoc json")
+    Ok(())
 }
 
 struct ExtractDocsOptions<'a> {

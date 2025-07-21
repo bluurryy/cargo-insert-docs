@@ -1,9 +1,10 @@
 use std::{collections::HashMap, fmt, fs};
 
+use cargo_metadata::MetadataCommand;
 use expect_test::expect;
 use rustdoc_types::{Crate, Id};
 
-use crate::tests::TreeFormatter;
+use crate::{rustdoc_json, tests::TreeFormatter};
 
 use super::{Tree, Value};
 
@@ -11,13 +12,34 @@ use super::{Tree, Value};
 fn test_tree() {
     const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
 
-    let json_path = rustdoc_json::Builder::default()
-        .toolchain("nightly")
-        .manifest_path(format!("{MANIFEST_DIR}/tests/test-crate/Cargo.toml"))
-        .build()
+    let metadata =
+        &MetadataCommand::new().manifest_path(format!("{MANIFEST_DIR}/Cargo.toml")).exec().unwrap();
+
+    let package_id = metadata
+        .packages
+        .iter()
+        .find_map(|p| (p.name.as_str() == "test-crate").then_some(&p.id))
         .unwrap();
 
-    let json = fs::read_to_string(json_path).expect("failed to read generated rustdoc json");
+    rustdoc_json::generate(
+        metadata,
+        package_id,
+        rustdoc_json::Options {
+            toolchain: Some("nightly"),
+            all_features: false,
+            no_default_features: false,
+            features: &mut None.into_iter(),
+            manifest_path: None,
+            target: None,
+            quiet: false,
+            document_private_items: false,
+            output: rustdoc_json::CommandOutput::Inherit,
+        },
+    )
+    .unwrap();
+
+    let path = rustdoc_json::path(metadata, package_id).unwrap();
+    let json = fs::read_to_string(path).expect("failed to read generated rustdoc json");
     let krate: Crate = serde_json::from_str(&json).expect("failed to parse generated rustdoc json");
     let tree = Tree::new(&krate).unwrap();
 
