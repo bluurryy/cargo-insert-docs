@@ -304,6 +304,10 @@ fn run(cx: &BaseContext) -> Result<()> {
 
     packages.retain(|id| !excluded_packages.contains(id));
 
+    if packages.is_empty() {
+        bail!("no packages selected");
+    }
+
     // error if a feature is not available in any selected package
     {
         let all_available_features = packages

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Breaking?:** Resolve default manifest path and default package using `cargo metadata`
+- Improve error messages
 
 ## [0.8.0] - 2025-07-18
 
