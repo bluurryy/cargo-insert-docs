@@ -67,11 +67,11 @@ struct Args {
     #[arg(long, default_value = "**`{feature}`**")]
     feature_label: String,
 
-    /// Name of the feature documentation section
+    /// Feature documentation section name
     #[arg(long, value_name = "SECTION_NAME", default_value = "feature documentation")]
     feature_docs_section: String,
 
-    /// Name of the crate documentation section
+    /// Crate documentation section name
     #[arg(long, value_name = "SECTION_NAME", default_value = "crate documentation")]
     crate_docs_section: String,
 

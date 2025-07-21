@@ -10,10 +10,8 @@ Usage: cargo insert-docs [OPTIONS]
 Options:
       --readme-path <PATH>                   Readme path relative to the package manifest [default: README.md]
       --feature-label <FEATURE_LABEL>        Formatting of the feature label [default: **`{feature}`**]
-      --feature-docs-section <SECTION_NAME>  Name of the feature documentation section [default: "feature
-                                             documentation"]
-      --crate-docs-section <SECTION_NAME>    Name of the crate documentation section [default: "crate
-                                             documentation"]
+      --feature-docs-section <SECTION_NAME>  Feature documentation section name [default: "feature documentation"]
+      --crate-docs-section <SECTION_NAME>    Crate documentation section name [default: "crate documentation"]
       --link-to-latest                       Link to the "latest" version on docs.rs
   -h, --help                                 Print help (see more with '--help')
   -V, --version                              Print version
