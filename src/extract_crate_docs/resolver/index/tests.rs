@@ -16,12 +16,10 @@ fn test_tree() {
         &MetadataCommand::new().manifest_path(format!("{MANIFEST_DIR}/Cargo.toml")).exec().unwrap();
 
     let package = metadata.packages.iter().find(|p| p.name.as_str() == "test-crate").unwrap();
-
     let target = package.targets.iter().find(|t| t.is_lib()).unwrap();
 
     rustdoc_json::generate(
-        metadata,
-        &package.id,
+        package,
         target,
         rustdoc_json::Options {
             toolchain: Some("nightly"),

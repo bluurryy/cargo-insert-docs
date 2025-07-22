@@ -21,7 +21,7 @@ use std::{
     time::Instant,
 };
 
-use cargo_metadata::{Metadata, MetadataCommand, PackageId, Target};
+use cargo_metadata::{Metadata, MetadataCommand, Package, Target};
 use clap::{Parser, ValueEnum};
 use clap_cargo::style::CLAP_STYLING;
 use color_eyre::eyre::{OptionExt, Result, WrapErr as _, bail, eyre};
@@ -361,8 +361,8 @@ fn try_main(args: &Args, log: &PrettyLog) -> Result<()> {
 }
 
 fn run(cx: &BaseContext) -> Result<()> {
-    let mut packages: Vec<PackageId> = if cx.args.workspace {
-        cx.metadata.workspace_members.clone()
+    let mut packages: Vec<&Package> = if cx.args.workspace {
+        cx.metadata.workspace_members.iter().map(|p| &cx.metadata[p]).collect()
     } else if cx.args.package.is_empty() {
         assert!(
             cx.metadata.workspace_default_members.is_available(),
@@ -370,7 +370,7 @@ fn run(cx: &BaseContext) -> Result<()> {
         );
 
         if cx.metadata.workspace_default_members.is_available() {
-            (*cx.metadata.workspace_default_members).to_vec()
+            (*cx.metadata.workspace_default_members).iter().map(|p| &cx.metadata[p]).collect()
         } else {
             let cargo_toml = ManifestPath::new("Cargo.toml".as_ref())?.get().read_to_string()?;
             let package_name = manifest_package_name(&cargo_toml)
@@ -398,7 +398,7 @@ fn run(cx: &BaseContext) -> Result<()> {
     {
         let all_available_features = packages
             .iter()
-            .flat_map(|id| cx.metadata[id].features.keys())
+            .flat_map(|p| p.features.keys())
             .map(|s| s.as_str())
             .collect::<HashSet<&str>>();
 
@@ -425,9 +425,9 @@ fn run(cx: &BaseContext) -> Result<()> {
 
     let mut cxs = vec![];
 
-    for id in packages {
-        let package = &cx.metadata[&id];
+    for package in packages {
         let manifest_path = ManifestPath::new(package.manifest_path.as_ref())?;
+
         let enabled_features = cx
             .args
             .features
@@ -452,7 +452,13 @@ fn run(cx: &BaseContext) -> Result<()> {
 
         cxs.push(Context {
             base: cx,
-            package: PackageContext { id, enabled_features, target, readme_path, manifest_path },
+            package: PackageContext {
+                package,
+                target,
+                enabled_features,
+                manifest_path,
+                readme_path,
+            },
         })
     }
 
@@ -571,7 +577,7 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
 
 fn run_package(cx: &Context) {
     let _span = (!cx.uses_default_packages || (*cx.metadata.workspace_default_members).len() > 1)
-        .then(|| info_span!("", package = cx.metadata[&cx.package.id].name.as_str()).entered());
+        .then(|| info_span!("", package = cx.package.name.as_str()).entered());
 
     if !cx.args.no_feature_section {
         task(cx, "feature documentation", "crate documentation", insert_features_into_docs);
@@ -592,18 +598,20 @@ fn manifest_package_name(cargo_toml: &str) -> Result<String> {
     inner(&doc).map(|s| s.to_string()).ok_or_eyre("Cargo.toml has no `package.name` field")
 }
 
-fn find_packages_by_name(
-    cx: &BaseContext,
+fn find_packages_by_name<'a>(
+    cx: &'a BaseContext,
     package_names: impl IntoIterator<Item = impl AsRef<str>>,
-) -> Result<Vec<PackageId>> {
+) -> Result<Vec<&'a Package>> {
     package_names.into_iter().map(|name| find_package_by_name(cx, name.as_ref())).collect()
 }
 
 // support package SPECs
-fn find_package_by_name(cx: &BaseContext, package_name: &str) -> Result<PackageId> {
+fn find_package_by_name<'a>(cx: &'a BaseContext, package_name: &str) -> Result<&'a Package> {
     for workspace_member in &cx.metadata.workspace_members {
-        if cx.metadata[workspace_member].name.as_str() == package_name {
-            return Ok(workspace_member.clone());
+        let package = &cx.metadata[workspace_member];
+
+        if package.name.as_str() == package_name {
+            return Ok(package);
         }
     }
 
@@ -631,11 +639,19 @@ impl<'a> Deref for Context<'a> {
 }
 
 struct PackageContext<'a> {
-    id: PackageId,
+    package: &'a Package,
     enabled_features: Vec<String>,
     manifest_path: ManifestPath,
     target: &'a Target,
     readme_path: RelativePath,
+}
+
+impl Deref for PackageContext<'_> {
+    type Target = Package;
+
+    fn deref(&self) -> &Self::Target {
+        self.package
+    }
 }
 
 struct ManifestPath(PathBuf);

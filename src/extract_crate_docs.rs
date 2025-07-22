@@ -43,8 +43,7 @@ fn generate_rustdoc_json(cx: &Context) -> Result<()> {
     }
 
     let output = rustdoc_json::generate(
-        &cx.metadata,
-        &cx.package.id,
+        &cx.package,
         cx.package.target,
         rustdoc_json::Options {
             toolchain: Some(&cx.args.toolchain),

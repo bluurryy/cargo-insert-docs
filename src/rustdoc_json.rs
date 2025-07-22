@@ -4,8 +4,8 @@ use std::{
 };
 
 use camino::Utf8PathBuf;
-use cargo_metadata::{Metadata, PackageId, Target};
-use color_eyre::eyre::{Context, OptionExt, Result, bail};
+use cargo_metadata::{Metadata, Package, Target};
+use color_eyre::eyre::{Context, Result, bail};
 use rustdoc_types::Crate;
 use serde::Deserialize;
 use tracing::error_span;
@@ -35,15 +35,7 @@ pub enum CommandOutput {
 }
 
 /// Package must have a `lib` target.
-pub fn generate(
-    metadata: &Metadata,
-    package_id: &PackageId,
-    package_target: &Target,
-    options: Options,
-) -> Result<Output> {
-    let package =
-        metadata.packages.iter().find(|p| &p.id == package_id).ok_or_eyre("invalid package id")?;
-
+pub fn generate(package: &Package, package_target: &Target, options: Options) -> Result<Output> {
     let Options {
         toolchain,
         all_features,
