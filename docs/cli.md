@@ -31,9 +31,10 @@ Error Behavior:
       --allow-staged            Insert documentation even if the affected file has staged changes
 
 Message Options:
-  -v, --verbose      Print more verbose messages
-  -q, --quiet        Do not print anything
-      --quiet-cargo  Do not print cargo log messages
+      --color <WHEN>  Coloring [default: auto] [possible values: auto, always, never]
+  -v, --verbose       Print more verbose messages
+  -q, --quiet         Do not print anything
+      --quiet-cargo   Do not print cargo log messages
 
 Package Selection:
   -p, --package <SPEC>  Package(s) to document
