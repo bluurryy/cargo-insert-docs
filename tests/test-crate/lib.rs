@@ -65,7 +65,7 @@
 //! [`ThinRope`]: String
 //!
 //! # Features
-//! <!-- feature documentation start -->
+//! <!-- features start -->
 //! - **`std`** *(enabled by default)* — Some docs about std
 //! - **`serde`** — Some docs about serde
 //!
@@ -78,7 +78,7 @@
 //! between the features
 //!
 //! - **`something_else`** — Wow
-//! <!-- feature documentation end -->
+//! <!-- features end -->
 //!
 //! # Examples
 //! ```

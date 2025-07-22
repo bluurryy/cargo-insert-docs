@@ -2,7 +2,11 @@ default:
     @just --list
 
 pre-release:
-    cargo run -- --workspace --check --exclude cargo-insert-docs
+    cargo run -- --check --strict -p test-crate --feature-section-name "features" --crate-section-name "docs"
+    cargo run -- --check --strict -p test-document-features --no-feature-section
+    cargo run -- --check --strict -p example-crate
+    cargo run -- --check --strict -p test-bin --no-feature-section
+    cargo run -- --check --strict --workspace --exclude test-crate --exclude cargo-insert-docs --no-feature-section
     just update-cli-md
     just test
     just test-recurse recurse
@@ -39,7 +43,7 @@ test:
 
 test-recurse feature:
     #!/usr/bin/env nu
-    let out = (cargo run -- -p test-crate -F {{feature}} --allow-dirty | complete).stderr | tee { print }
+    let out = (cargo run -- -p test-crate --feature-section-name "features" --crate-section-name "docs" -F {{feature}} --allow-dirty | complete).stderr | tee { print }
     if not ($out | str contains "recursed too deep while resolving item paths") {
         print -e $out
         exit 1

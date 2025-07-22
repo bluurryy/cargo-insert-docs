@@ -4,7 +4,7 @@ Notice how `lib.rs` does not have to be in the `src` directory for this to work.
 
 Now the crate documentation begins...
 
-<!-- crate documentation start -->
+<!-- docs start -->
 #### Link variants
 - A shortcut link: [`Vec`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)!
 - An inline link: [`String`](https://doc.rust-lang.org/alloc/string/struct.String.html)!
@@ -68,7 +68,7 @@ But we can have a naive implementation and try to not crash.
 [`ThinRope`]: String
 
 ## Features
-<!-- feature documentation start -->
+<!-- features start -->
 - **`std`** *(enabled by default)* — Some docs about std
 - **`serde`** — Some docs about serde
 
@@ -81,7 +81,7 @@ Here you can write documentation that goes
 between the features
 
 - **`something_else`** — Wow
-<!-- feature documentation end -->
+<!-- features end -->
 
 ## Examples
 ```rust
@@ -115,6 +115,6 @@ def square(n):
 // i don't see what this language could be
 int main(void) { return 0; }
 ```
-<!-- crate documentation end -->
+<!-- docs end -->
 
 This is after the crate docs.
