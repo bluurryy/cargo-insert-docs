@@ -22,7 +22,7 @@ use std::{
 };
 
 use cargo_metadata::{Metadata, MetadataCommand, PackageId, Target};
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use clap_cargo::style::CLAP_STYLING;
 use color_eyre::eyre::{OptionExt, Result, WrapErr as _, bail, eyre};
 use mimalloc::MiMalloc;
@@ -30,6 +30,8 @@ use relative_path::PathExt;
 use tracing::{Level, error_span, info_span, trace};
 
 use pretty_log::{PrettyLog, WithResultSeverity as _};
+
+use crate::pretty_log::AnyWrite;
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -120,6 +122,10 @@ struct Args {
     #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
     allow_staged: bool,
 
+    /// Coloring
+    #[arg(help_heading = heading::MESSAGE_OPTIONS, long, value_name = "WHEN", value_enum, default_value_t = ColorChoice::Auto)]
+    color: ColorChoice,
+
     /// Print more verbose messages
     #[arg(help_heading = heading::MESSAGE_OPTIONS, long, short = 'v')]
     verbose: bool,
@@ -194,6 +200,13 @@ struct TargetSelection {
     /// Document only the specified binary
     #[arg(help_heading = heading::TARGET_SELECTION, long, value_name = "NAME")]
     bin: Option<Option<String>>,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+enum ColorChoice {
+    Auto,
+    Always,
+    Never,
 }
 
 impl TargetSelection {
@@ -291,11 +304,20 @@ fn main() -> ExitCode {
     args.features =
         args.features.iter().flat_map(|f| f.split(' ').map(|s| s.to_string())).collect();
 
-    let log = PrettyLog::new(if args.quiet {
+    let stream: Box<dyn AnyWrite> = if args.quiet {
         Box::new(io::empty())
     } else {
-        Box::new(anstream::stderr())
-    });
+        Box::new(anstream::AutoStream::new(
+            std::io::stderr(),
+            match args.color {
+                ColorChoice::Auto => anstream::ColorChoice::Auto,
+                ColorChoice::Always => anstream::ColorChoice::Always,
+                ColorChoice::Never => anstream::ColorChoice::Never,
+            },
+        ))
+    };
+
+    let log = PrettyLog::new(stream);
 
     let log_level = if args.verbose { "trace" } else { "info" };
     log.install(&format!("cargo_insert_docs={log_level}"));
