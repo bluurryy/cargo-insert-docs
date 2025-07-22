@@ -16,6 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve help output with sections
 - Add `--bin` argument to support `bin` targets
 
+### Changed
+
+- **Breaking:** Rename `--feature-docs-section` to `--feature-section-name`
+- **Breaking:** Rename `--crate-docs-section` to `--crate-section-name`
+- **Breaking:** Rename `--no-feature-docs` to `--no-feature-section`
+- **Breaking:** Rename `--no-crate-docs` to `--no-crate-section`
+- **Breaking:** Rename `--strict-feature-docs` to `--strict-feature-section`
+- **Breaking:** Rename `--strict-crate-docs` to `--strict-crate-section`
+
 ## [0.8.0] - 2025-07-18
 
 ### Added

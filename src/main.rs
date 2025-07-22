@@ -64,12 +64,12 @@ struct Args {
     feature_label: String,
 
     /// Feature documentation section name
-    #[arg(long, value_name = "SECTION_NAME", default_value = "feature documentation")]
-    feature_docs_section: String,
+    #[arg(long, value_name = "NAME", default_value = "feature documentation")]
+    feature_section_name: String,
 
     /// Crate documentation section name
-    #[arg(long, value_name = "SECTION_NAME", default_value = "crate documentation")]
-    crate_docs_section: String,
+    #[arg(long, value_name = "NAME", default_value = "crate documentation")]
+    crate_section_name: String,
 
     #[expect(rustdoc::bare_urls)]
     /// Link to the "latest" version on docs.rs
@@ -92,11 +92,11 @@ struct Args {
 
     /// Disables inserting the feature documentation into the crate documentation
     #[arg(help_heading = heading::MODE_SELECTION, long)]
-    no_feature_docs: bool,
+    no_feature_section: bool,
 
     /// Disables inserting the crate documentation into the readme
     #[arg(help_heading = heading::MODE_SELECTION, long)]
-    no_crate_docs: bool,
+    no_crate_section: bool,
 
     /// Error when a section is missing
     ///
@@ -106,11 +106,11 @@ struct Args {
 
     /// Error when a feature documentation section is missing
     #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
-    strict_feature_docs: bool,
+    strict_feature_section: bool,
 
     /// Error when a crate documentation section is missing
     #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
-    strict_crate_docs: bool,
+    strict_crate_section: bool,
 
     /// Insert documentation even if the affected file is dirty or has staged changes
     #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
@@ -279,8 +279,8 @@ fn main() -> ExitCode {
     }
 
     if args.strict {
-        args.strict_feature_docs = true;
-        args.strict_crate_docs = true;
+        args.strict_feature_section = true;
+        args.strict_crate_section = true;
     }
 
     if args.allow_dirty {
@@ -460,7 +460,7 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
     let mut staged_files = vec![];
 
     for cx in cxs {
-        if !cx.args.no_feature_docs {
+        if !cx.args.no_feature_section {
             let lib_path = cx.package.target.src_path.as_std_path();
 
             let lib_path_display = lib_path
@@ -489,7 +489,7 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
             }
         }
 
-        if !cx.args.no_crate_docs {
+        if !cx.args.no_crate_section {
             let readme_path = cx.package.readme_path.full_path.as_path();
 
             let readme_path_display = readme_path
@@ -551,11 +551,11 @@ fn run_package(cx: &Context) {
     let _span = (!cx.uses_default_packages || (*cx.metadata.workspace_default_members).len() > 1)
         .then(|| info_span!("", package = cx.metadata[&cx.package.id].name.as_str()).entered());
 
-    if !cx.args.no_feature_docs {
+    if !cx.args.no_feature_section {
         task(cx, "feature documentation", "crate documentation", insert_features_into_docs);
     }
 
-    if !cx.args.no_crate_docs {
+    if !cx.args.no_crate_section {
         task(cx, "crate documentation", "readme", insert_docs_into_readme);
     }
 }
@@ -692,13 +692,13 @@ fn task(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
 }
 
 fn insert_features_into_docs(cx: &Context) -> Result<()> {
-    let not_found_level = if cx.args.strict_feature_docs { Level::ERROR } else { Level::WARN };
+    let not_found_level = if cx.args.strict_feature_section { Level::ERROR } else { Level::WARN };
 
     let target_path = cx.package.target.src_path.as_std_path();
     let target_src = read_to_string(target_path)?;
 
     let Some(feature_docs_section) =
-        edit_crate_docs::FeatureDocsSection::find(&target_src, &cx.args.feature_docs_section)?
+        edit_crate_docs::FeatureDocsSection::find(&target_src, &cx.args.feature_section_name)?
     else {
         let target_name = target_path
             .file_name()
@@ -707,7 +707,7 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
 
         let _span = info_span!("",
             path = %target_path.display(),
-            section_name = cx.args.feature_docs_section,
+            section_name = cx.args.feature_section_name,
         )
         .entered();
 
@@ -733,17 +733,17 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
 }
 
 fn insert_docs_into_readme(cx: &Context) -> Result<()> {
-    let not_found_level = if cx.args.strict_crate_docs { Level::ERROR } else { Level::WARN };
+    let not_found_level = if cx.args.strict_crate_section { Level::ERROR } else { Level::WARN };
 
     let readme_path = &cx.package.readme_path;
     let readme = readme_path.read_to_string().with_severity(not_found_level)?;
 
-    let Some(section) = markdown::find_section(&readme, &cx.args.crate_docs_section) else {
+    let Some(section) = markdown::find_section(&readme, &cx.args.crate_section_name) else {
         let relative_path = readme_path.relative_to_manifest.display();
 
         let _span = info_span!("",
             path = %readme_path.full_path.display(),
-            section_name = cx.args.crate_docs_section,
+            section_name = cx.args.crate_section_name,
         )
         .entered();
 

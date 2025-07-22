@@ -8,27 +8,27 @@ Inserts crate docs into a readme file and feature docs into the crate docs.
 Usage: cargo insert-docs [OPTIONS]
 
 Options:
-      --feature-label <FEATURE_LABEL>        Formatting of the feature label [default: **`{feature}`**]
-      --feature-docs-section <SECTION_NAME>  Feature documentation section name [default: "feature documentation"]
-      --crate-docs-section <SECTION_NAME>    Crate documentation section name [default: "crate documentation"]
-      --link-to-latest                       Link to the "latest" version on docs.rs
-  -h, --help                                 Print help (see more with '--help')
-  -V, --version                              Print version
+      --feature-label <FEATURE_LABEL>  Formatting of the feature label [default: **`{feature}`**]
+      --feature-section-name <NAME>    Feature documentation section name [default: "feature documentation"]
+      --crate-section-name <NAME>      Crate documentation section name [default: "crate documentation"]
+      --link-to-latest                 Link to the "latest" version on docs.rs
+  -h, --help                           Print help (see more with '--help')
+  -V, --version                        Print version
 
 Cargo Doc Options:
       --document-private-items  Document private items
 
 Mode Selection:
-      --check            Runs in 'check' mode, erroring if something is out of date
-      --no-feature-docs  Disables inserting the feature documentation into the crate documentation
-      --no-crate-docs    Disables inserting the crate documentation into the readme
+      --check               Runs in 'check' mode, erroring if something is out of date
+      --no-feature-section  Disables inserting the feature documentation into the crate documentation
+      --no-crate-section    Disables inserting the crate documentation into the readme
 
 Error Behavior:
-      --strict               Error when a section is missing
-      --strict-feature-docs  Error when a feature documentation section is missing
-      --strict-crate-docs    Error when a crate documentation section is missing
-      --allow-dirty          Insert documentation even if the affected file is dirty or has staged changes
-      --allow-staged         Insert documentation even if the affected file has staged changes
+      --strict                  Error when a section is missing
+      --strict-feature-section  Error when a feature documentation section is missing
+      --strict-crate-section    Error when a crate documentation section is missing
+      --allow-dirty             Insert documentation even if the affected file is dirty or has staged changes
+      --allow-staged            Insert documentation even if the affected file has staged changes
 
 Message Options:
   -v, --verbose      Print more verbose messages
