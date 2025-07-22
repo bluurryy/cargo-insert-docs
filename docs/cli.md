@@ -52,8 +52,9 @@ Target Selection:
       --bin [<NAME>]  Document only the specified binary
 
 Compilation Options:
-      --toolchain <TOOLCHAIN>  Which rustup toolchain to use when invoking rustdoc. [default: nightly]
-      --target <TRIPLE>        Target triple to document
+      --toolchain <TOOLCHAIN>   Which rustup toolchain to use when invoking rustdoc. [default: nightly]
+      --target <TRIPLE>         Target triple to document
+      --target-dir <DIRECTORY>  Directory for all generated artifacts
 
 Manifest Options:
       --manifest-path <PATH>  Path to Cargo.toml

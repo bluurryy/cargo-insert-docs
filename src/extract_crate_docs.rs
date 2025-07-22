@@ -1,5 +1,7 @@
 mod resolver;
 
+use std::path::PathBuf;
+
 use cargo_metadata::Metadata;
 use color_eyre::eyre::{OptionExt as _, Report, Result, bail};
 use rustdoc_types::Crate;
@@ -13,9 +15,8 @@ use crate::{
 use resolver::{Resolver, ResolverOptions};
 
 pub fn extract(cx: &Context) -> Result<String> {
-    generate_rustdoc_json(cx)?;
-    let path = rustdoc_json::path(&cx.metadata, cx.package.target)?;
-    let json = read_to_string(path.as_std_path())?;
+    let path = generate_rustdoc_json(cx)?;
+    let json = read_to_string(&path)?;
     let krate = rustdoc_json::parse(&json)?;
 
     extract_docs(ExtractDocsOptions {
@@ -26,7 +27,7 @@ pub fn extract(cx: &Context) -> Result<String> {
     })
 }
 
-fn generate_rustdoc_json(cx: &Context) -> Result<()> {
+fn generate_rustdoc_json(cx: &Context) -> Result<PathBuf> {
     let command_output = if cx.args.quiet {
         CommandOutput::Ignore
     } else if cx.args.quiet_cargo {
@@ -42,7 +43,8 @@ fn generate_rustdoc_json(cx: &Context) -> Result<()> {
         cx.log.foreign_write_incoming();
     }
 
-    let output = rustdoc_json::generate(
+    let (output, path) = rustdoc_json::generate(
+        &cx.metadata,
         &cx.package,
         cx.package.target,
         rustdoc_json::Options {
@@ -52,6 +54,7 @@ fn generate_rustdoc_json(cx: &Context) -> Result<()> {
             features: &mut cx.package.enabled_features.iter().map(|s| &**s),
             manifest_path: cx.args.manifest_path.as_deref(),
             target: cx.args.target.as_deref(),
+            target_dir: cx.args.target_dir.as_deref(),
             quiet: cx.args.quiet,
             document_private_items: cx.args.document_private_items,
             output: command_output,
@@ -71,7 +74,7 @@ fn generate_rustdoc_json(cx: &Context) -> Result<()> {
         bail!("Failed to build rustdoc JSON{see}");
     }
 
-    Ok(())
+    Ok(path)
 }
 
 struct ExtractDocsOptions<'a> {

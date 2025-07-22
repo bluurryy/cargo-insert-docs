@@ -183,6 +183,10 @@ struct Args {
     #[arg(help_heading = heading::COMPILATION_OPTIONS, long, value_name = "TRIPLE")]
     target: Option<String>,
 
+    /// Directory for all generated artifacts
+    #[arg(help_heading = heading::COMPILATION_OPTIONS, long, value_name = "DIRECTORY")]
+    target_dir: Option<PathBuf>,
+
     /// Path to Cargo.toml
     #[arg(help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
     manifest_path: Option<PathBuf>,

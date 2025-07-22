@@ -18,7 +18,8 @@ fn test_tree() {
     let package = metadata.packages.iter().find(|p| p.name.as_str() == "test-crate").unwrap();
     let target = package.targets.iter().find(|t| t.is_lib()).unwrap();
 
-    rustdoc_json::generate(
+    let (_, path) = rustdoc_json::generate(
+        metadata,
         package,
         target,
         rustdoc_json::Options {
@@ -28,6 +29,7 @@ fn test_tree() {
             features: &mut None.into_iter(),
             manifest_path: None,
             target: None,
+            target_dir: None,
             quiet: false,
             document_private_items: false,
             no_deps: false,
@@ -36,7 +38,6 @@ fn test_tree() {
     )
     .unwrap();
 
-    let path = rustdoc_json::path(metadata, target).unwrap();
     let json = fs::read_to_string(path).expect("failed to read generated rustdoc json");
     let krate: Crate = serde_json::from_str(&json).expect("failed to parse generated rustdoc json");
     let tree = Tree::new(&krate).unwrap();

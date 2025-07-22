@@ -1,9 +1,8 @@
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     process::{Command, Output, Stdio},
 };
 
-use camino::Utf8PathBuf;
 use cargo_metadata::{Metadata, Package, Target};
 use color_eyre::eyre::{Context, Result, bail};
 use rustdoc_types::Crate;
@@ -18,6 +17,7 @@ pub struct Options<'a> {
     pub features: &'a mut dyn Iterator<Item = &'a str>,
     pub manifest_path: Option<&'a Path>,
     pub target: Option<&'a str>,
+    pub target_dir: Option<&'a Path>,
     pub quiet: bool,
     pub no_deps: bool,
 
@@ -36,7 +36,12 @@ pub enum CommandOutput {
 }
 
 /// Package must have a `lib` target.
-pub fn generate(package: &Package, package_target: &Target, options: Options) -> Result<Output> {
+pub fn generate(
+    metadata: &Metadata,
+    package: &Package,
+    package_target: &Target,
+    options: Options,
+) -> Result<(Output, PathBuf)> {
     let Options {
         toolchain,
         all_features,
@@ -45,6 +50,7 @@ pub fn generate(package: &Package, package_target: &Target, options: Options) ->
         document_private_items,
         manifest_path,
         target,
+        target_dir,
         no_deps,
         quiet,
         output: output_option,
@@ -80,6 +86,11 @@ pub fn generate(package: &Package, package_target: &Target, options: Options) ->
     if let Some(target) = target {
         command.arg("--target");
         command.arg(target);
+    }
+
+    if let Some(target_dir) = target_dir {
+        command.arg("--target-dir");
+        command.arg(target_dir);
     }
 
     if all_features {
@@ -118,15 +129,18 @@ pub fn generate(package: &Package, package_target: &Target, options: Options) ->
         command.status().map(|status| Output { status, stdout: vec![], stderr: vec![] })
     };
 
-    result.wrap_err_with(|| format!("failed to run {command:?}"))
-}
+    let output = result.wrap_err_with(|| format!("failed to run {command:?}"))?;
 
-pub fn path(metadata: &Metadata, target: &Target) -> Result<Utf8PathBuf> {
-    let mut path = metadata.target_directory.clone();
+    let mut path = match target_dir {
+        Some(path) => path.to_path_buf(),
+        None => metadata.target_directory.as_std_path().to_path_buf(),
+    };
+
     path.push("doc");
-    path.push(target.name.replace('-', "_"));
+    path.push(package_target.name.replace('-', "_"));
     path.set_extension("json");
-    Ok(path)
+
+    Ok((output, path))
 }
 
 pub fn parse(rustdoc_json: &str) -> Result<Crate> {
