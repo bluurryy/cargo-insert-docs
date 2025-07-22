@@ -30,6 +30,7 @@ fn test_tree() {
             target: None,
             quiet: false,
             document_private_items: false,
+            no_deps: false,
             output: rustdoc_json::CommandOutput::Inherit,
         },
     )

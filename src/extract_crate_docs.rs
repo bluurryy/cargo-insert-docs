@@ -55,6 +55,7 @@ fn generate_rustdoc_json(cx: &Context) -> Result<()> {
             quiet: cx.args.quiet,
             document_private_items: cx.args.document_private_items,
             output: command_output,
+            no_deps: cx.args.no_deps,
         },
     )?;
 

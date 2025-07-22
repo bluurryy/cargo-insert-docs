@@ -19,6 +19,7 @@ pub struct Options<'a> {
     pub manifest_path: Option<&'a Path>,
     pub target: Option<&'a str>,
     pub quiet: bool,
+    pub no_deps: bool,
 
     // flags for rustdoc
     pub document_private_items: bool,
@@ -44,6 +45,7 @@ pub fn generate(package: &Package, package_target: &Target, options: Options) ->
         document_private_items,
         manifest_path,
         target,
+        no_deps,
         quiet,
         output: output_option,
     } = options;
@@ -90,6 +92,10 @@ pub fn generate(package: &Package, package_target: &Target, options: Options) ->
 
     for feature in features {
         command.arg("--features").arg(feature);
+    }
+
+    if no_deps {
+        command.arg("--no-deps");
     }
 
     command.arg("--package").arg(&package.id.repr);

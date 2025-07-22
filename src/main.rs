@@ -85,6 +85,10 @@ struct Args {
     #[arg(help_heading = heading::CARGO_DOC_OPTIONS, long)]
     document_private_items: bool,
 
+    /// Don't build documentation for dependencies
+    #[arg(help_heading = heading::CARGO_DOC_OPTIONS, long)]
+    no_deps: bool,
+
     /// Runs in 'check' mode, erroring if something is out of date
     ///
     /// Exits with 0 if the documentation is up to date.

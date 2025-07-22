@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve help output with sections
 - Add `--bin` argument to support `bin` targets
 - Add `--color` argument
+- Add `--no-deps` flag
 
 ### Changed
 
