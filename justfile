@@ -2,7 +2,7 @@ default:
     @just --list
 
 pre-release:
-    cargo run -- --workspace --check
+    cargo run -- --workspace --check --exclude cargo-insert-docs
     just update-cli-md
     just test
     just test-recurse recurse

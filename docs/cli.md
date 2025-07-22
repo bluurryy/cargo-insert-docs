@@ -46,6 +46,10 @@ Feature Selection:
       --all-features         Activate all available features
       --no-default-features  Do not activate the `default` feature
 
+Target Selection:
+      --lib           Document only library targets
+      --bin [<NAME>]  Document only the specified binary
+
 Compilation Options:
       --toolchain <TOOLCHAIN>  Which rustup toolchain to use when invoking rustdoc. [default: nightly]
       --target <TRIPLE>        Target triple to document

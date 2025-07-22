@@ -14,7 +14,7 @@ use resolver::{Resolver, ResolverOptions};
 
 pub fn extract(cx: &Context) -> Result<String> {
     generate_rustdoc_json(cx)?;
-    let path = rustdoc_json::path(&cx.metadata, &cx.package.id)?;
+    let path = rustdoc_json::path(&cx.metadata, cx.package.target)?;
     let json = read_to_string(path.as_std_path())?;
     let krate = rustdoc_json::parse(&json)?;
 
@@ -45,6 +45,7 @@ fn generate_rustdoc_json(cx: &Context) -> Result<()> {
     let output = rustdoc_json::generate(
         &cx.metadata,
         &cx.package.id,
+        cx.package.target,
         rustdoc_json::Options {
             toolchain: Some(&cx.args.toolchain),
             all_features: cx.args.all_features,

@@ -1090,6 +1090,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "test-bin"
+version = "0.0.0"
+
+[[package]]
 name = "test-crate"
 version = "0.0.0"
 dependencies = [

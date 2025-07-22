@@ -4,8 +4,8 @@ use std::{
 };
 
 use camino::Utf8PathBuf;
-use cargo_metadata::{Metadata, PackageId};
-use color_eyre::eyre::{Context, OptionExt, Result, bail, ensure};
+use cargo_metadata::{Metadata, PackageId, Target};
+use color_eyre::eyre::{Context, OptionExt, Result, bail};
 use rustdoc_types::Crate;
 use serde::Deserialize;
 use tracing::error_span;
@@ -35,11 +35,14 @@ pub enum CommandOutput {
 }
 
 /// Package must have a `lib` target.
-pub fn generate(metadata: &Metadata, package_id: &PackageId, options: Options) -> Result<Output> {
+pub fn generate(
+    metadata: &Metadata,
+    package_id: &PackageId,
+    package_target: &Target,
+    options: Options,
+) -> Result<Output> {
     let package =
         metadata.packages.iter().find(|p| &p.id == package_id).ok_or_eyre("invalid package id")?;
-
-    ensure!(package.targets.iter().any(|t| t.is_lib()), "package has no lib target");
 
     let Options {
         toolchain,
@@ -60,7 +63,14 @@ pub fn generate(metadata: &Metadata, package_id: &PackageId, options: Options) -
     }
 
     command.arg("rustdoc");
-    command.arg("--lib");
+
+    if package_target.is_lib() {
+        command.arg("--lib");
+    } else if package_target.is_bin() {
+        command.arg("--bin").arg(&package_target.name);
+    } else {
+        bail!("target must be lib or bin")
+    }
 
     if quiet {
         command.arg("--quiet");
@@ -113,16 +123,10 @@ pub fn generate(metadata: &Metadata, package_id: &PackageId, options: Options) -
     result.wrap_err_with(|| format!("failed to run {command:?}"))
 }
 
-pub fn path(metadata: &Metadata, package_id: &PackageId) -> Result<Utf8PathBuf> {
-    let lib = metadata[package_id]
-        .targets
-        .iter()
-        .find(|t| t.is_lib())
-        .ok_or_eyre("package has no lib target")?;
-
+pub fn path(metadata: &Metadata, target: &Target) -> Result<Utf8PathBuf> {
     let mut path = metadata.target_directory.clone();
     path.push("doc");
-    path.push(&lib.name);
+    path.push(target.name.replace('-', "_"));
     path.set_extension("json");
     Ok(path)
 }

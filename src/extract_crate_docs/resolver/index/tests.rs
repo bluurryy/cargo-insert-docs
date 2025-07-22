@@ -15,15 +15,14 @@ fn test_tree() {
     let metadata =
         &MetadataCommand::new().manifest_path(format!("{MANIFEST_DIR}/Cargo.toml")).exec().unwrap();
 
-    let package_id = metadata
-        .packages
-        .iter()
-        .find_map(|p| (p.name.as_str() == "test-crate").then_some(&p.id))
-        .unwrap();
+    let package = metadata.packages.iter().find(|p| p.name.as_str() == "test-crate").unwrap();
+
+    let target = package.targets.iter().find(|t| t.is_lib()).unwrap();
 
     rustdoc_json::generate(
         metadata,
-        package_id,
+        &package.id,
+        target,
         rustdoc_json::Options {
             toolchain: Some("nightly"),
             all_features: false,
@@ -38,7 +37,7 @@ fn test_tree() {
     )
     .unwrap();
 
-    let path = rustdoc_json::path(metadata, package_id).unwrap();
+    let path = rustdoc_json::path(metadata, target).unwrap();
     let json = fs::read_to_string(path).expect("failed to read generated rustdoc json");
     let krate: Crate = serde_json::from_str(&json).expect("failed to parse generated rustdoc json");
     let tree = Tree::new(&krate).unwrap();

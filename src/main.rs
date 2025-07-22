@@ -20,7 +20,7 @@ use std::{
     time::Instant,
 };
 
-use cargo_metadata::{Metadata, MetadataCommand, PackageId};
+use cargo_metadata::{Metadata, MetadataCommand, PackageId, Target};
 use clap::Parser;
 use clap_cargo::style::CLAP_STYLING;
 use color_eyre::eyre::{OptionExt, Result, WrapErr as _, bail, eyre};
@@ -35,7 +35,6 @@ static GLOBAL: MiMalloc = MiMalloc;
 
 mod heading {
     pub const PACKAGE_SELECTION: &str = "Package Selection";
-    #[expect(dead_code)] // TODO
     pub const TARGET_SELECTION: &str = "Target Selection";
     pub const FEATURE_SELECTION: &str = "Feature Selection";
     pub const COMPILATION_OPTIONS: &str = "Compilation Options";
@@ -160,6 +159,14 @@ struct Args {
     #[arg(help_heading = heading::FEATURE_SELECTION, long)]
     no_default_features: bool,
 
+    /// Document only library targets
+    #[arg(help_heading = heading::TARGET_SELECTION, long)]
+    lib: bool,
+
+    /// Document only the specified binary
+    #[arg(help_heading = heading::TARGET_SELECTION, long, value_name = "NAME")]
+    bin: Option<Option<String>>,
+
     /// Which rustup toolchain to use when invoking rustdoc.
     ///
     /// Whenever you update your nightly toolchain this tool may also need to be
@@ -256,6 +263,10 @@ fn main() -> ExitCode {
 }
 
 fn try_main(args: &Args, log: &PrettyLog) -> Result<()> {
+    if args.lib && args.bin.is_some() {
+        bail!("either `--lib` or `--bin`, not both");
+    }
+
     let mut cmd = MetadataCommand::new();
 
     if let Some(manifest_path) = args.manifest_path.as_deref() {
@@ -347,11 +358,6 @@ fn run(cx: &BaseContext) -> Result<()> {
         }
     }
 
-    // error if no package has a lib target
-    if !packages.iter().any(|id| cx.metadata[id].targets.iter().any(|t| t.is_lib())) {
-        bail!("no selected package contains a lib target");
-    }
-
     let mut cxs = vec![];
 
     for id in packages {
@@ -365,15 +371,46 @@ fn run(cx: &BaseContext) -> Result<()> {
             .cloned()
             .collect();
 
-        if !package.targets.iter().any(|t| t.is_lib()) {
-            // we can only work with lib targets
+        let target = if cx.args.lib {
+            package.targets.iter().find(|t| t.doc && t.is_lib())
+        } else if let Some(bin) = cx.args.bin.as_ref() {
+            if let Some(bin) = bin.as_deref() {
+                package.targets.iter().find(|t| t.doc && t.is_bin() && t.name == bin)
+            } else {
+                package.targets.iter().find(|t| t.doc && t.is_bin())
+            }
+        } else {
+            let lib = package.targets.iter().find(|t| t.doc && t.is_lib());
+            let bin = || package.targets.iter().find(|t| t.doc && t.is_bin());
+            lib.or_else(bin)
+        };
+
+        let Some(target) = target else {
+            // TODO: bail?
             continue;
-        }
+        };
 
         cxs.push(Context {
             base: cx,
-            package: PackageContext { id, enabled_features, manifest_path },
+            package: PackageContext { id, enabled_features, manifest_path, target },
         })
+    }
+
+    if cxs.is_empty() {
+        let filter = if cx.args.lib {
+            Some("--lib".to_string())
+        } else if let Some(bin) = cx.args.bin.as_ref() {
+            if let Some(bin) = bin.as_deref() {
+                Some(format!("--bin {bin}"))
+            } else {
+                Some("--bin".to_string())
+            }
+        } else {
+            None
+        };
+
+        let _span = filter.map(|filter| error_span!("", filter).entered());
+        bail!("no target found to document");
     }
 
     // Exit early if any affected file is dirty.
@@ -397,7 +434,8 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
 
     for cx in cxs {
         if !cx.args.no_feature_docs {
-            let lib_path = cx.lib_path()?;
+            let lib_path = cx.package.target.src_path.as_std_path();
+
             let lib_path_display = lib_path
                 .relative_to(cx.metadata.workspace_root.as_std_path())
                 .map(|p| p.to_string())
@@ -531,20 +569,10 @@ struct BaseContext<'a> {
 
 struct Context<'a> {
     base: &'a BaseContext<'a>,
-    package: PackageContext,
+    package: PackageContext<'a>,
 }
 
 impl Context<'_> {
-    fn lib_path(&self) -> Result<&Path> {
-        Ok(self.metadata[&self.package.id]
-            .targets
-            .iter()
-            .find(|target| target.is_lib())
-            .ok_or_eyre("the selected package contains no lib target")?
-            .src_path
-            .as_ref())
-    }
-
     fn readme_path(&self) -> RelativePath {
         self.package.manifest_path.relative(&self.args.readme_path)
     }
@@ -558,10 +586,11 @@ impl<'a> Deref for Context<'a> {
     }
 }
 
-struct PackageContext {
+struct PackageContext<'a> {
     id: PackageId,
     enabled_features: Vec<String>,
     manifest_path: ManifestPath,
+    target: &'a Target,
 }
 
 struct ManifestPath(PathBuf);
@@ -642,24 +671,24 @@ fn task(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
 fn insert_features_into_docs(cx: &Context) -> Result<()> {
     let not_found_level = if cx.args.strict_feature_docs { Level::ERROR } else { Level::WARN };
 
-    let lib_path = cx.lib_path()?;
-    let lib = read_to_string(lib_path)?;
+    let target_path = cx.package.target.src_path.as_std_path();
+    let target_src = read_to_string(target_path)?;
 
     let Some(feature_docs_section) =
-        edit_crate_docs::FeatureDocsSection::find(&lib, &cx.args.feature_docs_section)?
+        edit_crate_docs::FeatureDocsSection::find(&target_src, &cx.args.feature_docs_section)?
     else {
-        let lib_name = lib_path
+        let target_name = target_path
             .file_name()
             .map(|n| Path::new(n).display().to_string())
             .unwrap_or_else(|| "crate docs".into());
 
         let _span = info_span!("",
-            path = %lib_path.display(),
+            path = %target_path.display(),
             section_name = cx.args.feature_docs_section,
         )
         .entered();
 
-        return Err(eyre!("section not found in {lib_name}")).with_severity(not_found_level);
+        return Err(eyre!("section not found in {target_name}")).with_severity(not_found_level);
     };
 
     let cargo_toml = cx.package.manifest_path.get().read_to_string()?;
@@ -667,14 +696,14 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
     let feature_docs = extract_feature_docs::extract(&cargo_toml, &cx.args.feature_label)
         .wrap_err("failed to parse Cargo.toml")?;
 
-    let new_lib = feature_docs_section.replace(&feature_docs)?;
+    let new_target_src = feature_docs_section.replace(&feature_docs)?;
 
-    if new_lib != lib {
+    if new_target_src != target_src {
         if cx.args.check {
             bail!("feature documentation is stale");
         }
 
-        write(lib_path, new_lib.as_bytes())?;
+        write(target_path, new_target_src.as_bytes())?;
     }
 
     Ok(())
