@@ -13,6 +13,7 @@ mod tests;
 use std::{
     collections::HashSet,
     ffi::{OsStr, OsString},
+    fmt::{self, Write},
     fs, io,
     ops::Deref,
     path::{Path, PathBuf},
@@ -159,13 +160,8 @@ struct Args {
     #[arg(help_heading = heading::FEATURE_SELECTION, long)]
     no_default_features: bool,
 
-    /// Document only library targets
-    #[arg(help_heading = heading::TARGET_SELECTION, long)]
-    lib: bool,
-
-    /// Document only the specified binary
-    #[arg(help_heading = heading::TARGET_SELECTION, long, value_name = "NAME")]
-    bin: Option<Option<String>>,
+    #[command(flatten)]
+    target_selection: TargetSelection,
 
     /// Which rustup toolchain to use when invoking rustdoc.
     ///
@@ -184,6 +180,55 @@ struct Args {
     /// Path to Cargo.toml
     #[arg(help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
     manifest_path: Option<PathBuf>,
+}
+
+#[derive(clap::Args)]
+#[group(multiple = false)]
+struct TargetSelection {
+    /// Document only library targets
+    #[arg(help_heading = heading::TARGET_SELECTION, long)]
+    lib: bool,
+
+    /// Document only the specified binary
+    #[arg(help_heading = heading::TARGET_SELECTION, long, value_name = "NAME")]
+    bin: Option<Option<String>>,
+}
+
+impl TargetSelection {
+    fn select<'a>(&self, targets: &'a [Target]) -> Option<&'a Target> {
+        if self.lib {
+            targets.iter().find(|t| t.doc && t.is_lib())
+        } else if let Some(bin) = self.bin.as_ref() {
+            if let Some(bin) = bin.as_deref() {
+                targets.iter().find(|t| t.doc && t.is_bin() && t.name == bin)
+            } else {
+                targets.iter().find(|t| t.doc && t.is_bin())
+            }
+        } else {
+            let lib = targets.iter().find(|t| t.doc && t.is_lib());
+            let bin = || targets.iter().find(|t| t.doc && t.is_bin());
+            lib.or_else(bin)
+        }
+    }
+}
+
+impl fmt::Display for TargetSelection {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.lib {
+            f.write_str("--lib")
+        } else if let Some(bin) = self.bin.as_ref() {
+            f.write_str("--bin")?;
+
+            if let Some(bin) = bin.as_deref() {
+                f.write_char(' ')?;
+                f.write_str(bin)
+            } else {
+                Ok(())
+            }
+        } else {
+            Ok(())
+        }
+    }
 }
 
 /// <https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands>
@@ -263,10 +308,6 @@ fn main() -> ExitCode {
 }
 
 fn try_main(args: &Args, log: &PrettyLog) -> Result<()> {
-    if args.lib && args.bin.is_some() {
-        bail!("either `--lib` or `--bin`, not both");
-    }
-
     let mut cmd = MetadataCommand::new();
 
     if let Some(manifest_path) = args.manifest_path.as_deref() {
@@ -371,22 +412,7 @@ fn run(cx: &BaseContext) -> Result<()> {
             .cloned()
             .collect();
 
-        let target = if cx.args.lib {
-            package.targets.iter().find(|t| t.doc && t.is_lib())
-        } else if let Some(bin) = cx.args.bin.as_ref() {
-            if let Some(bin) = bin.as_deref() {
-                package.targets.iter().find(|t| t.doc && t.is_bin() && t.name == bin)
-            } else {
-                package.targets.iter().find(|t| t.doc && t.is_bin())
-            }
-        } else {
-            let lib = package.targets.iter().find(|t| t.doc && t.is_lib());
-            let bin = || package.targets.iter().find(|t| t.doc && t.is_bin());
-            lib.or_else(bin)
-        };
-
-        let Some(target) = target else {
-            // TODO: bail?
+        let Some(target) = cx.args.target_selection.select(&package.targets) else {
             continue;
         };
 
@@ -397,19 +423,8 @@ fn run(cx: &BaseContext) -> Result<()> {
     }
 
     if cxs.is_empty() {
-        let filter = if cx.args.lib {
-            Some("--lib".to_string())
-        } else if let Some(bin) = cx.args.bin.as_ref() {
-            if let Some(bin) = bin.as_deref() {
-                Some(format!("--bin {bin}"))
-            } else {
-                Some("--bin".to_string())
-            }
-        } else {
-            None
-        };
-
-        let _span = filter.map(|filter| error_span!("", filter).entered());
+        let filter = cx.args.target_selection.to_string();
+        let _span = (!filter.is_empty()).then(|| error_span!("", filter).entered());
         bail!("no target found to document");
     }
 
