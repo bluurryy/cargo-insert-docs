@@ -57,10 +57,6 @@ mod heading {
     styles = CLAP_STYLING
 )]
 struct Args {
-    /// Readme path relative to the package manifest
-    #[arg(long, value_name = "PATH", default_value = "README.md")]
-    readme_path: PathBuf,
-
     /// Formatting of the feature label
     ///
     /// When inserting feature documentation into the crate documentation.
@@ -180,6 +176,12 @@ struct Args {
     /// Path to Cargo.toml
     #[arg(help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
     manifest_path: Option<PathBuf>,
+
+    /// Readme path relative to the package manifest
+    ///
+    /// This defaults to the `readme` field as specified in the `Cargo.toml`.
+    #[arg(help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
+    readme_path: Option<PathBuf>,
 }
 
 #[derive(clap::Args)]
@@ -416,9 +418,19 @@ fn run(cx: &BaseContext) -> Result<()> {
             continue;
         };
 
+        let relative_readme_path = if let Some(path) = cx.args.readme_path.as_deref() {
+            path
+        } else if let Some(path) = package.readme.as_deref() {
+            path.as_std_path()
+        } else {
+            Path::new("README.md")
+        };
+
+        let readme_path = manifest_path.relative(relative_readme_path);
+
         cxs.push(Context {
             base: cx,
-            package: PackageContext { id, enabled_features, manifest_path, target },
+            package: PackageContext { id, enabled_features, target, readme_path, manifest_path },
         })
     }
 
@@ -478,13 +490,14 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
         }
 
         if !cx.args.no_crate_docs {
-            let readme_path = cx.readme_path().full_path;
+            let readme_path = cx.package.readme_path.full_path.as_path();
+
             let readme_path_display = readme_path
                 .relative_to(cx.metadata.workspace_root.as_std_path())
                 .map(|p| p.to_string())
                 .unwrap_or_else(|_| readme_path.display().to_string());
 
-            if let Some(status) = git::file_status(&readme_path) {
+            if let Some(status) = git::file_status(readme_path) {
                 match status {
                     git2::Status::CURRENT => (),
                     git2::Status::INDEX_NEW
@@ -587,12 +600,6 @@ struct Context<'a> {
     package: PackageContext<'a>,
 }
 
-impl Context<'_> {
-    fn readme_path(&self) -> RelativePath {
-        self.package.manifest_path.relative(&self.args.readme_path)
-    }
-}
-
 impl<'a> Deref for Context<'a> {
     type Target = BaseContext<'a>;
 
@@ -606,6 +613,7 @@ struct PackageContext<'a> {
     enabled_features: Vec<String>,
     manifest_path: ManifestPath,
     target: &'a Target,
+    readme_path: RelativePath,
 }
 
 struct ManifestPath(PathBuf);
@@ -727,7 +735,7 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
 fn insert_docs_into_readme(cx: &Context) -> Result<()> {
     let not_found_level = if cx.args.strict_crate_docs { Level::ERROR } else { Level::WARN };
 
-    let readme_path = cx.package.manifest_path.relative(&cx.args.readme_path);
+    let readme_path = &cx.package.readme_path;
     let readme = readme_path.read_to_string().with_severity(not_found_level)?;
 
     let Some(section) = markdown::find_section(&readme, &cx.args.crate_docs_section) else {

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Breaking?:** Resolve default manifest path and default package using `cargo metadata`
+- **Breaking:** Use `readme` field in the `Cargo.toml` as default readme path
 - Improve error messages
 - Improve help output with sections
 - Add `--bin` argument to support `bin` targets

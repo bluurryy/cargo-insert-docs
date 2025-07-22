@@ -8,7 +8,6 @@ Inserts crate docs into a readme file and feature docs into the crate docs.
 Usage: cargo insert-docs [OPTIONS]
 
 Options:
-      --readme-path <PATH>                   Readme path relative to the package manifest [default: README.md]
       --feature-label <FEATURE_LABEL>        Formatting of the feature label [default: **`{feature}`**]
       --feature-docs-section <SECTION_NAME>  Feature documentation section name [default: "feature documentation"]
       --crate-docs-section <SECTION_NAME>    Crate documentation section name [default: "crate documentation"]
@@ -56,4 +55,5 @@ Compilation Options:
 
 Manifest Options:
       --manifest-path <PATH>  Path to Cargo.toml
+      --readme-path <PATH>    Readme path relative to the package manifest
 ```

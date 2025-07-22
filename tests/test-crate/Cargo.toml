@@ -1,6 +1,7 @@
 [package]
 name = "test-crate"
 edition = "2024"
+readme = "MEREAD.md"
 
 [lib]
 path = "lib.rs"

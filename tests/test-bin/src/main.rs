@@ -1,1 +1,3 @@
 //! It works!
+
+fn main() {}
