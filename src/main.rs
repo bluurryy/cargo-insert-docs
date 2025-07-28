@@ -195,9 +195,9 @@ impl Args {
 
 #[derive(clap::Subcommand, Clone, Copy, PartialEq, Eq)]
 enum Command {
-    // Only inserts feature documentation into crate documentation
+    /// Only inserts feature documentation into crate documentation
     FeatureIntoCrate,
-    // Only inserts crate documentation into the readme file
+    /// Only inserts crate documentation into the readme file
     CrateIntoReadme,
 }
 

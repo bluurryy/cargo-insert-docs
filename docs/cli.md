@@ -8,8 +8,8 @@ Inserts crate docs into a readme file and feature docs into the crate docs.
 Usage: cargo insert-docs [OPTIONS] [COMMAND]
 
 Commands:
-  feature-into-crate  
-  crate-into-readme   
+  feature-into-crate  Only inserts feature documentation into crate documentation
+  crate-into-readme   Only inserts crate documentation into the readme file
   help                Print this message or the help of the given subcommand(s)
 
 Options:
