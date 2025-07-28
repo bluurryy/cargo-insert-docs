@@ -504,17 +504,13 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
 
             if let Some(status) = git::file_status(lib_path) {
                 match status {
-                    git2::Status::CURRENT => (),
-                    git2::Status::INDEX_NEW
-                    | git2::Status::INDEX_MODIFIED
-                    | git2::Status::INDEX_DELETED
-                    | git2::Status::INDEX_RENAMED
-                    | git2::Status::INDEX_TYPECHANGE => {
+                    git::Status::Current => (),
+                    git::Status::Staged => {
                         if !cx.args.allow_staged {
                             staged_files.push(lib_path_display);
                         }
                     }
-                    _ => {
+                    git::Status::Dirty => {
                         if !cx.args.allow_dirty {
                             dirty_files.push(lib_path_display);
                         }
@@ -533,17 +529,13 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
 
             if let Some(status) = git::file_status(readme_path) {
                 match status {
-                    git2::Status::CURRENT => (),
-                    git2::Status::INDEX_NEW
-                    | git2::Status::INDEX_MODIFIED
-                    | git2::Status::INDEX_DELETED
-                    | git2::Status::INDEX_RENAMED
-                    | git2::Status::INDEX_TYPECHANGE => {
+                    git::Status::Current => (),
+                    git::Status::Staged => {
                         if !cx.args.allow_staged {
                             staged_files.push(readme_path_display);
                         }
                     }
-                    _ => {
+                    git::Status::Dirty => {
                         if !cx.args.allow_dirty {
                             dirty_files.push(readme_path_display);
                         }
