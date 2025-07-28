@@ -136,7 +136,7 @@ struct Args {
     workspace: bool,
 
     /// Exclude package(s) from documenting
-    #[arg(global = true, help_heading = heading::PACKAGE_SELECTION, long, value_name = "SPEC")]
+    #[arg(global = true, help_heading = heading::PACKAGE_SELECTION, long, value_name = "SPEC", requires = "workspace")]
     exclude: Vec<String>,
 
     /// Space or comma separated list of features to activate
