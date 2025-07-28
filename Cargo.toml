@@ -24,7 +24,7 @@ proc-macro2 = { version = "1.0.95", default-features = false, features = [
     "span-locations",
 ] }
 pulldown-cmark = { version = "0.13.0", default-features = false }
-rangemap = "1.5.1"
+rangemap = "1.6.0"
 relative-path = "2.0.1"
 rustdoc-types = "0.54.0"
 serde = { version = "1.0.219", features = ["derive"] }
