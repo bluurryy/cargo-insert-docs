@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- **Breaking:** Remove `--no-feature-section` and `--no-crate-section` arguments, use `feature-into-crate` and `crate-into-readme` instead
+- **Breaking:** Remove `--no-*-section` arguments, use `feature-into-crate` and `crate-into-readme` instead
 - **Breaking:** Remove `--strict*` arguments, the behavior is now "strict" by default
 
 ## [0.9.0] - 2025-07-22
