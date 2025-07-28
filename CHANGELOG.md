@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Add `feature-into-crate` and `crate-into-readme` subcommands:
+  - `feature-into-crate` only inserts feature documentation into crate documentation 
+  - `crate-into-readme` only inserts crate documentation into the readme
+
+### Removed
+
+- **Breaking:** Remove `--no-feature-section` and `--no-crate-section` arguments, use `feature-into-crate` and `crate-into-readme` instead
+
 ## [0.9.0] - 2025-07-22
 
 ### Added

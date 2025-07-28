@@ -5,7 +5,12 @@ $ cargo insert-docs -h
 
 Inserts crate docs into a readme file and feature docs into the crate docs.
 
-Usage: cargo insert-docs [OPTIONS]
+Usage: cargo insert-docs [OPTIONS] [COMMAND]
+
+Commands:
+  feature-into-crate  
+  crate-into-readme   
+  help                Print this message or the help of the given subcommand(s)
 
 Options:
       --feature-label <FEATURE_LABEL>  Formatting of the feature label [default: **`{feature}`**]
@@ -20,9 +25,7 @@ Cargo Doc Options:
       --no-deps                 Don't build documentation for dependencies
 
 Mode Selection:
-      --check               Runs in 'check' mode, erroring if something is out of date
-      --no-feature-section  Disables inserting the feature documentation into the crate documentation
-      --no-crate-section    Disables inserting the crate documentation into the readme
+      --check  Runs in 'check' mode, erroring if something is out of date
 
 Error Behavior:
       --strict                  Error when a section is missing

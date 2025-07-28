@@ -151,7 +151,9 @@ Notice how:
 
 To update the sections just run the command again.
 
-You don't have to add both sections for the tool to work. If it doesn't find a section it will carry on with a warning. You can turn that warning into an error with the `--strict` flag and disable either job with `--no-feature-docs` and `--no-crate-docs`.
+By default, `cargo-insert-docs` tries to insert both feature documentation and crate documentation. To perform only one of these actions use the `feature-into-crate` or `crate-into-readme` command.
+
+You don't have to add both sections for the tool to work. If it doesn't find a section it will carry on with a warning. You can turn that warning into an error with the `--strict` flag.
 
 You can find all the available arguments in [docs/cli.md](docs/cli.md).
 

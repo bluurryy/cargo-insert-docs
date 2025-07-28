@@ -3,10 +3,10 @@ default:
 
 pre-release:
     cargo run -- --check --strict -p test-crate --feature-section-name "features" --crate-section-name "docs"
-    cargo run -- --check --strict -p test-document-features --no-feature-section
+    cargo run -- --check --strict -p test-document-features crate-into-readme
     cargo run -- --check --strict -p example-crate
-    cargo run -- --check --strict -p test-bin --no-feature-section
-    cargo run -- --check --strict --workspace --exclude test-crate --exclude cargo-insert-docs --no-feature-section
+    cargo run -- --check --strict -p test-bin crate-into-readme
+    cargo run -- --check --strict --workspace --exclude test-crate --exclude cargo-insert-docs crate-into-readme
     just update-cli-md
     just test
     just test-recurse recurse

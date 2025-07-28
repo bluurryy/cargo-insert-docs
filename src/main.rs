@@ -59,18 +59,21 @@ mod heading {
     styles = CLAP_STYLING
 )]
 struct Args {
+    #[command(subcommand)]
+    command: Option<Command>,
+
     /// Formatting of the feature label
     ///
     /// When inserting feature documentation into the crate documentation.
-    #[arg(long, default_value = "**`{feature}`**")]
+    #[arg(global = true, long, default_value = "**`{feature}`**")]
     feature_label: String,
 
     /// Feature documentation section name
-    #[arg(long, value_name = "NAME", default_value = "feature documentation")]
+    #[arg(global = true, long, value_name = "NAME", default_value = "feature documentation")]
     feature_section_name: String,
 
     /// Crate documentation section name
-    #[arg(long, value_name = "NAME", default_value = "crate documentation")]
+    #[arg(global = true, long, value_name = "NAME", default_value = "crate documentation")]
     crate_section_name: String,
 
     #[expect(rustdoc::bare_urls)]
@@ -78,92 +81,84 @@ struct Args {
     ///
     /// For example https://docs.rs/my-crate/latest/my_crate/.
     /// This only affects workspace crates.
-    #[arg(long, verbatim_doc_comment)]
+    #[arg(global = true, long, verbatim_doc_comment)]
     link_to_latest: bool,
 
     /// Document private items
-    #[arg(help_heading = heading::CARGO_DOC_OPTIONS, long)]
+    #[arg(global = true, help_heading = heading::CARGO_DOC_OPTIONS, long)]
     document_private_items: bool,
 
     /// Don't build documentation for dependencies
-    #[arg(help_heading = heading::CARGO_DOC_OPTIONS, long)]
+    #[arg(global = true, help_heading = heading::CARGO_DOC_OPTIONS, long)]
     no_deps: bool,
 
     /// Runs in 'check' mode, erroring if something is out of date
     ///
     /// Exits with 0 if the documentation is up to date.
     /// Exits with 1 if the documentation is stale or if any errors occured.
-    #[arg(help_heading = heading::MODE_SELECTION, long, verbatim_doc_comment)]
+    #[arg(global = true, help_heading = heading::MODE_SELECTION, long, verbatim_doc_comment)]
     check: bool,
-
-    /// Disables inserting the feature documentation into the crate documentation
-    #[arg(help_heading = heading::MODE_SELECTION, long)]
-    no_feature_section: bool,
-
-    /// Disables inserting the crate documentation into the readme
-    #[arg(help_heading = heading::MODE_SELECTION, long)]
-    no_crate_section: bool,
 
     /// Error when a section is missing
     ///
     /// Implies `--strict-feature-docs` and `--strict-crate-docs`.
-    #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
+    #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
     strict: bool,
 
     /// Error when a feature documentation section is missing
-    #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
+    #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
     strict_feature_section: bool,
 
     /// Error when a crate documentation section is missing
-    #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
+    #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
     strict_crate_section: bool,
 
     /// Insert documentation even if the affected file is dirty or has staged changes
-    #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
+    #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
     allow_dirty: bool,
 
     /// Insert documentation even if the affected file has staged changes
-    #[arg(help_heading = heading::ERROR_BEHAVIOR, long)]
+    #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
     allow_staged: bool,
 
     /// Coloring
-    #[arg(help_heading = heading::MESSAGE_OPTIONS, long, value_name = "WHEN", value_enum, default_value_t = ColorChoice::Auto)]
+    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long, value_name = "WHEN", value_enum, default_value_t = ColorChoice::Auto)]
     color: ColorChoice,
 
     /// Print more verbose messages
-    #[arg(help_heading = heading::MESSAGE_OPTIONS, long, short = 'v')]
+    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long, short = 'v')]
     verbose: bool,
 
     /// Do not print anything
-    #[arg(help_heading = heading::MESSAGE_OPTIONS, long, short = 'q')]
+    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long, short = 'q')]
     quiet: bool,
 
     /// Do not print cargo log messages
-    #[arg(help_heading = heading::MESSAGE_OPTIONS, long)]
+    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long)]
     quiet_cargo: bool,
 
     /// Package(s) to document
-    #[arg(help_heading = heading::PACKAGE_SELECTION, long, short = 'p', value_name = "SPEC")]
+    #[arg(global = true, help_heading = heading::PACKAGE_SELECTION, long, short = 'p', value_name = "SPEC")]
     package: Vec<String>,
 
     /// Document all packages in the workspace
-    #[arg(help_heading = heading::PACKAGE_SELECTION, long)]
+    #[arg(global = true, help_heading = heading::PACKAGE_SELECTION, long)]
     workspace: bool,
 
     /// Exclude package(s) from documenting
-    #[arg(help_heading = heading::PACKAGE_SELECTION, long, value_name = "SPEC")]
+    #[arg(global = true, help_heading = heading::PACKAGE_SELECTION, long, value_name = "SPEC")]
     exclude: Vec<String>,
 
     /// Space or comma separated list of features to activate
-    #[arg(help_heading = heading::FEATURE_SELECTION, long, short = 'F', value_delimiter = ',')]
+    #[arg(global = true, help_heading = heading::FEATURE_SELECTION, long, short = 'F', value_delimiter = ',')]
     features: Vec<String>,
 
     /// Activate all available features
-    #[arg(help_heading = heading::FEATURE_SELECTION, long)]
+    #[arg(global = true, help_heading = heading::FEATURE_SELECTION, long)]
     all_features: bool,
 
     /// Do not activate the `default` feature
-    #[arg(help_heading = heading::FEATURE_SELECTION, long)]
+    #[arg(global = true, help_heading = heading::FEATURE_SELECTION, long)]
     no_default_features: bool,
 
     #[command(flatten)]
@@ -176,26 +171,44 @@ struct Args {
     ///
     /// With this argument you can choose a nightly version that is guaranteed to be compatible
     /// with the current version of this tool, like `nightly-2025-07-16`.
-    #[arg(help_heading = heading::COMPILATION_OPTIONS, long, default_value = "nightly", verbatim_doc_comment)]
+    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, default_value = "nightly", verbatim_doc_comment)]
     toolchain: String,
 
     /// Target triple to document
-    #[arg(help_heading = heading::COMPILATION_OPTIONS, long, value_name = "TRIPLE")]
+    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, value_name = "TRIPLE")]
     target: Option<String>,
 
     /// Directory for all generated artifacts
-    #[arg(help_heading = heading::COMPILATION_OPTIONS, long, value_name = "DIRECTORY")]
+    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, value_name = "DIRECTORY")]
     target_dir: Option<PathBuf>,
 
     /// Path to Cargo.toml
-    #[arg(help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
+    #[arg(global = true, help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
     manifest_path: Option<PathBuf>,
 
     /// Readme path relative to the package manifest
     ///
     /// This defaults to the `readme` field as specified in the `Cargo.toml`.
-    #[arg(help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
+    #[arg(global = true, help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
     readme_path: Option<PathBuf>,
+}
+
+impl Args {
+    fn feature_section_enabled(&self) -> bool {
+        self.command != Some(Command::CrateIntoReadme)
+    }
+
+    fn crate_section_enabled(&self) -> bool {
+        self.command != Some(Command::FeatureIntoCrate)
+    }
+}
+
+#[derive(clap::Subcommand, Clone, Copy, PartialEq, Eq)]
+enum Command {
+    // Only inserts feature documentation into crate documentation
+    FeatureIntoCrate,
+    // Only inserts crate documentation into the readme file
+    CrateIntoReadme,
 }
 
 #[derive(clap::Args)]
@@ -496,7 +509,7 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
     let mut staged_files = vec![];
 
     for cx in cxs {
-        if !cx.args.no_feature_section {
+        if cx.args.feature_section_enabled() {
             let lib_path = cx.package.target.src_path.as_std_path();
 
             let lib_path_display = lib_path
@@ -525,7 +538,7 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
             }
         }
 
-        if !cx.args.no_crate_section {
+        if cx.args.crate_section_enabled() {
             let readme_path = cx.package.readme_path.full_path.as_path();
 
             let readme_path_display = readme_path
@@ -587,11 +600,11 @@ fn run_package(cx: &Context) {
     let _span = (!cx.uses_default_packages || (*cx.metadata.workspace_default_members).len() > 1)
         .then(|| info_span!("", package = cx.package.name.as_str()).entered());
 
-    if !cx.args.no_feature_section {
+    if cx.args.feature_section_enabled() {
         task(cx, "feature documentation", "crate documentation", insert_features_into_docs);
     }
 
-    if !cx.args.no_crate_section {
+    if cx.args.crate_section_enabled() {
         task(cx, "crate documentation", "readme", insert_docs_into_readme);
     }
 }
