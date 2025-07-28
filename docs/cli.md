@@ -25,7 +25,7 @@ Cargo Doc Options:
       --no-deps                 Don't build documentation for dependencies
 
 Mode Selection:
-      --check  Runs in 'check' mode, erroring if something is out of date
+      --check  Runs in 'check' mode, not writing to files but erroring if something is out of date
 
 Error Behavior:
       --allow-missing-section  Don't error when a section is missing
