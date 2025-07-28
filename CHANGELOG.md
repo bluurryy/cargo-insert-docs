@@ -10,13 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `feature-into-crate` and `crate-into-readme` subcommands:
-  - `feature-into-crate` only inserts feature documentation into crate documentation 
-  - `crate-into-readme` only inserts crate documentation into the readme
+- Add `feature-into-crate` command that only inserts feature documentation into crate documentation 
+- Add `crate-into-readme` command only inserts crate documentation into the readme
+- Add `--allow-missing-section` argument to not error when a section is missing
+
+### Changed
+
+- **Breaking:** Error when a section is missing, you can suppress the error with `--allow-missing-section`
 
 ### Removed
 
 - **Breaking:** Remove `--no-feature-section` and `--no-crate-section` arguments, use `feature-into-crate` and `crate-into-readme` instead
+- **Breaking:** Remove `--strict*` arguments, the behavior is now "strict" by default
 
 ## [0.9.0] - 2025-07-22
 

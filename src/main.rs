@@ -99,19 +99,9 @@ struct Args {
     #[arg(global = true, help_heading = heading::MODE_SELECTION, long, verbatim_doc_comment)]
     check: bool,
 
-    /// Error when a section is missing
-    ///
-    /// Implies `--strict-feature-docs` and `--strict-crate-docs`.
+    /// Don't error when a section is missing
     #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
-    strict: bool,
-
-    /// Error when a feature documentation section is missing
-    #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
-    strict_feature_section: bool,
-
-    /// Error when a crate documentation section is missing
-    #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
-    strict_crate_section: bool,
+    allow_missing_section: bool,
 
     /// Insert documentation even if the affected file is dirty or has staged changes
     #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
@@ -310,11 +300,6 @@ fn main() -> ExitCode {
 
     if args.quiet {
         args.quiet_cargo = true;
-    }
-
-    if args.strict {
-        args.strict_feature_section = true;
-        args.strict_crate_section = true;
     }
 
     if args.allow_dirty {
@@ -751,7 +736,7 @@ fn task(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
 }
 
 fn insert_features_into_docs(cx: &Context) -> Result<()> {
-    let not_found_level = if cx.args.strict_feature_section { Level::ERROR } else { Level::WARN };
+    let not_found_level = if cx.args.allow_missing_section { Level::WARN } else { Level::ERROR };
 
     let target_path = cx.package.target.src_path.as_std_path();
     let target_src = read_to_string(target_path)?;
@@ -792,7 +777,7 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
 }
 
 fn insert_docs_into_readme(cx: &Context) -> Result<()> {
-    let not_found_level = if cx.args.strict_crate_section { Level::ERROR } else { Level::WARN };
+    let not_found_level = if cx.args.allow_missing_section { Level::WARN } else { Level::ERROR };
 
     let readme_path = &cx.package.readme_path;
     let readme = readme_path.read_to_string().with_severity(not_found_level)?;

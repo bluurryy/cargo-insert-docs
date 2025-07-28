@@ -2,11 +2,11 @@ default:
     @just --list
 
 pre-release:
-    cargo run -- --check --strict -p test-crate --feature-section-name "features" --crate-section-name "docs"
-    cargo run -- --check --strict -p test-document-features crate-into-readme
-    cargo run -- --check --strict -p example-crate
-    cargo run -- --check --strict -p test-bin crate-into-readme
-    cargo run -- --check --strict --workspace --exclude test-crate --exclude cargo-insert-docs crate-into-readme
+    cargo run -- --check -p test-crate --feature-section-name "features" --crate-section-name "docs"
+    cargo run -- --check -p test-document-features crate-into-readme
+    cargo run -- --check -p example-crate
+    cargo run -- --check -p test-bin crate-into-readme
+    cargo run -- --check --workspace --exclude test-crate --exclude cargo-insert-docs crate-into-readme
     just update-cli-md
     just test
     just test-recurse recurse

@@ -28,11 +28,9 @@ Mode Selection:
       --check  Runs in 'check' mode, erroring if something is out of date
 
 Error Behavior:
-      --strict                  Error when a section is missing
-      --strict-feature-section  Error when a feature documentation section is missing
-      --strict-crate-section    Error when a crate documentation section is missing
-      --allow-dirty             Insert documentation even if the affected file is dirty or has staged changes
-      --allow-staged            Insert documentation even if the affected file has staged changes
+      --allow-missing-section  Don't error when a section is missing
+      --allow-dirty            Insert documentation even if the affected file is dirty or has staged changes
+      --allow-staged           Insert documentation even if the affected file has staged changes
 
 Message Options:
       --color <WHEN>  Coloring [default: auto] [possible values: auto, always, never]
