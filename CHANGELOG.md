@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `feature-into-crate` command that only inserts feature documentation into crate documentation 
 - Add `crate-into-readme` command only inserts crate documentation into the readme
 - Add `--allow-missing-section` argument to not error when a section is missing
+- Improve `--check` argument help
 
 ### Changed
 

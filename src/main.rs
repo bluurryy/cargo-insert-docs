@@ -92,7 +92,7 @@ struct Args {
     #[arg(global = true, help_heading = heading::CARGO_DOC_OPTIONS, long)]
     no_deps: bool,
 
-    /// Runs in 'check' mode, erroring if something is out of date
+    /// Runs in 'check' mode, not writing to files but erroring if something is out of date
     ///
     /// Exits with 0 if the documentation is up to date.
     /// Exits with 1 if the documentation is stale or if any errors occured.
