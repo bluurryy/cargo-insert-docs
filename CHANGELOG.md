@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** Upgrade to rustdoc json version 55 (nightly-2025-08-02)
+
 ## [0.11.0] - 2025-07-28
 
 ### Added
@@ -71,8 +75,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Support rustdoc json version 54 (nightly-2025-07-16)
 - Better help message when rustdoc format doesn't match
+
+### Changed
+
+- **Breaking:** Upgrade to rustdoc json version 54 (nightly-2025-07-16)
 
 ## [0.6.0] - 2025-07-17
 

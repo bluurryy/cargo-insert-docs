@@ -2,11 +2,11 @@ default:
     @just --list
 
 pre-release:
-    cargo run -- --check -p test-crate --feature-section-name "features" --crate-section-name "docs"
-    cargo run -- --check -p test-document-features crate-into-readme
-    cargo run -- --check -p example-crate
-    cargo run -- --check -p test-bin crate-into-readme
-    cargo run -- --check --workspace --exclude test-crate --exclude cargo-insert-docs crate-into-readme
+    cargo run -- --toolchain nightly-2025-08-02 --check -p test-crate --feature-section-name "features" --crate-section-name "docs"
+    cargo run -- --toolchain nightly-2025-08-02 --check -p test-document-features crate-into-readme
+    cargo run -- --toolchain nightly-2025-08-02 --check -p example-crate
+    cargo run -- --toolchain nightly-2025-08-02 --check -p test-bin crate-into-readme
+    cargo run -- --toolchain nightly-2025-08-02 --check --workspace --exclude test-crate --exclude cargo-insert-docs crate-into-readme
     just update-cli-md
     just test
     just test-recurse recurse
@@ -43,7 +43,7 @@ test:
 
 test-recurse feature:
     #!/usr/bin/env nu
-    let out = (cargo run -- -p test-crate --feature-section-name "features" --crate-section-name "docs" -F {{feature}} --allow-dirty | complete).stderr | tee { print }
+    let out = (cargo run -- --toolchain nightly-2025-08-02 -p test-crate --feature-section-name "features" --crate-section-name "docs" -F {{feature}} --allow-dirty | complete).stderr | tee { print }
     if not ($out | str contains "recursed too deep while resolving item paths") {
         print -e $out
         exit 1

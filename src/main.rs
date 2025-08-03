@@ -160,7 +160,7 @@ struct Args {
     /// updated to be compatible.
     ///
     /// With this argument you can choose a nightly version that is guaranteed to be compatible
-    /// with the current version of this tool, like `nightly-2025-07-16`.
+    /// with the current version of this tool, like `nightly-2025-08-02`.
     #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, default_value = "nightly", verbatim_doc_comment)]
     toolchain: String,
 
