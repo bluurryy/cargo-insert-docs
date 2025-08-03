@@ -177,7 +177,7 @@ A new nightly release may no longer be compatible with the current version and `
 
 |Version|Understands the rustdoc JSON output of|
 |---|---|
-|0.7 — 11.0|nightly-2025-07-16 — ?|
+|0.7 — 0.11|nightly-2025-07-16 — nightly-2025-08-01|
 |0.1 — 0.6|nightly-2025-06-22 — nightly-2025-07-15|
 
 ## Acknowledgements
