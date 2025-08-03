@@ -51,11 +51,11 @@ allow-branch = ["main"]
 pre-release-hook = ["just", "pre-release"]
 pre-release-commit-message = "release: version {{version}}"
 pre-release-replacements = [
-    { file = "CHANGELOG.md", search = "## \\[Unreleased\\]", replace = "## [{{version}}] - {{date}}", exactly = 1 },
-    { file = "CHANGELOG.md", search = "\\[Unreleased\\]: .*", replace = "[{{version}}]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v{{version}}", exactly = 1 },
-    { file = "CHANGELOG.md", search = "#Unreleased", replace = "#{{version}}", min = 0 },
-    { file = "CHANGELOG.md", search = "<!-- next-header -->", replace = "<!-- next-header -->\n## [Unreleased]\n", exactly = 1 },
-    { file = "CHANGELOG.md", search = "<!-- next-url -->", replace = "<!-- next-url -->\n[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/{{tag_name}}...HEAD", exactly = 1 },
+    { file = "CHANGELOG.md", search = '## \[Unreleased\]', replace = "## [{{version}}] - {{date}}", exactly = 1 },
+    { file = "CHANGELOG.md", search = '\[Unreleased\]: .*', replace = "[{{version}}]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v{{version}}", exactly = 1 },
+    { file = "CHANGELOG.md", search = '#Unreleased', replace = "#{{version}}", min = 0 },
+    { file = "CHANGELOG.md", search = '<!-- next-header -->', replace = "<!-- next-header -->\n## [Unreleased]\n", exactly = 1 },
+    { file = "CHANGELOG.md", search = '<!-- next-url -->', replace = "<!-- next-url -->\n[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/{{tag_name}}...HEAD", exactly = 1 },
 ]
 
 [workspace]
