@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/crates/l/cargo-insert-docs)](#license)
 [![Build Status](https://github.com/bluurryy/cargo-insert-docs/workflows/Release/badge.svg)](https://github.com/bluurryy/cargo-insert-docs/actions/workflows/release.yml)
 
-`cargo-insert-docs` helps you keep your documentation in sync by doing two jobs:
+`cargo-insert-docs` does two jobs:
 1. Insert feature documentation from `Cargo.toml` into your `lib.rs`.
 2. Insert crate documentation from `lib.rs` into your `README.md`.
 
