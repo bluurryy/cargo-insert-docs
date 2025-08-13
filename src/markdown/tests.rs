@@ -10,6 +10,22 @@ fn replace_section(markdown: &str, replacement: &str) -> String {
 }
 
 #[test]
+fn test_find_section() {
+    let markdown = r#"
+before section
+<!-- my section start -->
+inside section
+<!-- my section end -->
+after section
+    "#;
+
+    let range = find_section(markdown, "my section").unwrap();
+    let content = &markdown[range];
+
+    assert_eq!(content, "\ninside section\n");
+}
+
+#[test]
 fn test_replace_section_html() {
     expect![[r#"
 

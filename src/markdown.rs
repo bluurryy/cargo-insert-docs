@@ -28,9 +28,9 @@ pub fn parser<'a>(text: &'a str) -> OffsetIter<'a, impl BrokenLinkCallback<'a>> 
 
 /// Finds sections like these:
 /// ```md
-/// <!-- my_section start -->
+/// <!-- section_name start -->
 /// This is the section content.
-/// <!-- my_section end -->
+/// <!-- section_name end -->
 /// ```
 pub fn find_section(markdown: &str, section_name: &str) -> Option<Range<usize>> {
     let start_marker = format!("<!-- {section_name} start -->");
