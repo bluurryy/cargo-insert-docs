@@ -4,7 +4,22 @@ Notice how `lib.rs` does not have to be in the `src` directory for this to work.
 
 Now the crate documentation begins...
 
-<!-- docs start -->
+<!-- docs intro start -->
+This is kitchen-sink test crate for `cargo-insert-docs`.
+<!-- docs intro end -->
+
+## Table of Contents
+
+This table of contents exists only in the readme. 
+The html docs already have a table of contents on the left side panel.
+
+- [Links](#links)
+- [Features](#features)
+- [Examples](#examples)
+
+## Links
+
+<!-- docs rest start -->
 #### Link variants
 - A shortcut link: [`Vec`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)!
 - An inline link: [`String`](https://doc.rust-lang.org/alloc/string/struct.String.html)!
@@ -115,6 +130,6 @@ def square(n):
 // i don't see what this language could be
 int main(void) { return 0; }
 ```
-<!-- docs end -->
+<!-- docs rest end -->
 
 This is after the crate docs.

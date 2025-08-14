@@ -12,7 +12,7 @@ use crate::markdown;
 pub struct FeatureDocsSection<'a> {
     source: &'a str,
     docs: Docs,
-    section: Range<usize>,
+    content_span: Range<usize>,
 }
 
 impl<'a> FeatureDocsSection<'a> {
@@ -23,14 +23,14 @@ impl<'a> FeatureDocsSection<'a> {
             return Ok(None);
         };
 
-        Ok(Some(FeatureDocsSection { source, docs, section }))
+        Ok(Some(FeatureDocsSection { source, docs, content_span: section.content_span }))
     }
 
     pub fn replace(&self, section_content: &str) -> Result<String> {
-        let Self { source, docs, section } = self;
+        let Self { source, docs, content_span } = self;
 
-        let start = section.start;
-        let end = section.end;
+        let start = content_span.start;
+        let end = content_span.end;
 
         let start_frag_i = *docs.source_map.get(&start).unwrap();
         let end_frag_i = *docs.source_map.get(&end).unwrap();

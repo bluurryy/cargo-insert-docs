@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Add support for inserting subsections of the crate documentation
+  by adding a html comment tag in both crate docs and readme like
+  ```md
+  <!-- crate documentation my_subsection_name start -->
+  some content...
+  <!-- crate documentation my_subsection_name end -->
+  ``` 
+
 ## [0.12.0] - 2025-08-03
 
 ### Changed

@@ -153,6 +153,32 @@ To update the sections just run the command again.
 
 By default, `cargo-insert-docs` tries to insert both feature documentation and crate documentation. To perform only one of these actions use the `feature-into-crate` or `crate-into-readme` command.
 
+Instead of inserting the entire crate documentation into the readme you can also insert subsections into the readme. Here is an example:
+- lib.rs:
+  ```rs
+  //! <!-- crate documentation intro start --> 
+  //! This is my crate. Bla bla.
+  //! <!-- crate documentation intro end --> 
+  //! 
+  //! <!-- crate documentation rest start -->
+  //! ## Features
+  //! ...
+  //! <!-- crate documentation rest end -->
+  ```
+- README.md:
+  ```md
+  <!-- crate documentation intro start -->
+  <!-- crate documentation intro end -->
+
+  ## Table of Contents
+  - [Features](#features)
+
+  <!-- crate documentation rest start -->
+  <!-- crate documentation rest end -->
+  ```
+This is useful if you want a table of contents in the readme but don't want it in the crate docs because the
+crate documentation already has a side panel for that.
+
 You can find all the available arguments in [docs/cli.md](docs/cli.md).
 
 If you'd like to see what it looks like when used by a real crate then have a look at `bump-scope`'s [docs.rs](https://docs.rs/bump-scope/latest/bump_scope/) and [README.md](https://github.com/bluurryy/bump-scope/blob/main/README.md).

@@ -1,11 +1,13 @@
 use expect_test::expect;
 
-use super::{clean_code_blocks, code_blocks, fenced_code_block_is_rust, find_section};
+use super::{
+    clean_code_blocks, code_blocks, fenced_code_block_is_rust, find_section, find_subsections,
+};
 
 fn replace_section(markdown: &str, replacement: &str) -> String {
-    let range = find_section(markdown, "section").unwrap();
+    let section = find_section(markdown, "section").unwrap();
     let mut out = markdown.to_string();
-    out.replace_range(range, replacement);
+    out.replace_range(section.content_span, replacement);
     out
 }
 
@@ -19,10 +21,55 @@ inside section
 after section
     "#;
 
-    let range = find_section(markdown, "my section").unwrap();
-    let content = &markdown[range];
+    let section = find_section(markdown, "my section").unwrap();
 
-    assert_eq!(content, "\ninside section\n");
+    expect![[r#"
+        (
+            "<!-- my section start -->\ninside section\n<!-- my section end -->",
+            "\ninside section\n",
+        )
+    "#]]
+    .assert_debug_eq(&(&markdown[section.span], &markdown[section.content_span]));
+}
+
+#[test]
+fn test_find_subsections() {
+    let markdown = r#"
+before sections
+<!-- my section start -->
+will be ignored
+<!-- my section end -->
+<!-- my section foo start -->
+foo
+<!-- my section foo end -->
+<!-- my section ignore this -->
+<!-- my section bar start -->
+bar
+<!-- my section bar end -->
+after sections
+    "#;
+
+    let result = find_subsections(markdown, "my section")
+        .unwrap()
+        .into_iter()
+        .map(|(range, name)| (name, &markdown[range.span], &markdown[range.content_span]))
+        .collect::<Vec<_>>();
+
+    expect![[r#"
+        [
+            (
+                "foo",
+                "<!-- my section foo start -->\nfoo\n<!-- my section foo end -->",
+                "\nfoo\n",
+            ),
+            (
+                "bar",
+                "<!-- my section bar start -->\nbar\n<!-- my section bar end -->",
+                "\nbar\n",
+            ),
+        ]
+    "#]]
+    .assert_debug_eq(&result);
 }
 
 #[test]

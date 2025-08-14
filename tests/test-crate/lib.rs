@@ -2,6 +2,11 @@
 #![allow(rustdoc::broken_intra_doc_links)]
 #![feature(trait_alias)]
 #![feature(extern_types)]
+//! <!-- docs intro start -->
+//! This is kitchen-sink test crate for `cargo-insert-docs`.
+//! <!-- docs intro end -->
+//!
+//! <!-- docs rest start -->
 //! ### Link variants
 //! - A shortcut link: [`Vec`]!
 //! - An inline link: [`String`](std::string::String)!
@@ -113,6 +118,8 @@
 //! // i don't see what this language could be
 //! int main(void) { return 0; }
 //! ```
+//! <!-- docs rest end -->
+
 // The docs should not link here because it's not inline.
 pub use reexport::Reexport;
 

@@ -1,4 +1,8 @@
 #![doc = include_str!("../README.md")]
+#![allow(
+    // ifs are intentionally uncollapsed to make the logic clearer
+    clippy::collapsible_else_if,
+)]
 
 mod edit_crate_docs;
 mod extract_crate_docs;
@@ -774,7 +778,26 @@ fn insert_docs_into_readme(cx: &Context) -> Result<()> {
     let readme_path = &cx.package.readme_path;
     let readme = readme_path.read_to_string().with_severity(not_found_level)?;
 
-    let Some(section) = markdown::find_section(&readme, &cx.args.crate_section_name) else {
+    let section_name = &cx.args.crate_section_name;
+    let subsections = markdown::find_subsections(&readme, section_name)?;
+
+    let new_readme = if !subsections.is_empty() {
+        let crate_docs = extract_crate_docs::extract(cx)?;
+        let mut new_readme = readme.clone();
+
+        for (section, name) in subsections.into_iter().rev() {
+            let replace_with_section = markdown::find_section(&crate_docs, &format!("{section_name} {name}")).ok_or_else(|| eyre!("\"{section_name}\" subsection \"{name}\" is contained in readme but missing from crate docs"))?;
+            let replace_with = &crate_docs[replace_with_section.span];
+            new_readme.replace_range(section.span, replace_with);
+        }
+
+        new_readme
+    } else if let Some(section) = markdown::find_section(&readme, &cx.args.crate_section_name) {
+        let crate_docs = extract_crate_docs::extract(cx)?;
+        let mut new_readme = readme.clone();
+        new_readme.replace_range(section.content_span, &format!("\n{crate_docs}\n"));
+        new_readme
+    } else {
         let relative_path = readme_path.relative_to_manifest.display();
 
         let _span = info_span!("",
@@ -785,11 +808,6 @@ fn insert_docs_into_readme(cx: &Context) -> Result<()> {
 
         return Err(eyre!("section not found in {relative_path}")).with_severity(not_found_level);
     };
-
-    let crate_docs = extract_crate_docs::extract(cx)?;
-
-    let mut new_readme = readme.clone();
-    new_readme.replace_range(section, &format!("\n{crate_docs}\n"));
 
     if readme != new_readme {
         if cx.args.check {
