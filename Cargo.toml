@@ -12,15 +12,15 @@ readme = "README.md"
 exclude = [".github"]
 
 [dependencies]
-anstream = "0.6.19"
+anstream = "0.6.20"
 anstyle = "1.0.11"
 cargo_metadata = "0.21.0"
-clap = { version = "4.5.41", features = ["derive", "wrap_help"] }
+clap = { version = "4.5.45", features = ["derive", "wrap_help"] }
 clap-cargo = "0.16.0"
 color-eyre = { version = "0.6.5", features = ["capture-spantrace"] }
 git2 = { version = "0.20.2", default-features = false }
 mimalloc = "0.1.47"
-proc-macro2 = { version = "1.0.95", default-features = false, features = [
+proc-macro2 = { version = "1.0.97", default-features = false, features = [
     "span-locations",
 ] }
 pulldown-cmark = { version = "0.13.0", default-features = false }
@@ -28,22 +28,22 @@ rangemap = "1.6.0"
 relative-path = "2.0.1"
 rustdoc-types = "0.55.0"
 serde = { version = "1.0.219", features = ["derive"] }
-serde_json = "1.0.141"
-syn = { version = "2.0.104", default-features = false, features = [
+serde_json = "1.0.142"
+syn = { version = "2.0.105", default-features = false, features = [
     "clone-impls",
     "extra-traits",
     "full",
     "parsing",
     "printing",
 ] }
-toml_edit = "0.23.2"
+toml_edit = "0.23.3"
 tracing = "0.1.41"
 tracing-error = "0.2.1"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 
 [dev-dependencies]
 expect-test = "1.5.1"
-indoc = "2.0.6"
+indoc = "2"
 unindent = "0.2.4"
 
 [package.metadata.release]
