@@ -33,8 +33,8 @@ The html docs already have a table of contents on the left side panel.
 - A broken link: [goes somewhere](i lied)
 
 #### Inter-doc links
-- A link to another crate: [`glob_match`](https://docs.rs/fast-glob/0.4.5/fast_glob/fn.glob_match.html).
-- A shortcut to another crate [`fast_glob::glob_match`](https://docs.rs/fast-glob/0.4.5/fast_glob/fn.glob_match.html).
+- A link to another crate: [`glob_match`](https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html).
+- A shortcut to another crate [`fast_glob::glob_match`](https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html).
 - A link to a crate from github: [`indoc::indoc!`](https://docs.rs/indoc/2.0.6/indoc/macro.indoc.html).
 
 #### Re-exports
