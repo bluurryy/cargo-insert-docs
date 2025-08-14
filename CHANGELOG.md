@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+## [0.13.0] - 2025-08-14
+
 ### Added
 
 - Add support for inserting subsections of the crate documentation
@@ -167,7 +169,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-07-09
 
 <!-- next-url -->
-[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.13.0
 [0.12.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.12.0
 [0.11.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.11.0
 [0.10.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.10.0
