@@ -70,13 +70,13 @@ impl PrettyLog {
                 sink,
                 tally: Default::default(),
                 last_print_kind: None,
-                print_source_info: false,
+                format_source_info: false,
             })),
         }
     }
 
-    pub fn print_source_info(&self, enabled: bool) {
-        self.inner.lck().print_source_info = enabled;
+    pub fn source_info(&self, enabled: bool) {
+        self.inner.lck().format_source_info = enabled;
     }
 
     pub fn subscriber(&self, filter: &str) -> impl Subscriber + Send + Sync + 'static {
@@ -169,7 +169,7 @@ struct PrettyLogInner {
     sink: Box<dyn AnyWrite>,
     tally: Tally,
     last_print_kind: Option<PrintKind>,
-    print_source_info: bool,
+    format_source_info: bool,
 }
 
 impl PrettyLogInner {
@@ -229,10 +229,12 @@ impl PrettyLogInner {
             });
         }
 
-        if let Some(location) = pretty_eyre::extract_location(report) {
-            let file = location.file();
-            let line = location.line();
-            format_field(&mut out, "source", &format!("{file}:{line}"));
+        if self.format_source_info {
+            if let Some(location) = pretty_eyre::extract_location(report) {
+                let file = location.file();
+                let line = location.line();
+                format_field(&mut out, "source", &format!("{file}:{line}"));
+            }
         }
 
         _ = self.sink.write_all(out.as_bytes());
@@ -272,7 +274,7 @@ impl PrettyLogInner {
     }
 
     fn format_metadata(&self, out: &mut String, metadata: &Metadata) {
-        if self.print_source_info {
+        if self.format_source_info {
             if let Some(module) = metadata.module_path() {
                 format_field(out, "module", module);
             }

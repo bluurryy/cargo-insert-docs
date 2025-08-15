@@ -285,7 +285,7 @@ fn main() -> ExitCode {
     };
 
     let log = PrettyLog::new(stream);
-    log.print_source_info(args.cli.verbose);
+    log.source_info(args.cli.verbose);
 
     let log_level = if args.cli.verbose { "trace" } else { "info" };
     log.install(&format!("cargo_insert_docs={log_level}"));
