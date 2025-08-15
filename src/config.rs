@@ -7,7 +7,7 @@ use std::{
 use color_eyre::eyre::{Result, WrapErr as _};
 use macro_rules_attribute::derive;
 use serde::{
-    Deserialize, Serialize,
+    Deserialize, Serialize, Serializer,
     de::{DeserializeOwned, IgnoredAny},
 };
 
@@ -153,7 +153,7 @@ impl WorkspaceConfigPatch {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct PackageConfig {
     pub feature_into_crate: bool,
     pub crate_into_readme: bool,
@@ -170,6 +170,7 @@ pub struct PackageConfig {
     pub features: Vec<String>,
     pub all_features: bool,
     pub no_default_features: bool,
+    #[serde(flatten, serialize_with = "serialize_target_selection")]
     pub target_selection: Option<TargetSelection>,
     pub toolchain: String,
     pub target: Option<String>,
@@ -177,7 +178,7 @@ pub struct PackageConfig {
     pub readme_path: Option<PathBuf>,
 }
 
-#[derive(Default, Clone, Deserialize, Serialize, Fields!)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, Fields!)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct PackageConfigPatch {
     pub feature_into_crate: Option<bool>,
@@ -386,7 +387,7 @@ impl PackageConfigPatch {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(untagged, rename_all = "kebab-case")]
 pub enum TargetSelection {
     Lib,
@@ -434,6 +435,32 @@ struct Metadata<T: Default> {
     insert_docs: T,
 }
 
+fn serialize_target_selection<S>(
+    value: &Option<TargetSelection>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    #[derive(Serialize)]
+    struct Helper {
+        lib: Option<bool>,
+        bin: Option<BoolOrString>,
+    }
+
+    match value {
+        Some(value) => match value.clone() {
+            TargetSelection::Lib => Helper { lib: Some(true), bin: None },
+            TargetSelection::Bin(name) => match name {
+                Some(name) => Helper { lib: None, bin: Some(BoolOrString::String(name)) },
+                None => Helper { lib: None, bin: Some(BoolOrString::Bool(true)) },
+            },
+        },
+        None => Helper { lib: None, bin: None },
+    }
+    .serialize(serializer)
+}
+
 fn metadata_json<T: Default + DeserializeOwned>(json: &serde_json::Value) -> Result<T> {
     let metadata = <Metadata<T> as Deserialize>::deserialize(json)
         .wrap_err("failed to deserialize metadata")?;
@@ -463,4 +490,59 @@ fn warn_about_unused_fields(fields: HashMap<String, IgnoredAny>, available_field
     if !unknown_fields.is_empty() {
         tracing::warn!("metadata.insert-docs contains unknown fields: {unknown_fields}");
     }
+}
+
+#[test]
+fn test_target_selection() {
+    #[derive(Debug, Default, Serialize, PartialEq, Eq)]
+    #[serde(default)]
+    struct Table {
+        #[serde(flatten, serialize_with = "serialize_target_selection")]
+        foo: Option<TargetSelection>,
+    }
+
+    assert_eq!(toml::to_string(&Table { foo: None }).unwrap(), "");
+    assert_eq!(
+        toml::to_string(&Table { foo: Some(TargetSelection::Lib) }).unwrap(),
+        "lib = true\n"
+    );
+    assert_eq!(
+        toml::to_string(&Table { foo: Some(TargetSelection::Bin(None)) }).unwrap(),
+        "bin = true\n"
+    );
+    assert_eq!(
+        toml::to_string(&Table { foo: Some(TargetSelection::Bin(Some("hey".into()))) }).unwrap(),
+        "bin = \"hey\"\n"
+    );
+}
+
+#[test]
+fn test_bool_or_string() {
+    #[derive(Default, Debug, Serialize, Deserialize, PartialEq, Eq)]
+    #[serde(default)]
+    struct Table {
+        foo: Option<BoolOrString>,
+    }
+
+    assert_eq!(toml::to_string(&Table { foo: None }).unwrap(), "");
+    assert_eq!(
+        toml::to_string(&Table { foo: Some(BoolOrString::Bool(false)) }).unwrap(),
+        "foo = false\n"
+    );
+    assert_eq!(
+        toml::to_string(&Table { foo: Some(BoolOrString::Bool(true)) }).unwrap(),
+        "foo = true\n"
+    );
+    assert_eq!(
+        toml::to_string(&Table { foo: Some(BoolOrString::String("hey".into())) }).unwrap(),
+        "foo = \"hey\"\n"
+    );
+
+    assert_eq!(toml::from_str(""), Ok(Table { foo: None }));
+    assert_eq!(toml::from_str("foo = true"), Ok(Table { foo: Some(BoolOrString::Bool(true)) }));
+    assert_eq!(toml::from_str("foo = false"), Ok(Table { foo: Some(BoolOrString::Bool(false)) }));
+    assert_eq!(
+        toml::from_str("foo = 'bar'"),
+        Ok(Table { foo: Some(BoolOrString::String(String::from("bar"))) })
+    );
 }

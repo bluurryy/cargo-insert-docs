@@ -381,9 +381,12 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
     let mut cxs = vec![];
     let uses_default_packages = !workspace.workspace && workspace.package.is_empty();
 
+    dbg!(packages.len());
+
     for package in packages {
         let manifest_path = ManifestPath::new(package.manifest_path.as_ref())?;
         let toml = manifest_path.get().read_to_string()?;
+
         let cfg_patch = config::read_package_config(&toml)?;
 
         let cfg =
@@ -476,19 +479,17 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
 
         #[derive(Serialize)]
         struct PerPackage<'a> {
-            package: &'a PackageConfigPatch,
-            resolved: WorkspaceAndPackageConfig<'a>,
+            package: HashMap<&'a str, &'a PackageConfigPatch>,
+            resolved: HashMap<&'a str, WorkspaceAndPackageConfig<'a>>,
         }
 
         #[derive(Serialize)]
         struct Table<'a> {
             cli: WorkspaceAndPackageConfigPatch<'a>,
             workspace: WorkspaceAndPackageConfigPatch<'a>,
-            #[serde(flatten)]
-            packages: HashMap<String, PerPackage<'a>>,
         }
 
-        let mut table = Table {
+        let mut out = toml::to_string(&Table {
             cli: WorkspaceAndPackageConfigPatch {
                 workspace: &args.workspace_patch,
                 package: &args.package_patch,
@@ -497,20 +498,26 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
                 workspace: &workspace_workspace_config_patch,
                 package: &workspace_package_config_patch,
             },
-            packages: Default::default(),
-        };
+        })
+        .wrap_err("toml serialization failed")?;
 
         for cx in &cxs {
-            table.packages.insert(
-                cx.package.name.to_string(),
-                PerPackage {
-                    package: &cx.cfg_patch,
-                    resolved: WorkspaceAndPackageConfig { workspace: &workspace, package: &cx.cfg },
-                },
+            let name = cx.package.name.as_str();
+
+            out.push('\n');
+
+            out.push_str(
+                &toml::to_string(&PerPackage {
+                    package: HashMap::from_iter([(name, &cx.cfg_patch)]),
+                    resolved: HashMap::from_iter([(
+                        name,
+                        WorkspaceAndPackageConfig { workspace: &workspace, package: &cx.cfg },
+                    )]),
+                })
+                .wrap_err("toml serialization failed")?,
             );
         }
 
-        let out = toml::to_string(&table)?;
         log.foreign_write_incoming();
         println!("{out}");
         return Ok(());
