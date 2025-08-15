@@ -13,11 +13,12 @@ Commands:
   help                Print this message or the help of the given subcommand(s)
 
 Options:
-      --feature-label <FEATURE_LABEL>  Formatting of the feature label [default: **`{feature}`**]
+      --feature-label <FEATURE_LABEL>  Formatting of the feature label [default: "**`{feature}`**"]
       --feature-section-name <NAME>    Feature documentation section name [default: "feature documentation"]
       --crate-section-name <NAME>      Crate documentation section name [default: "crate documentation"]
       --link-to-latest                 Link to the "latest" version on docs.rs
       --print-supported-toolchain      Prints a supported nightly toolchain
+      --print-config                   Prints configuration values and their sources for debugging
   -h, --help                           Print help (see more with '--help')
   -V, --version                        Print version
 
@@ -34,7 +35,7 @@ Error Behavior:
       --allow-staged           Insert documentation even if the affected file has staged changes
 
 Message Options:
-      --color <WHEN>  Coloring [default: auto] [possible values: auto, always, never]
+      --color <WHEN>  Coloring [default: "auto"] [possible values: auto, always, never]
   -v, --verbose       Print more verbose messages
   -q, --quiet         Do not print anything
       --quiet-cargo   Do not print cargo log messages
@@ -54,7 +55,7 @@ Target Selection:
       --bin [<NAME>]  Document only the specified binary
 
 Compilation Options:
-      --toolchain <TOOLCHAIN>   Which rustup toolchain to use when invoking rustdoc [default: nightly-2025-08-02]
+      --toolchain <TOOLCHAIN>   Which rustup toolchain to use when invoking rustdoc [default: "nightly-2025-08-02"]
       --target <TRIPLE>         Target triple to document
       --target-dir <DIRECTORY>  Directory for all generated artifacts
 

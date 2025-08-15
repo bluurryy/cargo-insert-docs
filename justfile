@@ -6,11 +6,13 @@ pre-release:
     cargo run -- --check -p test-document-features crate-into-readme
     cargo run -- --check -p example-crate
     cargo run -- --check -p test-bin crate-into-readme
-    cargo run -- --check --workspace --exclude test-crate --exclude cargo-insert-docs crate-into-readme
+    cargo run -- --check --workspace --exclude test-crate --exclude cargo-insert-docs --exclude test-bin-lib crate-into-readme
     just update-cli-md
     just test
     just test-recurse recurse
     just test-recurse recurse-glob
+    just test-config
+    just test-bin-lib
 
 update-cli-md:
     #!/usr/bin/env nu
@@ -48,3 +50,25 @@ test-recurse feature:
         print -e $out
         exit 1
     }
+
+test-config:
+    #!/usr/bin/env nu
+    let out = (cargo run -- --manifest-path tests/test-config/Cargo.toml --print-config | tee { print })
+    if ($env | get -i UPDATE_EXPECT) == "1" {
+        $out | save -f tests/test-config/print-config.toml
+    } else {
+        let expected = try { open --raw tests/test-config/print-config.toml } catch { "" }
+        if $out != $expected {
+            print -e $"(ansi red_bold)EXPECT TEST FAILED(ansi reset)"
+            exit 1
+        }
+    }
+
+test-bin-lib:
+    #!/usr/bin/env nu
+    let out = (cargo run -- -p test-bin-lib --allow-dirty | complete).stderr | tee { print }
+    if not ($out | str contains "choose one or the other") {
+        print -e $"(ansi red_bold)EXPECTED A DIFFERENT ERROR(ansi reset)"
+        exit 1
+    }
+

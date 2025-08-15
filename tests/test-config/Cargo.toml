@@ -1,0 +1,48 @@
+[package]
+name = "test-config"
+edition = "2024"
+
+[workspace.metadata.insert-docs]
+workspace = true
+this-is-not-a-valid-field = "so please warn about it"
+feature-into-crate = false
+crate-into-readme = false
+feature-label = "feature label from workspace"
+feature-section-name = "feature section from workspace "
+crate-section-name = "crate section from workspace "
+link-to-latest = true
+document-private-items = true
+no-deps = true
+check = true
+allow-missing-section = true
+allow-staged = true
+features = ["foo", "bar", "baz"]
+all-features = true
+no-default-features = true
+bin = "foo"
+toolchain = "toolchain from workspace"
+target = "wasm32-unknown-unknown"
+target-dir = "target dir from workspace"
+readme-path = "readme path from workspace"
+
+[package.metadata.insert-docs]
+this-is-not-a-valid-field = "so please warn about it"
+feature-into-crate = true
+crate-into-readme = true
+feature-label = "feature label from package"
+feature-section-name = "feature section from package"
+crate-section-name = "crate section from package"
+link-to-latest = true
+document-private-items = true
+no-deps = true
+check = false
+allow-missing-section = true
+allow-staged = true
+features = ["foo", "bar", "baz"]
+all-features = true
+no-default-features = true
+lib = true
+toolchain = "toolchain from package"
+target = "wasm32-unknown-unknown"
+target-dir = "target dir from package"
+readme-path = "readme path from package"

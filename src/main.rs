@@ -4,6 +4,7 @@
     clippy::collapsible_else_if,
 )]
 
+mod config;
 mod edit_crate_docs;
 mod extract_crate_docs;
 mod extract_feature_docs;
@@ -15,11 +16,9 @@ mod rustdoc_json;
 mod tests;
 
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     ffi::{OsStr, OsString},
-    fmt::{self, Write},
     fs, io,
-    ops::Deref,
     path::{Path, PathBuf},
     process::ExitCode,
     time::Instant,
@@ -31,11 +30,17 @@ use clap_cargo::style::CLAP_STYLING;
 use color_eyre::eyre::{OptionExt, Result, WrapErr as _, bail, eyre};
 use mimalloc::MiMalloc;
 use relative_path::PathExt;
+use serde::Serialize;
 use tracing::{Level, error_span, info_span, trace};
 
 use pretty_log::{PrettyLog, WithResultSeverity as _};
 
-use crate::pretty_log::AnyWrite;
+use crate::{
+    config::{
+        ArgsConfig, PackageConfig, PackageConfigPatch, WorkspaceConfig, WorkspaceConfigPatch,
+    },
+    pretty_log::AnyWrite,
+};
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -52,8 +57,6 @@ mod heading {
     pub const CARGO_DOC_OPTIONS: &str = "Cargo Doc Options";
 }
 
-const SUPPORTED_TOOLCHAIN: &str = "nightly-2025-08-02";
-
 #[derive(Parser)]
 #[command(
     version,
@@ -68,19 +71,19 @@ struct Args {
     #[command(subcommand)]
     command: Option<Command>,
 
-    /// Formatting of the feature label
+    /// Formatting of the feature label [default: "**`{feature}`**"]
     ///
     /// When inserting feature documentation into the crate documentation.
-    #[arg(global = true, long, default_value = "**`{feature}`**")]
-    feature_label: String,
+    #[arg(global = true, long)]
+    feature_label: Option<String>,
 
-    /// Feature documentation section name
-    #[arg(global = true, long, value_name = "NAME", default_value = "feature documentation")]
-    feature_section_name: String,
+    /// Feature documentation section name [default: "feature documentation"]
+    #[arg(global = true, long, value_name = "NAME")]
+    feature_section_name: Option<String>,
 
-    /// Crate documentation section name
-    #[arg(global = true, long, value_name = "NAME", default_value = "crate documentation")]
-    crate_section_name: String,
+    /// Crate documentation section name [default: "crate documentation"]
+    #[arg(global = true, long, value_name = "NAME")]
+    crate_section_name: Option<String>,
 
     #[expect(rustdoc::bare_urls)]
     /// Link to the "latest" version on docs.rs
@@ -93,6 +96,10 @@ struct Args {
     /// Prints a supported nightly toolchain
     #[arg(global = true, long)]
     print_supported_toolchain: bool,
+
+    /// Prints configuration values and their sources for debugging
+    #[arg(global = true, long)]
+    print_config: bool,
 
     /// Document private items
     #[arg(global = true, help_heading = heading::CARGO_DOC_OPTIONS, long)]
@@ -121,9 +128,9 @@ struct Args {
     #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
     allow_staged: bool,
 
-    /// Coloring
-    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long, value_name = "WHEN", value_enum, default_value_t = ColorChoice::Auto)]
-    color: ColorChoice,
+    /// Coloring [default: "auto"]
+    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long, value_name = "WHEN", value_enum)]
+    color: Option<ColorChoice>,
 
     /// Print more verbose messages
     #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long, short = 'v')]
@@ -164,12 +171,12 @@ struct Args {
     #[command(flatten)]
     target_selection: TargetSelection,
 
-    /// Which rustup toolchain to use when invoking rustdoc
+    /// Which rustup toolchain to use when invoking rustdoc [default: "nightly-2025-08-02"]
     ///
     /// The default value is a toolchain that is known to be compatible with
     /// this version of `cargo-insert-docs`.
-    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, default_value = SUPPORTED_TOOLCHAIN, verbatim_doc_comment)]
-    toolchain: String,
+    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, verbatim_doc_comment)]
+    toolchain: Option<String>,
 
     /// Target triple to document
     #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, value_name = "TRIPLE")]
@@ -188,16 +195,6 @@ struct Args {
     /// This defaults to the `readme` field as specified in the `Cargo.toml`.
     #[arg(global = true, help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
     readme_path: Option<PathBuf>,
-}
-
-impl Args {
-    fn feature_section_enabled(&self) -> bool {
-        self.command != Some(Command::CrateIntoReadme)
-    }
-
-    fn crate_section_enabled(&self) -> bool {
-        self.command != Some(Command::FeatureIntoCrate)
-    }
 }
 
 #[derive(clap::Subcommand, Clone, Copy, PartialEq, Eq)]
@@ -225,43 +222,6 @@ enum ColorChoice {
     Auto,
     Always,
     Never,
-}
-
-impl TargetSelection {
-    fn select<'a>(&self, targets: &'a [Target]) -> Option<&'a Target> {
-        if self.lib {
-            targets.iter().find(|t| t.doc && t.is_lib())
-        } else if let Some(bin) = self.bin.as_ref() {
-            if let Some(bin) = bin.as_deref() {
-                targets.iter().find(|t| t.doc && t.is_bin() && t.name == bin)
-            } else {
-                targets.iter().find(|t| t.doc && t.is_bin())
-            }
-        } else {
-            let lib = targets.iter().find(|t| t.doc && t.is_lib());
-            let bin = || targets.iter().find(|t| t.doc && t.is_bin());
-            lib.or_else(bin)
-        }
-    }
-}
-
-impl fmt::Display for TargetSelection {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.lib {
-            f.write_str("--lib")
-        } else if let Some(bin) = self.bin.as_ref() {
-            f.write_str("--bin")?;
-
-            if let Some(bin) = bin.as_deref() {
-                f.write_char(' ')?;
-                f.write_str(bin)
-            } else {
-                Ok(())
-            }
-        } else {
-            Ok(())
-        }
-    }
 }
 
 /// <https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands>
@@ -303,31 +263,20 @@ fn subcommand_name(bin: &OsStr) -> Option<OsString> {
 }
 
 fn main() -> ExitCode {
-    let mut args = parse_args();
+    let args = parse_args();
+    let args = ArgsConfig::from_args(&args);
 
-    if args.print_supported_toolchain {
-        println!("{SUPPORTED_TOOLCHAIN}");
+    if args.cli.print_supported_toolchain {
+        println!("{}", config::DEFAULT_TOOLCHAIN);
         return ExitCode::SUCCESS;
     }
 
-    if args.quiet {
-        args.quiet_cargo = true;
-    }
-
-    if args.allow_dirty {
-        args.allow_staged = true;
-    }
-
-    // features are already comma separated, we still need to make them space separated
-    args.features =
-        args.features.iter().flat_map(|f| f.split(' ').map(|s| s.to_string())).collect();
-
-    let stream: Box<dyn AnyWrite> = if args.quiet {
+    let stream: Box<dyn AnyWrite> = if args.cli.quiet {
         Box::new(io::empty())
     } else {
         Box::new(anstream::AutoStream::new(
             std::io::stderr(),
-            match args.color {
+            match args.cli.color {
                 ColorChoice::Auto => anstream::ColorChoice::Auto,
                 ColorChoice::Always => anstream::ColorChoice::Always,
                 ColorChoice::Never => anstream::ColorChoice::Never,
@@ -336,8 +285,9 @@ fn main() -> ExitCode {
     };
 
     let log = PrettyLog::new(stream);
+    log.source_info(args.cli.verbose);
 
-    let log_level = if args.verbose { "trace" } else { "info" };
+    let log_level = if args.cli.verbose { "trace" } else { "info" };
     log.install(&format!("cargo_insert_docs={log_level}"));
 
     if let Err(err) = try_main(&args, &log) {
@@ -349,61 +299,45 @@ fn main() -> ExitCode {
     if log.tally().errors == 0 { ExitCode::SUCCESS } else { ExitCode::FAILURE }
 }
 
-fn try_main(args: &Args, log: &PrettyLog) -> Result<()> {
+fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
     let mut cmd = MetadataCommand::new();
 
-    if let Some(manifest_path) = args.manifest_path.as_deref() {
+    if let Some(manifest_path) = args.cli.manifest_path.as_deref() {
         cmd.manifest_path(manifest_path);
     }
 
-    if args.no_default_features {
-        cmd.features(cargo_metadata::CargoOpt::NoDefaultFeatures);
-    }
-
-    if args.all_features {
-        cmd.features(cargo_metadata::CargoOpt::AllFeatures);
-    }
-
-    if args.features.is_empty() {
-        cmd.features(cargo_metadata::CargoOpt::SomeFeatures(args.features.clone()));
-    }
-
     let metadata = cmd.exec()?;
+    let (workspace_workspace_config_patch, workspace_package_config_patch) =
+        config::read_workspace_config(&metadata.workspace_metadata)?;
 
-    run(&BaseContext {
-        args,
-        metadata,
-        log: log.clone(),
-        uses_default_packages: !args.workspace && args.package.is_empty(),
-    })
-}
+    let workspace = workspace_workspace_config_patch.apply(&args.workspace_patch).finish();
 
-fn run(cx: &BaseContext) -> Result<()> {
-    let mut packages: Vec<&Package> = if cx.args.workspace {
-        cx.metadata.workspace_members.iter().map(|p| &cx.metadata[p]).collect()
-    } else if cx.args.package.is_empty() {
+    let mut packages: Vec<&Package> = if workspace.workspace {
+        metadata.workspace_members.iter().map(|p| &metadata[p]).collect()
+    } else if workspace.package.is_empty() {
         assert!(
-            cx.metadata.workspace_default_members.is_available(),
+            metadata.workspace_default_members.is_available(),
             "to infer the current package, cargo of rust version 1.71 or higher is required"
         );
 
-        if cx.metadata.workspace_default_members.is_available() {
-            (*cx.metadata.workspace_default_members).iter().map(|p| &cx.metadata[p]).collect()
+        // FIXME: just refuse to run if the workspace default members are not available
+        // it has been available since 1.71
+        if metadata.workspace_default_members.is_available() {
+            (*metadata.workspace_default_members).iter().map(|p| &metadata[p]).collect()
         } else {
             let cargo_toml = ManifestPath::new("Cargo.toml".as_ref())?.get().read_to_string()?;
             let package_name = manifest_package_name(&cargo_toml)
                 .wrap_err("tried to read Cargo.toml to figure out package name")?;
-            vec![find_package_by_name(cx, &package_name)?]
+            vec![find_package_by_name(&metadata, &package_name)?]
         }
     } else {
-        find_packages_by_name(cx, &cx.args.package)?
+        find_packages_by_name(&metadata, &workspace.package)?
     };
 
-    let excluded_packages = cx
-        .args
+    let excluded_packages = workspace
         .exclude
         .iter()
-        .map(|name| find_package_by_name(cx, name))
+        .map(|name| find_package_by_name(&metadata, name))
         .collect::<Result<HashSet<_>, _>>()?;
 
     packages.retain(|id| !excluded_packages.contains(id));
@@ -413,15 +347,16 @@ fn run(cx: &BaseContext) -> Result<()> {
     }
 
     // error if a feature is not available in any selected package
-    {
+    if !args.cli.print_config {
+        let pkg = workspace_package_config_patch.clone().apply(&args.package_patch).finish();
+
         let all_available_features = packages
             .iter()
             .flat_map(|p| p.features.keys())
             .map(|s| s.as_str())
             .collect::<HashSet<&str>>();
 
-        let unavailable_features = cx
-            .args
+        let unavailable_features = pkg
             .features
             .iter()
             .map(|s| s.as_str())
@@ -441,24 +376,55 @@ fn run(cx: &BaseContext) -> Result<()> {
         }
     }
 
+    // We first prepare all the contexts for each package.
+    // This way we error early if there are any severe errors.
     let mut cxs = vec![];
+    let uses_default_packages = !workspace.workspace && workspace.package.is_empty();
 
     for package in packages {
+        let _span = error_span!("", package = package.name.as_str()).entered();
+
         let manifest_path = ManifestPath::new(package.manifest_path.as_ref())?;
+        let toml = manifest_path.get().read_to_string()?;
 
-        let enabled_features = cx
-            .args
-            .features
-            .iter()
-            .filter(|&f| package.features.contains_key(f))
-            .cloned()
-            .collect();
+        let cfg_patch = config::read_package_config(&toml)?;
 
-        let Some(target) = cx.args.target_selection.select(&package.targets) else {
+        let final_patch =
+            workspace_package_config_patch.apply(&cfg_patch).apply(&args.package_patch);
+
+        if final_patch.bin.is_some() && final_patch.lib.is_some() {
+            bail!("`lib` and `bin` are both set, you have to choose one or the other");
+        }
+
+        let cfg = final_patch.finish();
+
+        let enabled_features =
+            cfg.features.iter().filter(|&f| package.features.contains_key(f)).cloned().collect();
+
+        let target = match &cfg.target_selection {
+            Some(target_selection) => match target_selection {
+                config::TargetSelection::Lib => {
+                    package.targets.iter().find(|t| t.doc && t.is_lib())
+                }
+                config::TargetSelection::Bin(bin) => match bin {
+                    Some(bin_name) => {
+                        package.targets.iter().find(|t| t.doc && t.is_bin() && t.name == *bin_name)
+                    }
+                    None => package.targets.iter().find(|t| t.doc && t.is_bin()),
+                },
+            },
+            None => {
+                let lib = package.targets.iter().find(|t| t.doc && t.is_lib());
+                let bin = || package.targets.iter().find(|t| t.doc && t.is_bin());
+                lib.or_else(bin)
+            }
+        };
+
+        let Some(target) = target else {
             continue;
         };
 
-        let relative_readme_path = if let Some(path) = cx.args.readme_path.as_deref() {
+        let relative_readme_path = if let Some(path) = cfg.readme_path.as_deref() {
             path
         } else if let Some(path) = package.readme.as_deref() {
             path.as_std_path()
@@ -468,26 +434,110 @@ fn run(cx: &BaseContext) -> Result<()> {
 
         let readme_path = manifest_path.relative(relative_readme_path);
 
+        let mut cmd = MetadataCommand::new();
+        cmd.manifest_path(&package.manifest_path);
+
+        if cfg.no_default_features {
+            cmd.features(cargo_metadata::CargoOpt::NoDefaultFeatures);
+        }
+
+        if cfg.all_features {
+            cmd.features(cargo_metadata::CargoOpt::AllFeatures);
+        }
+
+        if cfg.features.is_empty() {
+            cmd.features(cargo_metadata::CargoOpt::SomeFeatures(cfg.features.clone()));
+        }
+
+        let metadata = cmd.exec()?;
+
         cxs.push(Context {
-            base: cx,
-            package: PackageContext {
-                package,
-                target,
-                enabled_features,
-                manifest_path,
-                readme_path,
-            },
+            args,
+            cfg,
+            cfg_patch,
+            package,
+            target,
+            enabled_features,
+            manifest_path,
+            readme_path,
+            uses_default_packages,
+            metadata,
+            log: log.clone(),
         })
     }
 
+    if args.cli.print_config {
+        #[derive(Serialize)]
+        struct WorkspaceAndPackageConfigPatch<'a> {
+            #[serde(flatten)]
+            workspace: &'a WorkspaceConfigPatch,
+            #[serde(flatten)]
+            package: &'a PackageConfigPatch,
+        }
+
+        #[derive(Serialize)]
+        struct WorkspaceAndPackageConfig<'a> {
+            #[serde(flatten)]
+            workspace: &'a WorkspaceConfig,
+            #[serde(flatten)]
+            package: &'a PackageConfig,
+        }
+
+        #[derive(Serialize)]
+        struct PerPackage<'a> {
+            package: HashMap<&'a str, &'a PackageConfigPatch>,
+            resolved: HashMap<&'a str, WorkspaceAndPackageConfig<'a>>,
+        }
+
+        #[derive(Serialize)]
+        struct Table<'a> {
+            cli: WorkspaceAndPackageConfigPatch<'a>,
+            workspace: WorkspaceAndPackageConfigPatch<'a>,
+        }
+
+        let mut out = toml::to_string(&Table {
+            cli: WorkspaceAndPackageConfigPatch {
+                workspace: &args.workspace_patch,
+                package: &args.package_patch,
+            },
+            workspace: WorkspaceAndPackageConfigPatch {
+                workspace: &workspace_workspace_config_patch,
+                package: &workspace_package_config_patch,
+            },
+        })
+        .wrap_err("toml serialization failed")?;
+
+        for cx in &cxs {
+            let name = cx.package.name.as_str();
+
+            out.push('\n');
+
+            out.push_str(
+                &toml::to_string(&PerPackage {
+                    package: HashMap::from_iter([(name, &cx.cfg_patch)]),
+                    resolved: HashMap::from_iter([(
+                        name,
+                        WorkspaceAndPackageConfig { workspace: &workspace, package: &cx.cfg },
+                    )]),
+                })
+                .wrap_err("toml serialization failed")?,
+            );
+        }
+
+        log.foreign_write_incoming();
+        println!("{out}");
+        return Ok(());
+    }
+
     if cxs.is_empty() {
-        let filter = cx.args.target_selection.to_string();
-        let _span = (!filter.is_empty()).then(|| error_span!("", filter).entered());
+        let _span = workspace_package_config_patch
+            .finish()
+            .target_selection
+            .map(|filter| error_span!("", %filter).entered());
         bail!("no target found to document");
     }
 
-    // Exit early if any affected file is dirty.
-    check_version_control(cx, &cxs)?;
+    check_version_control(&cxs)?;
 
     for cx in &cxs {
         run_package(cx);
@@ -497,17 +547,17 @@ fn run(cx: &BaseContext) -> Result<()> {
 }
 
 // Modified from `fn check_version_control` in `rust-lang/cargo/src/cargo/ops/fix/mod.rs`.
-fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
-    if cx.args.check || cx.args.allow_dirty {
-        return Ok(());
-    }
-
+fn check_version_control(cxs: &[Context]) -> Result<()> {
     let mut dirty_files = vec![];
     let mut staged_files = vec![];
 
     for cx in cxs {
-        if cx.args.feature_section_enabled() {
-            let lib_path = cx.package.target.src_path.as_std_path();
+        if cx.cfg.check || cx.cfg.allow_dirty {
+            continue;
+        }
+
+        if cx.cfg.feature_into_crate {
+            let lib_path = cx.target.src_path.as_std_path();
 
             let lib_path_display = lib_path
                 .relative_to(cx.metadata.workspace_root.as_std_path())
@@ -518,12 +568,12 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
                 match status {
                     git::Status::Current => (),
                     git::Status::Staged => {
-                        if !cx.args.allow_staged {
+                        if !cx.cfg.allow_staged {
                             staged_files.push(lib_path_display);
                         }
                     }
                     git::Status::Dirty => {
-                        if !cx.args.allow_dirty {
+                        if !cx.cfg.allow_dirty {
                             dirty_files.push(lib_path_display);
                         }
                     }
@@ -531,8 +581,8 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
             }
         }
 
-        if cx.args.crate_section_enabled() {
-            let readme_path = cx.package.readme_path.full_path.as_path();
+        if cx.cfg.crate_into_readme {
+            let readme_path = cx.readme_path.full_path.as_path();
 
             let readme_path_display = readme_path
                 .relative_to(cx.metadata.workspace_root.as_std_path())
@@ -543,12 +593,12 @@ fn check_version_control(cx: &BaseContext, cxs: &[Context]) -> Result<()> {
                 match status {
                     git::Status::Current => (),
                     git::Status::Staged => {
-                        if !cx.args.allow_staged {
+                        if !cx.cfg.allow_staged {
                             staged_files.push(readme_path_display);
                         }
                     }
                     git::Status::Dirty => {
-                        if !cx.args.allow_dirty {
+                        if !cx.cfg.allow_dirty {
                             dirty_files.push(readme_path_display);
                         }
                     }
@@ -589,11 +639,11 @@ fn run_package(cx: &Context) {
     let _span = (!cx.uses_default_packages || (*cx.metadata.workspace_default_members).len() > 1)
         .then(|| info_span!("", package = cx.package.name.as_str()).entered());
 
-    if cx.args.feature_section_enabled() {
+    if cx.cfg.feature_into_crate {
         task(cx, "feature documentation", "crate documentation", insert_features_into_docs);
     }
 
-    if cx.args.crate_section_enabled() {
+    if cx.cfg.crate_into_readme {
         task(cx, "crate documentation", "readme", insert_docs_into_readme);
     }
 }
@@ -608,17 +658,16 @@ fn manifest_package_name(cargo_toml: &str) -> Result<String> {
     inner(&doc).map(|s| s.to_string()).ok_or_eyre("Cargo.toml has no `package.name` field")
 }
 
-fn find_packages_by_name<'a>(
-    cx: &'a BaseContext,
+fn find_packages_by_name(
+    metadata: &Metadata,
     package_names: impl IntoIterator<Item = impl AsRef<str>>,
-) -> Result<Vec<&'a Package>> {
-    package_names.into_iter().map(|name| find_package_by_name(cx, name.as_ref())).collect()
+) -> Result<Vec<&Package>> {
+    package_names.into_iter().map(|name| find_package_by_name(metadata, name.as_ref())).collect()
 }
 
-// support package SPECs
-fn find_package_by_name<'a>(cx: &'a BaseContext, package_name: &str) -> Result<&'a Package> {
-    for workspace_member in &cx.metadata.workspace_members {
-        let package = &cx.metadata[workspace_member];
+fn find_package_by_name<'a>(metadata: &'a Metadata, package_name: &str) -> Result<&'a Package> {
+    for workspace_member in &metadata.workspace_members {
+        let package = &metadata[workspace_member];
 
         if package.name.as_str() == package_name {
             return Ok(package);
@@ -628,40 +677,18 @@ fn find_package_by_name<'a>(cx: &'a BaseContext, package_name: &str) -> Result<&
     bail!("no package named \"{package_name}\" found")
 }
 
-struct BaseContext<'a> {
-    args: &'a Args,
-    log: PrettyLog,
-    metadata: Metadata,
-    uses_default_packages: bool,
-}
-
 struct Context<'a> {
-    base: &'a BaseContext<'a>,
-    package: PackageContext<'a>,
-}
-
-impl<'a> Deref for Context<'a> {
-    type Target = BaseContext<'a>;
-
-    fn deref(&self) -> &Self::Target {
-        self.base
-    }
-}
-
-struct PackageContext<'a> {
+    args: &'a ArgsConfig,
+    cfg: PackageConfig,
+    cfg_patch: PackageConfigPatch, // just for `--print-config`
     package: &'a Package,
     enabled_features: Vec<String>,
     manifest_path: ManifestPath,
     target: &'a Target,
     readme_path: RelativePath,
-}
-
-impl Deref for PackageContext<'_> {
-    type Target = Package;
-
-    fn deref(&self) -> &Self::Target {
-        self.package
-    }
+    uses_default_packages: bool,
+    metadata: Metadata,
+    log: PrettyLog,
 }
 
 struct ManifestPath(PathBuf);
@@ -714,7 +741,7 @@ impl RelativePath {
 }
 
 fn task(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
-    let task_name = if cx.args.check {
+    let task_name = if cx.cfg.check {
         format!("checking {from} in {to}")
     } else {
         format!("insert {from} into {to}")
@@ -727,7 +754,7 @@ fn task(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
     let start = Instant::now();
 
     if let Err(report) = f(cx) {
-        let context = if cx.args.check {
+        let context = if cx.cfg.check {
             format!("checking {from} failed")
         } else {
             format!("could not {task_name}")
@@ -740,13 +767,13 @@ fn task(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
 }
 
 fn insert_features_into_docs(cx: &Context) -> Result<()> {
-    let not_found_level = if cx.args.allow_missing_section { Level::WARN } else { Level::ERROR };
+    let not_found_level = if cx.cfg.allow_missing_section { Level::WARN } else { Level::ERROR };
 
-    let target_path = cx.package.target.src_path.as_std_path();
+    let target_path = cx.target.src_path.as_std_path();
     let target_src = read_to_string(target_path)?;
 
     let Some(feature_docs_section) =
-        edit_crate_docs::FeatureDocsSection::find(&target_src, &cx.args.feature_section_name)?
+        edit_crate_docs::FeatureDocsSection::find(&target_src, &cx.cfg.feature_section_name)?
     else {
         let target_name = target_path
             .file_name()
@@ -755,22 +782,22 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
 
         let _span = info_span!("",
             path = %target_path.display(),
-            section_name = cx.args.feature_section_name,
+            section_name = cx.cfg.feature_section_name,
         )
         .entered();
 
         return Err(eyre!("section not found in {target_name}")).with_severity(not_found_level);
     };
 
-    let cargo_toml = cx.package.manifest_path.get().read_to_string()?;
+    let cargo_toml = cx.manifest_path.get().read_to_string()?;
 
-    let feature_docs = extract_feature_docs::extract(&cargo_toml, &cx.args.feature_label)
+    let feature_docs = extract_feature_docs::extract(&cargo_toml, &cx.cfg.feature_label)
         .wrap_err("failed to parse Cargo.toml")?;
 
     let new_target_src = feature_docs_section.replace(&feature_docs)?;
 
     if new_target_src != target_src {
-        if cx.args.check {
+        if cx.cfg.check {
             bail!("feature documentation is stale");
         }
 
@@ -781,12 +808,12 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
 }
 
 fn insert_docs_into_readme(cx: &Context) -> Result<()> {
-    let not_found_level = if cx.args.allow_missing_section { Level::WARN } else { Level::ERROR };
+    let not_found_level = if cx.cfg.allow_missing_section { Level::WARN } else { Level::ERROR };
 
-    let readme_path = &cx.package.readme_path;
+    let readme_path = &cx.readme_path;
     let readme = readme_path.read_to_string().with_severity(not_found_level)?;
 
-    let section_name = &cx.args.crate_section_name;
+    let section_name = &cx.cfg.crate_section_name;
     let subsections = markdown::find_subsections(&readme, section_name)?;
 
     let new_readme = if !subsections.is_empty() {
@@ -800,7 +827,7 @@ fn insert_docs_into_readme(cx: &Context) -> Result<()> {
         }
 
         new_readme
-    } else if let Some(section) = markdown::find_section(&readme, &cx.args.crate_section_name) {
+    } else if let Some(section) = markdown::find_section(&readme, &cx.cfg.crate_section_name) {
         let crate_docs = extract_crate_docs::extract(cx)?;
         let mut new_readme = readme.clone();
         new_readme.replace_range(section.content_span, &format!("\n{crate_docs}\n"));
@@ -810,7 +837,7 @@ fn insert_docs_into_readme(cx: &Context) -> Result<()> {
 
         let _span = info_span!("",
             path = %readme_path.full_path.display(),
-            section_name = cx.args.crate_section_name,
+            section_name = cx.cfg.crate_section_name,
         )
         .entered();
 
@@ -818,7 +845,7 @@ fn insert_docs_into_readme(cx: &Context) -> Result<()> {
     };
 
     if readme != new_readme {
-        if cx.args.check {
+        if cx.cfg.check {
             bail!("crate documentation is stale");
         }
 

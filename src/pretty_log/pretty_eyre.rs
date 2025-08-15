@@ -12,12 +12,21 @@ use tracing::{Level, Span};
 
 pub fn wrap_hook(base_hook: HookFunc) -> HookFunc {
     Box::new(move |e| {
-        Box::new(PrettyHandler { base: base_hook(e), level: Level::ERROR, span: Span::current() })
+        Box::new(PrettyHandler {
+            base: base_hook(e),
+            level: Level::ERROR,
+            span: Span::current(),
+            location: None,
+        })
     })
 }
 
 pub fn extract_span(report: &Report) -> Option<&Span> {
     report.handler().downcast_ref::<PrettyHandler>().map(|h| &h.span)
+}
+
+pub fn extract_location(report: &Report) -> Option<&'static panic::Location<'static>> {
+    report.handler().downcast_ref::<PrettyHandler>().and_then(|h| h.location)
 }
 
 pub fn extract_severity(report: &Report) -> Level {
@@ -34,6 +43,7 @@ struct PrettyHandler {
     base: Box<dyn EyreHandler>,
     span: Span,
     level: Level,
+    location: Option<&'static panic::Location<'static>>,
 }
 
 impl EyreHandler for PrettyHandler {
@@ -47,6 +57,7 @@ impl EyreHandler for PrettyHandler {
 
     fn track_caller(&mut self, location: &'static panic::Location<'static>) {
         self.base.track_caller(location);
+        self.location = Some(location);
     }
 }
 

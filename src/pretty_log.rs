@@ -26,7 +26,7 @@ use std::{
 use anstyle::{AnsiColor, Color, Effects, Style};
 use color_eyre::eyre::{self, Report};
 use tracing::{
-    Event, Level, Subscriber,
+    Event, Level, Metadata, Subscriber,
     field::{Field, Visit},
     level_filters::LevelFilter,
     span::{Attributes, Id},
@@ -70,8 +70,13 @@ impl PrettyLog {
                 sink,
                 tally: Default::default(),
                 last_print_kind: None,
+                format_source_info: false,
             })),
         }
+    }
+
+    pub fn source_info(&self, enabled: bool) {
+        self.inner.lck().format_source_info = enabled;
     }
 
     pub fn subscriber(&self, filter: &str) -> impl Subscriber + Send + Sync + 'static {
@@ -164,6 +169,7 @@ struct PrettyLogInner {
     sink: Box<dyn AnyWrite>,
     tally: Tally,
     last_print_kind: Option<PrintKind>,
+    format_source_info: bool,
 }
 
 impl PrettyLogInner {
@@ -223,6 +229,14 @@ impl PrettyLogInner {
             });
         }
 
+        if self.format_source_info {
+            if let Some(location) = pretty_eyre::extract_location(report) {
+                let file = location.file();
+                let line = location.line();
+                format_field(&mut out, "source", &format!("{file}:{line}"));
+            }
+        }
+
         _ = self.sink.write_all(out.as_bytes());
     }
 
@@ -258,6 +272,18 @@ impl PrettyLogInner {
 
         _ = self.sink.write_all(out.as_bytes());
     }
+
+    fn format_metadata(&self, out: &mut String, metadata: &Metadata) {
+        if self.format_source_info {
+            if let Some(module) = metadata.module_path() {
+                format_field(out, "module", module);
+            }
+
+            if let (Some(file), Some(line)) = (metadata.file(), metadata.line()) {
+                format_field(out, "source", &format!("{file}:{line}"));
+            }
+        }
+    }
 }
 
 struct FormattedField(String);
@@ -287,6 +313,7 @@ where
             }
         }
 
+        self.inner.lck().format_metadata(&mut out, event.metadata());
         self.print_formatted_event(level, &out);
     }
 }
