@@ -26,7 +26,7 @@ use std::{
 use anstyle::{AnsiColor, Color, Effects, Style};
 use color_eyre::eyre::{self, Report};
 use tracing::{
-    Event, Level, Subscriber,
+    Event, Level, Metadata, Subscriber,
     field::{Field, Visit},
     level_filters::LevelFilter,
     span::{Attributes, Id},
@@ -229,6 +229,12 @@ impl PrettyLogInner {
             });
         }
 
+        if let Some(location) = pretty_eyre::extract_location(report) {
+            let file = location.file();
+            let line = location.line();
+            format_field(&mut out, "source", &format!("{file}:{line}"));
+        }
+
         _ = self.sink.write_all(out.as_bytes());
     }
 
@@ -264,6 +270,18 @@ impl PrettyLogInner {
 
         _ = self.sink.write_all(out.as_bytes());
     }
+
+    fn format_metadata(&self, out: &mut String, metadata: &Metadata) {
+        if self.print_source_info {
+            if let Some(module) = metadata.module_path() {
+                format_field(out, "module", module);
+            }
+
+            if let (Some(file), Some(line)) = (metadata.file(), metadata.line()) {
+                format_field(out, "source", &format!("{file}:{line}"));
+            }
+        }
+    }
 }
 
 struct FormattedField(String);
@@ -293,12 +311,7 @@ where
             }
         }
 
-        if self.inner.lck().print_source_info {
-            if let (Some(file), Some(line)) = (event.metadata().file(), event.metadata().line()) {
-                format_field(&mut out, "source", &format!("{file}:{line}"));
-            }
-        }
-
+        self.inner.lck().format_metadata(&mut out, event.metadata());
         self.print_formatted_event(level, &out);
     }
 }
