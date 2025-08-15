@@ -1,0 +1,69 @@
+[cli]
+
+[workspace]
+workspace = true
+feature-into-crate = false
+crate-into-readme = false
+feature-label = "from workspace label"
+feature-section-name = "from workspace feature section"
+crate-section-name = "from workspace crate section"
+link-to-latest = true
+document-private-items = true
+no-deps = true
+check = true
+allow-missing-section = true
+allow-staged = true
+features = ["foo", "bar", "baz"]
+all-features = true
+no-default-features = true
+bin = "foo"
+toolchain = "toolchain from workspace"
+target = "wasm32-unknown-unknown"
+target-dir = "target dir from workspace"
+readme-path = "readme path from workspace"
+
+[package.test-config]
+feature-into-crate = true
+crate-into-readme = true
+feature-label = "from package label"
+feature-section-name = "from package feature section"
+crate-section-name = "from package crate section"
+link-to-latest = true
+document-private-items = true
+no-deps = true
+check = false
+allow-missing-section = true
+allow-staged = true
+features = ["foo", "bar", "baz"]
+all-features = true
+no-default-features = true
+lib = true
+toolchain = "toolchain from package"
+target = "wasm32-unknown-unknown"
+target-dir = "target dir from package"
+readme-path = "readme path from package"
+
+[resolved.test-config]
+package = []
+workspace = true
+exclude = []
+feature_into_crate = true
+crate_into_readme = true
+feature_label = "from package label"
+feature_section_name = "from package feature section"
+crate_section_name = "from package crate section"
+link_to_latest = true
+document_private_items = true
+no_deps = true
+check = false
+allow_missing_section = true
+allow_dirty = false
+allow_staged = true
+features = ["foo", "bar", "baz"]
+all_features = true
+no_default_features = true
+lib = true
+toolchain = "toolchain from package"
+target = "wasm32-unknown-unknown"
+target_dir = "target dir from package"
+readme_path = "readme path from package"

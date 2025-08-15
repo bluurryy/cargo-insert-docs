@@ -11,6 +11,7 @@ pre-release:
     just test
     just test-recurse recurse
     just test-recurse recurse-glob
+    just test-config
 
 update-cli-md:
     #!/usr/bin/env nu
@@ -47,4 +48,17 @@ test-recurse feature:
     if not ($out | str contains "recursed too deep while resolving item paths") {
         print -e $out
         exit 1
+    }
+
+test-config:
+    #!/usr/bin/env nu
+    let out = (cargo run -- --manifest-path tests/test-config/Cargo.toml --print-config | tee { print })
+    if ($env | get -i UPDATE_EXPECT) == "1" {
+        $out | save -f tests/test-config/print-config.toml
+    } else {
+        let expected = try { open --raw tests/test-config/print-config.toml } catch { "" }
+        if $out != $expected {
+            print -e $"(ansi red_bold)EXPECT TEST FAILED(ansi reset)"
+            exit 1
+        }
     }
