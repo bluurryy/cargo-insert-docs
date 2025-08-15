@@ -53,7 +53,7 @@ pub struct CliConfig {
     pub print_supported_toolchain: bool,
     pub print_config: bool,
     pub color: ColorChoice,
-    pub verbose: bool,
+    pub verbose: bool, // FIXME: make this an int, so we can -vvv
     pub quiet: bool,
     pub quiet_cargo: bool,
     pub manifest_path: Option<PathBuf>,
