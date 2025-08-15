@@ -23,14 +23,14 @@ pub fn extract(cx: &Context) -> Result<String> {
         krate: &krate,
         metadata: &cx.metadata,
         on_not_found: &mut |link, cause| warn!(%cause, %link, "failed to resolve doc link"),
-        link_to_latest: cx.args.link_to_latest,
+        link_to_latest: cx.cfg.link_to_latest,
     })
 }
 
 fn generate_rustdoc_json(cx: &Context) -> Result<PathBuf> {
-    let command_output = if cx.args.quiet {
+    let command_output = if cx.args.cli.quiet {
         CommandOutput::Ignore
-    } else if cx.args.quiet_cargo {
+    } else if cx.args.cli.quiet_cargo {
         CommandOutput::Collect
     } else {
         CommandOutput::Inherit
@@ -45,20 +45,20 @@ fn generate_rustdoc_json(cx: &Context) -> Result<PathBuf> {
 
     let (output, path) = rustdoc_json::generate(
         &cx.metadata,
-        &cx.package,
-        cx.package.target,
+        cx.package,
+        cx.target,
         rustdoc_json::Options {
-            toolchain: Some(&cx.args.toolchain),
-            all_features: cx.args.all_features,
-            no_default_features: cx.args.no_default_features,
-            features: &mut cx.package.enabled_features.iter().map(|s| &**s),
-            manifest_path: cx.args.manifest_path.as_deref(),
-            target: cx.args.target.as_deref(),
-            target_dir: cx.args.target_dir.as_deref(),
-            quiet: cx.args.quiet,
-            document_private_items: cx.args.document_private_items,
+            toolchain: Some(&cx.cfg.toolchain),
+            all_features: cx.cfg.all_features,
+            no_default_features: cx.cfg.no_default_features,
+            features: &mut cx.enabled_features.iter().map(|s| &**s),
+            manifest_path: Some(cx.package.manifest_path.as_std_path()),
+            target: cx.cfg.target.as_deref(),
+            target_dir: cx.cfg.target_dir.as_deref(),
+            quiet: cx.args.cli.quiet,
+            document_private_items: cx.cfg.document_private_items,
             output: command_output,
-            no_deps: cx.args.no_deps,
+            no_deps: cx.cfg.no_deps,
         },
     )?;
 
