@@ -1,7 +1,7 @@
 You can configure `cargo-insert-docs` using [the cli](cli.md) and by adding fields to the
  `[package.metadata.insert-docs]` or `[workspace.metadata.insert-docs]` table in the `Cargo.toml`.
 
-Many values can be set in multiple sources. In that case string list values get combined and all other values get replaced with the following precedence in decreasing order:
+Many values can be set in multiple sources. In that case values get replaced with the following precedence in decreasing order:
 - Command line arguments
 - `[package.metadata.insert-docs]`
 - `[workspace.metadata.insert-docs]`

@@ -97,21 +97,14 @@ pub fn read_workspace_config(
     let wrk: WorkspaceConfigPatch = metadata_json(json)?;
     let pkg: PackageConfigPatch = metadata_json(json)?;
     let fields: HashMap<String, IgnoredAny> = metadata_json(json)?;
-    warn_about_unused_fields(
-        fields,
-        WorkspaceConfigPatch::FIELDS
-            .iter()
-            .copied()
-            .chain(PackageConfigPatch::FIELDS.iter().copied())
-            .collect(),
-    );
+    warn_about_unused_fields(fields, &[WorkspaceConfigPatch::FIELDS, PackageConfigPatch::FIELDS]);
     Ok((wrk, pkg))
 }
 
 pub fn read_package_config(toml: &str) -> Result<PackageConfigPatch> {
     let pkg: PackageConfigPatch = metadata_toml(toml)?;
     let fields: HashMap<String, IgnoredAny> = metadata_toml(toml)?;
-    warn_about_unused_fields(fields, PackageConfigPatch::FIELDS.iter().copied().collect());
+    warn_about_unused_fields(fields, &[PackageConfigPatch::FIELDS]);
     Ok(pkg)
 }
 
@@ -138,13 +131,13 @@ impl WorkspaceConfigPatch {
         let mut this = self.clone();
 
         if let Some(package) = &overwrite.package {
-            this.package.get_or_insert_with(Vec::new).extend(package.clone());
+            this.package = Some(package.clone());
         }
         if let Some(workspace) = overwrite.workspace {
             this.workspace = Some(workspace);
         }
         if let Some(exclude) = &overwrite.exclude {
-            this.exclude.get_or_insert_with(Vec::new).extend(exclude.clone());
+            this.exclude = Some(exclude.clone());
         }
 
         this
@@ -305,7 +298,7 @@ impl PackageConfigPatch {
             this.allow_staged = Some(allow_staged);
         }
         if let Some(features) = &overwrite.features {
-            this.features.get_or_insert_with(Vec::new).extend(features.clone());
+            this.features = Some(features.clone());
         }
         if let Some(all_features) = overwrite.all_features {
             this.all_features = Some(all_features);
@@ -429,14 +422,22 @@ fn metadata_toml<T: Default + DeserializeOwned>(toml: &str) -> Result<T> {
     Ok(cargo.package.metadata.insert_docs)
 }
 
-fn warn_about_unused_fields(fields: HashMap<String, IgnoredAny>, available_fields: HashSet<&str>) {
-    let unused_fields = fields
+fn warn_about_unused_fields(fields: HashMap<String, IgnoredAny>, available_fields: &[&[&str]]) {
+    let available_fields = available_fields
+        .iter()
+        .copied()
+        .flatten()
+        .copied()
+        .map(|s| s.replace('_', "-"))
+        .collect::<HashSet<_>>();
+
+    let unknown_fields = fields
         .into_keys()
-        .filter(|k| available_fields.contains(&**k))
+        .filter(|k| !available_fields.contains(&**k))
         .collect::<Vec<String>>()
         .join(", ");
 
-    if !unused_fields.is_empty() {
-        tracing::warn!("metadata.insert-docs contains unknown fields: {unused_fields}");
+    if !unknown_fields.is_empty() {
+        tracing::warn!("metadata.insert-docs contains unknown fields: {unknown_fields}");
     }
 }

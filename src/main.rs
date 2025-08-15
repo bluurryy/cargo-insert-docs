@@ -311,7 +311,7 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
 
     let workspace = workspace_workspace_config_patch.apply(&args.workspace_patch).finish();
 
-    let mut packages: Vec<&Package> = if args.cli.workspace {
+    let mut packages: Vec<&Package> = if workspace.workspace {
         metadata.workspace_members.iter().map(|p| &metadata[p]).collect()
     } else if workspace.package.is_empty() {
         assert!(
@@ -346,7 +346,7 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
     }
 
     // error if a feature is not available in any selected package
-    {
+    if !args.cli.print_config {
         let pkg = workspace_package_config_patch.clone().apply(&args.package_patch).finish();
 
         let all_available_features = packages
@@ -378,7 +378,7 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
     // We first prepare all the contexts for each package.
     // This way we error early if there are any severe errors.
     let mut cxs = vec![];
-    let uses_default_packages = !args.cli.workspace && workspace.package.is_empty();
+    let uses_default_packages = !workspace.workspace && workspace.package.is_empty();
 
     for package in packages {
         let manifest_path = ManifestPath::new(package.manifest_path.as_ref())?;

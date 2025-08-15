@@ -62,6 +62,7 @@ pre-release-replacements = [
 
 [workspace]
 members = ["tests/*"]
+exclude = ["tests/test-config"]
 
 [workspace.metadata.release]
 consolidate-commits = false
