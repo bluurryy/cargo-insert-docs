@@ -389,8 +389,12 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
 
         let cfg_patch = config::read_package_config(&toml)?;
 
+        dbg!(&cfg_patch);
+
         let cfg =
             workspace_package_config_patch.apply(&cfg_patch).apply(&args.package_patch).finish();
+
+        dbg!(&cfg);
 
         let enabled_features =
             cfg.features.iter().filter(|&f| package.features.contains_key(f)).cloned().collect();

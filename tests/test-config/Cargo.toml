@@ -1,9 +1,9 @@
 [package]
 name = "test-config"
-version = "0.1.0"
 edition = "2024"
 
 [workspace.metadata.insert-docs]
+workspace = true
 this-is-not-a-valid-field = "so please warn about it"
 feature-into-crate = false
 crate-into-readme = false
@@ -19,9 +19,30 @@ allow-staged = true
 features = ["foo", "bar", "baz"]
 all-features = true
 no-default-features = true
-lib = false                                             # TODO: test collision
-bin = true
+bin = "foo"                                             # TODO: test collision
 toolchain = "toolchain from workspace"
 target = "wasm32-unknown-unknown"
 target-dir = "target dir from workspace"
 readme-path = "readme path from workspace"
+
+[package.metadata.insert-docs]
+this-is-not-a-valid-field = "so please warn about it"
+feature-into-crate = true
+crate-into-readme = true
+feature-label = "from package label"
+feature-section-name = "from package feature section"
+crate-section-name = "from package crate section"
+link-to-latest = true
+document-private-items = true
+no-deps = true
+check = false
+allow-missing-section = true
+allow-staged = true
+features = ["foo", "bar", "baz"]
+all-features = true
+no-default-features = true
+lib = true
+toolchain = "toolchain from package"
+target = "wasm32-unknown-unknown"
+target-dir = "target dir from package"
+readme-path = "readme path from package"
