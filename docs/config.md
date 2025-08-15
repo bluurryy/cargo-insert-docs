@@ -1,7 +1,7 @@
-You can configure `cargo-insert-docs` using [the cli](cli.md) and by adding fields to the `Cargo.toml` in the
+You can configure `cargo-insert-docs` using [cli arguments](cli.md) and by adding fields to the `Cargo.toml` in the
  `[package.metadata.insert-docs]` or `[workspace.metadata.insert-docs]` table. 
- 
- Here is an example what setting fields in the `Cargo.toml` looks like: [../tests/test-config/Cargo.toml](../tests/test-config/Cargo.toml).
+
+Here is an example what setting fields in the `Cargo.toml` looks like: [../tests/test-config/Cargo.toml](../tests/test-config/Cargo.toml).
 
 Configuration fields are read in the following (in precedence) order:
 - Command line arguments

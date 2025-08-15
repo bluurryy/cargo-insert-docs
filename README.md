@@ -180,8 +180,6 @@ Instead of inserting the entire crate documentation into the readme you can also
 This is useful if you want a table of contents in the readme but don't want it in the crate docs because the
 crate documentation already has a side panel for that.
 
-You can find all the available arguments in [docs/cli.md](docs/cli.md).
-
 If you'd like to see what it looks like when used by a real crate then have a look at `bump-scope`'s [docs.rs](https://docs.rs/bump-scope/latest/bump_scope/) and [README.md](https://github.com/bluurryy/bump-scope/blob/main/README.md).
 
 ## Configuration
