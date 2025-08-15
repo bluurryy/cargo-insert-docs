@@ -382,6 +382,8 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
     let uses_default_packages = !workspace.workspace && workspace.package.is_empty();
 
     for package in packages {
+        let _span = error_span!("", package = package.name.as_str()).entered();
+
         let manifest_path = ManifestPath::new(package.manifest_path.as_ref())?;
         let toml = manifest_path.get().read_to_string()?;
 
