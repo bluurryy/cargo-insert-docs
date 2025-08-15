@@ -195,7 +195,8 @@ pub struct PackageConfigPatch {
     pub features: Option<Vec<String>>,
     pub all_features: Option<bool>,
     pub no_default_features: Option<bool>,
-    pub target_selection: Option<TargetSelection>,
+    pub lib: Option<bool>,
+    pub bin: Option<BoolOrString>,
     pub toolchain: Option<String>,
     pub target: Option<String>,
     pub target_dir: Option<PathBuf>,
@@ -246,11 +247,11 @@ impl PackageConfigPatch {
             }),
             all_features: all_features.then_some(true),
             no_default_features: no_default_features.then_some(true),
-            target_selection: if target_selection.lib {
-                Some(TargetSelection::Lib)
-            } else {
-                target_selection.bin.clone().map(TargetSelection::Bin)
-            },
+            lib: target_selection.lib.then_some(true),
+            bin: target_selection.bin.clone().map(|bin| match bin {
+                Some(name) => BoolOrString::String(name),
+                None => BoolOrString::Bool(true),
+            }),
             toolchain: toolchain.clone(),
             target: target.clone(),
             target_dir: target_dir.clone(),
@@ -306,8 +307,9 @@ impl PackageConfigPatch {
         if let Some(no_default_features) = overwrite.no_default_features {
             this.no_default_features = Some(no_default_features);
         }
-        if let Some(target_selection) = &overwrite.target_selection {
-            this.target_selection = Some(target_selection.clone());
+        if overwrite.lib.is_some() || overwrite.bin.is_some() {
+            this.lib = overwrite.lib;
+            this.bin = overwrite.bin.clone();
         }
         if let Some(toolchain) = &overwrite.toolchain {
             this.toolchain = Some(toolchain.clone());
@@ -342,8 +344,9 @@ impl PackageConfigPatch {
             features,
             all_features,
             no_default_features,
-            target_selection,
             toolchain,
+            lib,
+            bin,
             target,
             target_dir,
             readme_path,
@@ -367,7 +370,14 @@ impl PackageConfigPatch {
             features: features.unwrap_or_default(),
             all_features: all_features.unwrap_or_default(),
             no_default_features: no_default_features.unwrap_or_default(),
-            target_selection,
+            target_selection: match lib {
+                Some(true) => Some(TargetSelection::Lib),
+                _ => match bin.clone() {
+                    Some(BoolOrString::Bool(true)) => Some(TargetSelection::Bin(None)),
+                    Some(BoolOrString::String(s)) => Some(TargetSelection::Bin(Some(s))),
+                    _ => None,
+                },
+            },
             toolchain: toolchain.unwrap_or_else(|| DEFAULT_TOOLCHAIN.to_string()),
             target,
             target_dir,
@@ -390,6 +400,19 @@ impl fmt::Display for TargetSelection {
             TargetSelection::Bin(Some(bin)) => write!(f, "--bin {bin}"),
             TargetSelection::Bin(None) => f.write_str("--bin"),
         }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(untagged)]
+pub enum BoolOrString {
+    Bool(bool),
+    String(String),
+}
+
+impl Default for BoolOrString {
+    fn default() -> Self {
+        BoolOrString::Bool(false)
     }
 }
 

@@ -517,6 +517,7 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
 
     if cxs.is_empty() {
         let _span = workspace_package_config_patch
+            .finish()
             .target_selection
             .map(|filter| error_span!("", %filter).entered());
         bail!("no target found to document");
