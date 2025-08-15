@@ -17,6 +17,7 @@ Options:
       --feature-section-name <NAME>    Feature documentation section name [default: "feature documentation"]
       --crate-section-name <NAME>      Crate documentation section name [default: "crate documentation"]
       --link-to-latest                 Link to the "latest" version on docs.rs
+      --print-supported-toolchain      Prints a supported nightly toolchain
   -h, --help                           Print help (see more with '--help')
   -V, --version                        Print version
 

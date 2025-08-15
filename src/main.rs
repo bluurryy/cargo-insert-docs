@@ -52,6 +52,8 @@ mod heading {
     pub const CARGO_DOC_OPTIONS: &str = "Cargo Doc Options";
 }
 
+const SUPPORTED_TOOLCHAIN: &str = "nightly-2025-08-02";
+
 #[derive(Parser)]
 #[command(
     version,
@@ -87,6 +89,10 @@ struct Args {
     /// This only affects workspace crates.
     #[arg(global = true, long, verbatim_doc_comment)]
     link_to_latest: bool,
+
+    /// Prints a supported nightly toolchain
+    #[arg(global = true, long)]
+    print_supported_toolchain: bool,
 
     /// Document private items
     #[arg(global = true, help_heading = heading::CARGO_DOC_OPTIONS, long)]
@@ -162,7 +168,7 @@ struct Args {
     ///
     /// The default value is a toolchain that is known to be compatible with
     /// this version of `cargo-insert-docs`.
-    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, default_value = "nightly-2025-08-02", verbatim_doc_comment)]
+    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, default_value = SUPPORTED_TOOLCHAIN, verbatim_doc_comment)]
     toolchain: String,
 
     /// Target triple to document
@@ -298,6 +304,11 @@ fn subcommand_name(bin: &OsStr) -> Option<OsString> {
 
 fn main() -> ExitCode {
     let mut args = parse_args();
+
+    if args.print_supported_toolchain {
+        println!("{SUPPORTED_TOOLCHAIN}");
+        return ExitCode::SUCCESS;
+    }
 
     if args.quiet {
         args.quiet_cargo = true;

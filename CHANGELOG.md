@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Add `--print-supported-toolchain` argument to print a supported nightly toolchain
+
 ### Changed
 
 - **Breaking:** The default toolchain is now a known compatible one instead of `nightly`
