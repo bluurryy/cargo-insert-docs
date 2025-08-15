@@ -133,8 +133,8 @@ struct Args {
     color: Option<ColorChoice>,
 
     /// Print more verbose messages
-    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long, short = 'v')]
-    verbose: bool,
+    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
 
     /// Do not print anything
     #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long, short = 'q')]
@@ -285,9 +285,9 @@ fn main() -> ExitCode {
     };
 
     let log = PrettyLog::new(stream);
-    log.source_info(args.cli.verbose);
+    log.source_info(args.cli.verbose >= 2);
 
-    let log_level = if args.cli.verbose { "trace" } else { "info" };
+    let log_level = if args.cli.verbose >= 1 { "trace" } else { "info" };
     log.install(&format!("cargo_insert_docs={log_level}"));
 
     if let Err(err) = try_main(&args, &log) {

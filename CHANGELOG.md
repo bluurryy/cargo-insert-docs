@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for configuration values in `workspace.metadata.insert-docs` and `package.metadata.insert-docs`. See [docs/config.md](docs/config.md).
 - Add `--print-config` to print configuration values and their sources
 - Add `--print-supported-toolchain` argument to print a supported nightly toolchain
+- Add even more verbose messages with `-vv`
 
 ### Changed
 

@@ -36,7 +36,7 @@ Error Behavior:
 
 Message Options:
       --color <WHEN>  Coloring [default: "auto"] [possible values: auto, always, never]
-  -v, --verbose       Print more verbose messages
+  -v, --verbose...    Print more verbose messages
   -q, --quiet         Do not print anything
       --quiet-cargo   Do not print cargo log messages
 
