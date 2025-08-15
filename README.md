@@ -12,6 +12,7 @@
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Configuration](#configuration)
 - [FAQ](#faq)
 - [Compatibility](#compatibility)
 - [Acknowledgements](#acknowledgements)
@@ -182,6 +183,12 @@ crate documentation already has a side panel for that.
 You can find all the available arguments in [docs/cli.md](docs/cli.md).
 
 If you'd like to see what it looks like when used by a real crate then have a look at `bump-scope`'s [docs.rs](https://docs.rs/bump-scope/latest/bump_scope/) and [README.md](https://github.com/bluurryy/bump-scope/blob/main/README.md).
+
+## Configuration
+
+You can configure `cargo-insert-docs` using the cli and via metadata tables inside `Cargo.toml`.
+
+See [docs/config.md](docs/config.md) for details.
 
 ## FAQ
 
