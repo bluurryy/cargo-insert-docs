@@ -158,14 +158,11 @@ struct Args {
     #[command(flatten)]
     target_selection: TargetSelection,
 
-    /// Which rustup toolchain to use when invoking rustdoc.
+    /// Which rustup toolchain to use when invoking rustdoc
     ///
-    /// Whenever you update your nightly toolchain this tool may also need to be
-    /// updated to be compatible.
-    ///
-    /// With this argument you can choose a nightly version that is guaranteed to be compatible
-    /// with the current version of this tool, like `nightly-2025-08-02`.
-    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, default_value = "nightly", verbatim_doc_comment)]
+    /// The default value is a toolchain that is known to be compatible with
+    /// this version of `cargo-insert-docs`.
+    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, default_value = "nightly-2025-08-02", verbatim_doc_comment)]
     toolchain: String,
 
     /// Target triple to document

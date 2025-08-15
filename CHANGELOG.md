@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** The default toolchain is now a known compatible one instead of `nightly`
+
 ## [0.13.0] - 2025-08-14
 
 ### Added
