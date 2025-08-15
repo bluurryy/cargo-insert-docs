@@ -12,7 +12,7 @@ pre-release:
     just test-recurse recurse
     just test-recurse recurse-glob
     just test-config
-    jsut test-bin-lib
+    just test-bin-lib
 
 update-cli-md:
     #!/usr/bin/env nu
