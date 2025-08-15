@@ -6,7 +6,7 @@ pre-release:
     cargo run -- --check -p test-document-features crate-into-readme
     cargo run -- --check -p example-crate
     cargo run -- --check -p test-bin crate-into-readme
-    cargo run -- --check --workspace --exclude test-crate --exclude cargo-insert-docs crate-into-readme
+    cargo run -- --check --workspace --exclude test-crate --exclude cargo-insert-docs --exclude test-bin-lib crate-into-readme
     just update-cli-md
     just test
     just test-recurse recurse
