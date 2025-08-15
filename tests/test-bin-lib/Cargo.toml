@@ -1,0 +1,8 @@
+[package]
+name = "test-bin-lib"
+edition = "2024"
+
+[package.metadata.insert-docs]
+feature-into-crate = false
+bin = true
+lib = true
