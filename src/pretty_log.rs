@@ -70,8 +70,13 @@ impl PrettyLog {
                 sink,
                 tally: Default::default(),
                 last_print_kind: None,
+                print_source_info: false,
             })),
         }
+    }
+
+    pub fn print_source_info(&self, enabled: bool) {
+        self.inner.lck().print_source_info = enabled;
     }
 
     pub fn subscriber(&self, filter: &str) -> impl Subscriber + Send + Sync + 'static {
@@ -164,6 +169,7 @@ struct PrettyLogInner {
     sink: Box<dyn AnyWrite>,
     tally: Tally,
     last_print_kind: Option<PrintKind>,
+    print_source_info: bool,
 }
 
 impl PrettyLogInner {
@@ -284,6 +290,12 @@ where
                 if let Some(FormattedField(string)) = span.extensions().get() {
                     out.push_str(string);
                 }
+            }
+        }
+
+        if self.inner.lck().print_source_info {
+            if let (Some(file), Some(line)) = (event.metadata().file(), event.metadata().line()) {
+                format_field(&mut out, "source", &format!("{file}:{line}"));
             }
         }
 
