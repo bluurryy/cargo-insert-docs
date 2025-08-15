@@ -12,6 +12,7 @@ pre-release:
     just test-recurse recurse
     just test-recurse recurse-glob
     just test-config
+    jsut test-bin-lib
 
 update-cli-md:
     #!/usr/bin/env nu
@@ -62,3 +63,12 @@ test-config:
             exit 1
         }
     }
+
+test-bin-lib:
+    #!/usr/bin/env nu
+    let out = (cargo run -- -p test-bin-lib --allow-dirty | complete).stderr | tee { print }
+    if not ($out | str contains "choose one or the other") {
+        print -e $"(ansi red_bold)EXPECTED A DIFFERENT ERROR(ansi reset)"
+        exit 1
+    }
+

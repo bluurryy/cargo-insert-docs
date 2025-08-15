@@ -387,8 +387,14 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
 
         let cfg_patch = config::read_package_config(&toml)?;
 
-        let cfg =
-            workspace_package_config_patch.apply(&cfg_patch).apply(&args.package_patch).finish();
+        let final_patch =
+            workspace_package_config_patch.apply(&cfg_patch).apply(&args.package_patch);
+
+        if final_patch.bin.is_some() && final_patch.lib.is_some() {
+            bail!("`lib` and `bin` are both set, you have to choose one or the other");
+        }
+
+        let cfg = final_patch.finish();
 
         let enabled_features =
             cfg.features.iter().filter(|&f| package.features.contains_key(f)).cloned().collect();
