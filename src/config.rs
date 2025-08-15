@@ -56,7 +56,6 @@ pub struct CliConfig {
     pub verbose: bool,
     pub quiet: bool,
     pub quiet_cargo: bool,
-    pub workspace: bool,
     pub manifest_path: Option<PathBuf>,
 }
 
@@ -68,7 +67,6 @@ impl CliConfig {
             verbose,
             quiet,
             quiet_cargo,
-            workspace,
             ref manifest_path,
             print_config,
             ..
@@ -81,7 +79,6 @@ impl CliConfig {
             verbose,
             quiet,
             quiet_cargo: quiet || quiet_cargo,
-            workspace,
             manifest_path: manifest_path.clone(),
         }
     }
@@ -90,6 +87,7 @@ impl CliConfig {
 #[derive(Serialize)]
 pub struct WorkspaceConfig {
     pub package: Vec<String>,
+    pub workspace: bool,
     pub exclude: Vec<String>,
 }
 
@@ -121,6 +119,7 @@ pub fn read_package_config(toml: &str) -> Result<PackageConfigPatch> {
 #[serde(default, rename_all = "kebab-case")]
 pub struct WorkspaceConfigPatch {
     package: Option<Vec<String>>,
+    workspace: Option<bool>,
     exclude: Option<Vec<String>>,
 }
 
@@ -130,6 +129,7 @@ impl WorkspaceConfigPatch {
 
         Self {
             package: (!package.is_empty()).then(|| package.clone()),
+            workspace: args.workspace.then_some(true),
             exclude: (!exclude.is_empty()).then(|| exclude.clone()),
         }
     }
@@ -140,6 +140,9 @@ impl WorkspaceConfigPatch {
         if let Some(package) = &overwrite.package {
             this.package.get_or_insert_with(Vec::new).extend(package.clone());
         }
+        if let Some(workspace) = overwrite.workspace {
+            this.workspace = Some(workspace);
+        }
         if let Some(exclude) = &overwrite.exclude {
             this.exclude.get_or_insert_with(Vec::new).extend(exclude.clone());
         }
@@ -148,9 +151,10 @@ impl WorkspaceConfigPatch {
     }
 
     pub fn finish(self) -> WorkspaceConfig {
-        let Self { package, exclude } = self;
+        let Self { package, workspace, exclude } = self;
         WorkspaceConfig {
             package: package.unwrap_or_default(),
+            workspace: workspace.unwrap_or_default(),
             exclude: exclude.unwrap_or_default(),
         }
     }
