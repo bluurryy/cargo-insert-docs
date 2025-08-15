@@ -462,9 +462,9 @@ where
 }
 
 fn metadata_json<T: Default + DeserializeOwned>(json: &serde_json::Value) -> Result<T> {
-    let metadata = <Metadata<T> as Deserialize>::deserialize(json)
+    let metadata = <Option<Metadata<T>> as Deserialize>::deserialize(json)
         .wrap_err("failed to deserialize metadata")?;
-    Ok(metadata.insert_docs)
+    Ok(metadata.unwrap_or_default().insert_docs)
 }
 
 fn metadata_toml<T: Default + DeserializeOwned>(toml: &str) -> Result<T> {
