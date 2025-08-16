@@ -10,6 +10,7 @@ use tracing::warn;
 use crate::{
     Context, markdown, read_to_string,
     rustdoc_json::{self, CommandOutput},
+    string_replacer::StringReplacer,
 };
 
 use resolver::{Resolver, ResolverOptions};
@@ -93,7 +94,7 @@ fn extract_docs(
     let resolver_options = ResolverOptions { link_to_latest };
     let resolver = Resolver::new(krate, metadata, &resolver_options)?;
 
-    let mut new_docs = docs.clone();
+    let mut new_docs = StringReplacer::new(&docs);
 
     for link in markdown::links(&docs).into_iter().rev() {
         let markdown::Link { span, link_type: _, dest_url, title, id: _, content_span } = link;
@@ -138,9 +139,10 @@ fn extract_docs(
             None => content.to_string(),
         };
 
-        new_docs.replace_range(span, &replace_with);
+        new_docs.replace(span, replace_with);
     }
 
+    let new_docs = new_docs.finish();
     let new_docs = markdown::clean_code_blocks(&new_docs);
     let new_docs = markdown::shrink_headings(&new_docs);
 

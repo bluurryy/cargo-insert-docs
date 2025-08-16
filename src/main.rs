@@ -12,6 +12,7 @@ mod git;
 mod markdown;
 mod pretty_log;
 mod rustdoc_json;
+mod string_replacer;
 #[cfg(test)]
 mod tests;
 
@@ -40,6 +41,7 @@ use crate::{
         ArgsConfig, PackageConfig, PackageConfigPatch, WorkspaceConfig, WorkspaceConfigPatch,
     },
     pretty_log::AnyWrite,
+    string_replacer::StringReplacer,
 };
 
 #[global_allocator]
@@ -818,15 +820,15 @@ fn insert_docs_into_readme(cx: &Context) -> Result<()> {
 
     let new_readme = if !subsections.is_empty() {
         let crate_docs = extract_crate_docs::extract(cx)?;
-        let mut new_readme = readme.clone();
+        let mut new_readme = StringReplacer::new(&readme);
 
         for (section, name) in subsections.into_iter().rev() {
             let replace_with_section = markdown::find_section(&crate_docs, &format!("{section_name} {name}")).ok_or_else(|| eyre!("\"{section_name}\" subsection \"{name}\" is contained in readme but missing from crate docs"))?;
             let replace_with = &crate_docs[replace_with_section.span];
-            new_readme.replace_range(section.span, replace_with);
+            new_readme.replace(section.span, replace_with);
         }
 
-        new_readme
+        new_readme.finish()
     } else if let Some(section) = markdown::find_section(&readme, &cx.cfg.crate_section_name) {
         let crate_docs = extract_crate_docs::extract(cx)?;
         let mut new_readme = readme.clone();

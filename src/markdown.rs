@@ -9,6 +9,8 @@ use pulldown_cmark::{
     OffsetIter, Options, Parser, Tag, TagEnd,
 };
 
+use crate::string_replacer::StringReplacer;
+
 /// The same parser rustdoc uses.
 pub fn parser<'a>(text: &'a str) -> OffsetIter<'a, impl BrokenLinkCallback<'a>> {
     // Interprets `[Vec]` as `[Vec](Vec)` which is fine for rust docs.
@@ -201,7 +203,7 @@ struct CodeBlock<'a> {
 }
 
 pub fn clean_code_blocks(markdown: &str) -> String {
-    let mut out = markdown.to_string();
+    let mut out = StringReplacer::new(markdown);
 
     for block in code_blocks(markdown).into_iter().rev() {
         match &block.kind {
@@ -232,7 +234,7 @@ pub fn clean_code_blocks(markdown: &str) -> String {
 
                 new_content = format!("```rust\n{new_content}```\n");
 
-                out.replace_range(block.span.clone(), &new_content);
+                out.replace(block.span.clone(), new_content);
             } else {
                 let mut new_content = String::new();
 
@@ -243,19 +245,21 @@ pub fn clean_code_blocks(markdown: &str) -> String {
                     }
                 }
 
-                out.replace_range(content, &new_content);
+                out.replace(content, new_content);
             }
         }
 
         if let CodeBlockKind::Fenced(_) = &block.kind {
-            let line =
-                out[block.span.start + 3..].lines().next().expect("it wouldn't be a code block ");
-            let info_span = substr_range(&out, line);
-            out.replace_range(info_span, "rust");
+            let line = markdown[block.span.start + 3..]
+                .lines()
+                .next()
+                .expect("it wouldn't be a code block ");
+            let info_span = substr_range(markdown, line);
+            out.replace(info_span, "rust");
         }
     }
 
-    out
+    out.finish()
 }
 
 fn substr_range(str: &str, substr: &str) -> Range<usize> {
@@ -318,13 +322,13 @@ fn fenced_code_block_is_rust(name: &str) -> bool {
 }
 
 pub fn shrink_headings(markdown: &str) -> String {
-    let mut out = markdown.to_string();
+    let mut out = StringReplacer::new(markdown);
 
     for heading in headings(markdown).into_iter().rev() {
-        out.insert(heading.span.start, '#');
+        out.insert(heading.span.start, "#");
     }
 
-    out
+    out.finish()
 }
 
 struct Heading {

@@ -7,7 +7,7 @@ use color_eyre::eyre::{Result, bail};
 use rangemap::RangeMap;
 use syn::spanned::Spanned as _;
 
-use crate::markdown;
+use crate::{markdown, string_replacer::StringReplacer};
 
 pub struct FeatureDocsSection<'a> {
     source: &'a str,
@@ -74,21 +74,20 @@ impl<'a> FeatureDocsSection<'a> {
             out
         };
 
-        let mut out = source.to_string();
+        let mut out = StringReplacer::new(source);
 
         let insert_start = start_frag.attr_span.end;
-        let insert_end = end_frag.attr_span.start;
-
-        out.replace_range(insert_start..insert_end, &replacement);
+        let mut insert_end = end_frag.attr_span.start;
 
         // after the attribute end there was probably already a newline
         // so no need for a second one
-        let after_insertion = insert_start + replacement.len();
-        if out[after_insertion..].starts_with('\n') {
-            out.remove(after_insertion);
+        if source[insert_end..].starts_with('\n') {
+            insert_end += 1;
         }
 
-        Ok(out)
+        out.replace(insert_start..insert_end, &replacement);
+
+        Ok(out.finish())
     }
 }
 
