@@ -28,12 +28,7 @@ cargo binstall cargo-insert-docs
 cargo install cargo-insert-docs
 ```
 
-Inserting crate documentation into the `README.md` requires a nightly toolchain to be installed. See [Compatibility](#compatibility). The active toolchain does not need to be nightly. Inserting the feature documentation into the crate and compiling `cargo-insert-docs` itself does not require a nightly toolchain.
-
-```sh
-# To be able to insert crate documentation into the readme
-rustup install nightly --profile minimal
-```
+To extract the crate documentation, `cargo-insert-docs` invokes `cargo +nightly-2025-08-02 rustdoc`. This will automatically install the required nightly toolchain.
 
 ## Usage
 
@@ -200,9 +195,11 @@ See [docs/config.md](docs/config.md) for details.
 
 ## Compatibility
 
-To extract the crate documentation `cargo-insert-docs` relies on the unstable [rustdoc JSON](https://github.com/rust-lang/rust/issues/76578) format, which requires a recent Rust nightly toolchain to be installed.
+To extract the crate documentation `cargo-insert-docs` relies on the unstable [rustdoc JSON](https://github.com/rust-lang/rust/issues/76578) format, which requires a recent Rust nightly toolchain.
 
-A new nightly release may no longer be compatible with the current version and `cargo-insert-docs` will need to be updated. Alternatively you can choose a specific nightly version that is known to be compatible using the `--toolchain` argument.
+It invokes `cargo +nightly-2025-08-02 rustdoc` which will automatically install the required nightly toolchain. The chosen nightly version is one that is known to be compatible. 
+
+You can choose a different toolchain with the `--toolchain` argument. See the table below what nightly toolchains are compatible with which `cargo-insert-docs` version.
 
 #### Compatibility Matrix
 
