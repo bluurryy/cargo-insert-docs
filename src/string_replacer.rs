@@ -1,8 +1,6 @@
 use core::ops::Range;
 use std::borrow::Cow;
 
-use tracing::error_span;
-
 /// A type to efficiently replace string ranges.
 ///
 /// Ranges and indices must be removed in reverse order and must not overlap.
@@ -22,9 +20,6 @@ impl<'a> StringReplacer<'a> {
     }
 
     pub fn replace(&mut self, range: Range<usize>, with: impl Into<Cow<'a, str>>) {
-        let _span =
-            error_span!("", issues = "https://github.com/bluurryy/cargo-insert-docs").entered();
-
         self.replace_inner(range, with.into())
     }
 
