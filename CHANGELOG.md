@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `--print-config` to print configuration values and their sources
 - Add `--print-supported-toolchain` argument to print a supported nightly toolchain
 - Add even more verbose messages with `-vv`
+- Don't turn link references with a definition into inline links
 - Replace intra doc links in link definitions, like `[Foo]: my_mod::Foo` too
 
 ### Fixed

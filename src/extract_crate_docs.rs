@@ -4,6 +4,7 @@ use std::path::PathBuf;
 
 use cargo_metadata::Metadata;
 use color_eyre::eyre::{OptionExt as _, Report, Result, bail};
+use pulldown_cmark::LinkType;
 use rustdoc_types::Crate;
 use tracing::warn;
 
@@ -97,12 +98,22 @@ fn extract_docs(
     let mut new_docs = StringReplacer::new(&docs);
 
     for link in markdown::links(&docs).into_iter().rev() {
-        let markdown::Link { span, link_type: _, dest_url, title, id: _, content_span } = link;
+        let markdown::Link { span, link_type, dest_url, title, id: _, content_span } = link;
+
+        if !matches!(
+            link_type,
+            LinkType::Inline
+                | LinkType::ReferenceUnknown
+                | LinkType::CollapsedUnknown
+                | LinkType::ShortcutUnknown
+        ) {
+            // we only handle inline links and unknown references
+            continue;
+        }
 
         let Some(&item_id) = root.links.get(&*dest_url) else {
             // rustdoc has no item for this url
-            // the link could just not be rustdoc related like `https://www.rust-lang.org/` or
-            // the link is dead because some feature is not enabled or code is cfg'd out
+            // the link could be dead because of conditional compilation
             // we keep such links as they are
             continue;
         };
