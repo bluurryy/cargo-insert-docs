@@ -33,19 +33,18 @@ macro_rules! Fields {
     };
 }
 
-pub struct ArgsConfig {
-    pub cli: CliConfig,
+pub struct Cli {
+    pub cfg: CliConfig,
     pub workspace_patch: WorkspaceConfigPatch,
     pub package_patch: PackageConfigPatch,
 }
 
-impl ArgsConfig {
+impl Cli {
     pub fn from_args(args: &Args) -> Self {
-        let cli = CliConfig::from_args(args);
+        let cfg = CliConfig::from_args(args);
         let workspace_patch = WorkspaceConfigPatch::from_args(args);
         let package_patch = PackageConfigPatch::from_args(args);
-
-        Self { cli, workspace_patch, package_patch }
+        Self { cfg, workspace_patch, package_patch }
     }
 }
 

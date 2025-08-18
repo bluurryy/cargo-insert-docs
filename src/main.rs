@@ -38,9 +38,7 @@ use tracing::{Level, error_span, info_span, trace};
 use pretty_log::{PrettyLog, WithResultSeverity as _};
 
 use crate::{
-    config::{
-        ArgsConfig, PackageConfig, PackageConfigPatch, WorkspaceConfig, WorkspaceConfigPatch,
-    },
+    config::{Cli, PackageConfig, PackageConfigPatch, WorkspaceConfig, WorkspaceConfigPatch},
     pretty_log::AnyWrite,
     string_replacer::StringReplacer,
 };
@@ -266,20 +264,19 @@ fn subcommand_name(bin: &OsStr) -> Option<OsString> {
 }
 
 fn main() -> ExitCode {
-    let args = parse_args();
-    let args = ArgsConfig::from_args(&args);
+    let cli = config::Cli::from_args(&parse_args());
 
-    if args.cli.print_supported_toolchain {
+    if cli.cfg.print_supported_toolchain {
         println!("{}", config::DEFAULT_TOOLCHAIN);
         return ExitCode::SUCCESS;
     }
 
-    let stream: Box<dyn AnyWrite> = if args.cli.quiet {
+    let stream: Box<dyn AnyWrite> = if cli.cfg.quiet {
         Box::new(io::empty())
     } else {
         Box::new(anstream::AutoStream::new(
             std::io::stderr(),
-            match args.cli.color {
+            match cli.cfg.color {
                 ColorChoice::Auto => anstream::ColorChoice::Auto,
                 ColorChoice::Always => anstream::ColorChoice::Always,
                 ColorChoice::Never => anstream::ColorChoice::Never,
@@ -288,12 +285,12 @@ fn main() -> ExitCode {
     };
 
     let log = PrettyLog::new(stream);
-    log.source_info(args.cli.verbose >= 2);
+    log.source_info(cli.cfg.verbose >= 2);
 
-    let log_level = if args.cli.verbose >= 1 { "trace" } else { "info" };
+    let log_level = if cli.cfg.verbose >= 1 { "trace" } else { "info" };
     log.install(&format!("cargo_insert_docs={log_level}"));
 
-    if let Err(err) = try_main(&args, &log) {
+    if let Err(err) = try_main(&cli, &log) {
         log.print_report(&err);
     }
 
@@ -302,10 +299,10 @@ fn main() -> ExitCode {
     if log.tally().errors == 0 { ExitCode::SUCCESS } else { ExitCode::FAILURE }
 }
 
-fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
+fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
     let mut cmd = MetadataCommand::new();
 
-    if let Some(manifest_path) = args.cli.manifest_path.as_deref() {
+    if let Some(manifest_path) = cli.cfg.manifest_path.as_deref() {
         cmd.manifest_path(manifest_path);
     }
 
@@ -313,7 +310,7 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
     let (workspace_workspace_config_patch, workspace_package_config_patch) =
         config::read_workspace_config(&metadata.workspace_metadata)?;
 
-    let workspace = workspace_workspace_config_patch.apply(&args.workspace_patch).finish();
+    let workspace = workspace_workspace_config_patch.apply(&cli.workspace_patch).finish();
 
     let mut packages: Vec<&Package> = if workspace.workspace {
         metadata.workspace_members.iter().map(|p| &metadata[p]).collect()
@@ -350,8 +347,8 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
     }
 
     // error if a feature is not available in any selected package
-    if !args.cli.print_config {
-        let pkg = workspace_package_config_patch.clone().apply(&args.package_patch).finish();
+    if !cli.cfg.print_config {
+        let pkg = workspace_package_config_patch.clone().apply(&cli.package_patch).finish();
 
         let all_available_features = packages
             .iter()
@@ -393,7 +390,7 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
         let cfg_patch = config::read_package_config(&toml)?;
 
         let final_patch =
-            workspace_package_config_patch.apply(&cfg_patch).apply(&args.package_patch);
+            workspace_package_config_patch.apply(&cfg_patch).apply(&cli.package_patch);
 
         if final_patch.bin.is_some() && final_patch.lib.is_some() {
             bail!("`lib` and `bin` are both set, you have to choose one or the other");
@@ -454,8 +451,8 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
 
         let metadata = cmd.exec()?;
 
-        cxs.push(Context {
-            args,
+        cxs.push(PackageContext {
+            cli,
             cfg,
             cfg_patch,
             package,
@@ -469,7 +466,7 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
         })
     }
 
-    if args.cli.print_config {
+    if cli.cfg.print_config {
         #[derive(Serialize)]
         struct WorkspaceAndPackageConfigPatch<'a> {
             #[serde(flatten)]
@@ -500,8 +497,8 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
 
         let mut out = toml::to_string(&Table {
             cli: WorkspaceAndPackageConfigPatch {
-                workspace: &args.workspace_patch,
-                package: &args.package_patch,
+                workspace: &cli.workspace_patch,
+                package: &cli.package_patch,
             },
             workspace: WorkspaceAndPackageConfigPatch {
                 workspace: &workspace_workspace_config_patch,
@@ -550,7 +547,7 @@ fn try_main(args: &ArgsConfig, log: &PrettyLog) -> Result<()> {
 }
 
 // Modified from `fn check_version_control` in `rust-lang/cargo/src/cargo/ops/fix/mod.rs`.
-fn check_version_control(cxs: &[Context]) -> Result<()> {
+fn check_version_control(cxs: &[PackageContext]) -> Result<()> {
     let mut dirty_files = vec![];
     let mut staged_files = vec![];
 
@@ -638,7 +635,7 @@ fn check_version_control(cxs: &[Context]) -> Result<()> {
     );
 }
 
-fn run_package(cx: &Context) {
+fn run_package(cx: &PackageContext) {
     let _span = (!cx.uses_default_packages || (*cx.metadata.workspace_default_members).len() > 1)
         .then(|| info_span!("", package = cx.package.name.as_str()).entered());
 
@@ -680,8 +677,8 @@ fn find_package_by_name<'a>(metadata: &'a Metadata, package_name: &str) -> Resul
     bail!("no package named \"{package_name}\" found")
 }
 
-struct Context<'a> {
-    args: &'a ArgsConfig,
+struct PackageContext<'a> {
+    cli: &'a Cli,
     cfg: PackageConfig,
     cfg_patch: PackageConfigPatch, // just for `--print-config`
     package: &'a Package,
@@ -743,7 +740,7 @@ impl RelativePath {
     }
 }
 
-fn task(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
+fn task(cx: &PackageContext, from: &str, to: &str, f: fn(&PackageContext) -> Result<()>) {
     let task_name = if cx.cfg.check {
         format!("checking {from} in {to}")
     } else {
@@ -769,7 +766,7 @@ fn task(cx: &Context, from: &str, to: &str, f: fn(&Context) -> Result<()>) {
     trace!("finished in {:?}", start.elapsed());
 }
 
-fn insert_features_into_docs(cx: &Context) -> Result<()> {
+fn insert_features_into_docs(cx: &PackageContext) -> Result<()> {
     let not_found_level = if cx.cfg.allow_missing_section { Level::WARN } else { Level::ERROR };
 
     let target_path = cx.target.src_path.as_std_path();
@@ -810,7 +807,7 @@ fn insert_features_into_docs(cx: &Context) -> Result<()> {
     Ok(())
 }
 
-fn insert_docs_into_readme(cx: &Context) -> Result<()> {
+fn insert_docs_into_readme(cx: &PackageContext) -> Result<()> {
     let not_found_level = if cx.cfg.allow_missing_section { Level::WARN } else { Level::ERROR };
 
     let readme_path = &cx.readme_path;

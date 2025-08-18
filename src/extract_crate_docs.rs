@@ -9,14 +9,14 @@ use rustdoc_types::Crate;
 use tracing::warn;
 
 use crate::{
-    Context, markdown, read_to_string,
+    PackageContext, markdown, read_to_string,
     rustdoc_json::{self, CommandOutput},
     string_replacer::StringReplacer,
 };
 
 use resolver::{Resolver, ResolverOptions};
 
-pub fn extract(cx: &Context) -> Result<String> {
+pub fn extract(cx: &PackageContext) -> Result<String> {
     let path = generate_rustdoc_json(cx)?;
     let json = read_to_string(&path)?;
     let krate = rustdoc_json::parse(&json)?;
@@ -29,10 +29,10 @@ pub fn extract(cx: &Context) -> Result<String> {
     })
 }
 
-fn generate_rustdoc_json(cx: &Context) -> Result<PathBuf> {
-    let command_output = if cx.args.cli.quiet {
+fn generate_rustdoc_json(cx: &PackageContext) -> Result<PathBuf> {
+    let command_output = if cx.cli.cfg.quiet {
         CommandOutput::Ignore
-    } else if cx.args.cli.quiet_cargo {
+    } else if cx.cli.cfg.quiet_cargo {
         CommandOutput::Collect
     } else {
         CommandOutput::Inherit
@@ -57,7 +57,7 @@ fn generate_rustdoc_json(cx: &Context) -> Result<PathBuf> {
             manifest_path: Some(cx.package.manifest_path.as_std_path()),
             target: cx.cfg.target.as_deref(),
             target_dir: cx.cfg.target_dir.as_deref(),
-            quiet: cx.args.cli.quiet,
+            quiet: cx.cli.cfg.quiet,
             document_private_items: cx.cfg.document_private_items,
             output: command_output,
             no_deps: cx.cfg.no_deps,
