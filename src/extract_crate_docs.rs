@@ -19,7 +19,7 @@ use resolver::{Resolver, ResolverOptions};
 pub fn extract(cx: &PackageContext) -> Result<String> {
     let path = generate_rustdoc_json(cx)?;
     let json = read_to_string(&path)?;
-    let krate = rustdoc_json::parse(&json)?;
+    let krate = rustdoc_json::parse(&json, &cx.cfg.toolchain)?;
 
     extract_docs(ExtractDocsOptions {
         krate: &krate,

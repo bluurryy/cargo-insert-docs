@@ -143,7 +143,7 @@ pub fn generate(
     Ok((output, path))
 }
 
-pub fn parse(rustdoc_json: &str) -> Result<Crate> {
+pub fn parse(rustdoc_json: &str, toolchain: &str) -> Result<Crate> {
     #[derive(Deserialize)]
     struct CrateWithJustTheFormatVersion {
         format_version: u32,
@@ -156,18 +156,14 @@ pub fn parse(rustdoc_json: &str) -> Result<Crate> {
         let expected = rustdoc_types::FORMAT_VERSION;
         let actual = krate.format_version;
 
-        let help = if actual > expected {
-            "update `cargo-insert-docs` or use `--toolchain nightly-2025-08-02`"
-        } else {
-            "upgrade your nightly toolchain"
-        };
+        let _span = error_span!("",
+            %toolchain,
+            expected = format!("rustdoc json version {expected}"),
+            actual = format!("rustdoc json version {actual}"),
+        )
+        .entered();
 
-        let _span = error_span!("", %help).entered();
-
-        bail!(
-            "`cargo-insert-docs` requires rustdoc json format version {expected} \
-            but rustdoc produced version {actual}"
-        );
+        bail!("the chosen rust toolchain is not compatible");
     }
 
     serde_json::from_str(rustdoc_json).wrap_err("failed to parse generated rustdoc json")
