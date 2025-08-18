@@ -1,5 +1,6 @@
 #![allow(rustdoc::redundant_explicit_links)]
 #![allow(rustdoc::broken_intra_doc_links)]
+#![allow(clippy::tabs_in_doc_comments)]
 #![feature(trait_alias)]
 #![feature(extern_types)]
 //! <!-- docs intro start -->
@@ -94,12 +95,9 @@
 //! assert_eq!(one + two, 3);
 //! ```
 //!
-//! ```compile_fail,E69420
+//! ```compile_fail,E0369
 //! // this is rust code as well
-//! let one = 1;
-//! # println!("won't show up in readme");
-//! let two = 2;
-//! assert_eq!(one + two, 3);
+//! "hello" + "world"
 //! ```
 //!
 //!     // believe it or not: rust code
@@ -118,6 +116,48 @@
 //! // i don't see what this language could be
 //! int main(void) { return 0; }
 //! ```
+//!
+//! Test if ignoring lines work.
+//! ```
+//! # // ignore this line
+//! #[derive(Debug)] // don't ignore this line
+//! struct Foo {
+//!    foo: i32
+//! }
+//!
+//!   # // ignore this aswell
+//!   #[derive(Debug)] // don't ignore this line
+//! struct Bar;
+//!
+//! let s = "foo
+//! ## bar # baz";
+//! assert_eq!(s, "foo\n# bar # baz");
+//!
+//! let s = "foo
+//! ### bar # baz";
+//! assert_eq!(s, "foo\n## bar # baz");
+//! ```
+//!
+//! Test if ignoring lines work for indented code blocks.
+//!
+//!     # // ignore this line
+//!     #[derive(Debug)] // don't ignore this line
+//!     struct Foo {
+//!         foo: i32
+//!     }
+//!
+//!       # // ignore this aswell
+//!       #[derive(Debug)] // don't ignore this line
+//!     struct Bar;
+//!
+//!     let s = "foo
+//!     ## bar # baz";
+//!     assert_eq!(s, "foo\n# bar # baz");
+//!
+//!     let s = "foo
+//!     ### bar # baz";
+//!     assert_eq!(s, "foo\n## bar # baz");
+//!
 //! <!-- docs rest end -->
 
 // The docs should not link here because it's not inline.

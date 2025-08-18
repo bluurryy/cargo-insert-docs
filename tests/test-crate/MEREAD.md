@@ -108,9 +108,7 @@ assert_eq!(one + two, 3);
 
 ```rust
 // this is rust code as well
-let one = 1;
-let two = 2;
-assert_eq!(one + two, 3);
+"hello" + "world"
 ```
 
 ```rust
@@ -129,6 +127,24 @@ def square(n):
 ```custom,{.language-c}
 // i don't see what this language could be
 int main(void) { return 0; }
+```
+
+```rust
+#[derive(Debug)] // don't ignore this line
+struct Foo {
+   foo: i32
+}
+
+  #[derive(Debug)] // don't ignore this line
+struct Bar;
+
+let s = "foo
+# bar # baz";
+assert_eq!(s, "foo\n# bar # baz");
+
+let s = "foo
+## bar # baz";
+assert_eq!(s, "foo\n## bar # baz");
 ```
 <!-- docs rest end -->
 

@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `--print-supported-toolchain` argument to print a supported nightly toolchain
 - Add even more verbose messages with `-vv`
 
+### Fixed
+
+- Fix ignored attributes in code blocks
+
 ### Changed
 
 - **Breaking:** The default toolchain is now a known compatible one instead of `nightly`

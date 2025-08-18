@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests;
 
-use std::ops::Range;
+use std::{borrow::Cow, ops::Range};
 
 use color_eyre::eyre::{self, bail};
 use pulldown_cmark::{
@@ -222,12 +222,12 @@ pub fn clean_code_blocks(markdown: &str) -> String {
                 let mut new_content = String::new();
 
                 for mut line in markdown[block.span.clone()].lines() {
-                    if !line.trim_start().starts_with('#') {
-                        line = line
-                            .strip_prefix("    ")
-                            .expect("a markdown indented code block must start with four spaces");
+                    line = line
+                        .strip_prefix("    ")
+                        .expect("a markdown indented code block must start with four spaces");
 
-                        new_content.push_str(line);
+                    if let Some(line) = clean_code_line(line) {
+                        new_content.push_str(&line);
                         new_content.push('\n');
                     }
                 }
@@ -239,8 +239,8 @@ pub fn clean_code_blocks(markdown: &str) -> String {
                 let mut new_content = String::new();
 
                 for line in markdown[content.clone()].lines() {
-                    if !line.trim_start().starts_with('#') {
-                        new_content.push_str(line);
+                    if let Some(line) = clean_code_line(line) {
+                        new_content.push_str(&line);
                         new_content.push('\n');
                     }
                 }
@@ -260,6 +260,27 @@ pub fn clean_code_blocks(markdown: &str) -> String {
     }
 
     out.finish()
+}
+
+// remove hidden lines
+// <https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html#hiding-portions-of-the-example>
+fn clean_code_line(line: &str) -> Option<Cow<str>> {
+    let line_trim_start = line.trim_start();
+
+    if let Some(rest) = line_trim_start.strip_prefix('#') {
+        match rest.bytes().next() {
+            Some(b' ') | None => None,
+            Some(b'#') => {
+                let mid = substr_range(line, line_trim_start).start;
+                let lhs = &line[..mid];
+                let rhs = &line[mid + 1..];
+                Some(format!("{lhs}{rhs}").into())
+            }
+            Some(_) => Some(Cow::Borrowed(line)),
+        }
+    } else {
+        Some(Cow::Borrowed(line))
+    }
 }
 
 fn substr_range(str: &str, substr: &str) -> Range<usize> {
