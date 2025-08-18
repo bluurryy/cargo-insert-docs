@@ -80,8 +80,8 @@ These fields can only be set in the cli.
 |---|---|---|---|
 |manifest-path|path||Path to Cargo.toml
 |print-supported-toolchain|bool|false|Print the supported toolchain and quits|
-|print-config|bool|false|Prints configuration values and their sources for debugging and quits|
-|color|string|`auto`, `always`, `never`|Printed messages coloring|
+|print-config|bool|false|Prints configuration values and their sources and quits|
+|color|`"auto"`, `"always"`, `"never"`|`"auto"`|Printed messages coloring|
 |verbose|bool|false|Print more verbose messages|
 |quiet|bool|false|Do not print anything|
 |quiet-cargo|bool|false|Do not print cargo log messages
