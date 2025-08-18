@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![allow(
     // ifs are intentionally uncollapsed to make the logic clearer
+    clippy::collapsible_if,
     clippy::collapsible_else_if,
 )]
 

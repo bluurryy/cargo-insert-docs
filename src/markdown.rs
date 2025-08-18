@@ -268,7 +268,7 @@ pub fn clean_code_blocks(markdown: &str) -> String {
 
 // remove hidden lines
 // <https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html#hiding-portions-of-the-example>
-fn clean_code_line(line: &str) -> Option<Cow<str>> {
+fn clean_code_line(line: &str) -> Option<Cow<'_, str>> {
     let line_trim_start = line.trim_start();
 
     if let Some(rest) = line_trim_start.strip_prefix('#') {
