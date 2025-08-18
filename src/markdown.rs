@@ -222,9 +222,8 @@ pub fn clean_code_blocks(markdown: &str) -> String {
                 let mut new_content = String::new();
 
                 for mut line in markdown[block.span.clone()].lines() {
-                    line = line
-                        .strip_prefix("    ")
-                        .expect("a markdown indented code block must start with four spaces");
+                    // empty lines are allowed to not be prefixed by four spaces
+                    line = line.strip_prefix("    ").unwrap_or(line);
 
                     if let Some(line) = clean_code_line(line) {
                         new_content.push_str(&line);

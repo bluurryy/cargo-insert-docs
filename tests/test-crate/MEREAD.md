@@ -129,6 +129,7 @@ def square(n):
 int main(void) { return 0; }
 ```
 
+Test if ignoring lines work.
 ```rust
 #[derive(Debug)] // don't ignore this line
 struct Foo {
@@ -146,6 +147,27 @@ let s = "foo
 ## bar # baz";
 assert_eq!(s, "foo\n## bar # baz");
 ```
+
+Test if ignoring lines work for indented code blocks.
+
+```rust
+#[derive(Debug)] // don't ignore this line
+struct Foo {
+    foo: i32
+}
+
+  #[derive(Debug)] // don't ignore this line
+struct Bar;
+
+let s = "foo
+# bar # baz";
+assert_eq!(s, "foo\n# bar # baz");
+
+let s = "foo
+## bar # baz";
+assert_eq!(s, "foo\n## bar # baz");
+```
+
 <!-- docs rest end -->
 
 This is after the crate docs.
