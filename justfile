@@ -55,7 +55,7 @@ test-recurse feature:
 test-config:
     #!/usr/bin/env nu
     let out = (cargo run -- --manifest-path tests/test-config/Cargo.toml --print-config | tee { print })
-    if ($env | get -i UPDATE_EXPECT) == "1" {
+    if ($env | get -o UPDATE_EXPECT) == "1" {
         $out | save -f tests/test-config/print-config.toml
     } else {
         let expected = try { open --raw tests/test-config/print-config.toml } catch { "" }
