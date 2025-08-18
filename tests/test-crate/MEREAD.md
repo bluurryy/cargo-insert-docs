@@ -80,7 +80,8 @@ But we can have a naive implementation and try to not crash.
 - A link to a keyword is not possible
 - A link to a method: [`MyStruct::my_method`](https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html#method.my_method)
 
-[`ThinRope`]: String
+[`ThinRope`]: https://doc.rust-lang.org/alloc/string/struct.String.html
+
 
 ## Features
 <!-- features start -->

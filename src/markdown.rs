@@ -368,3 +368,41 @@ fn headings(markdown: &str) -> Vec<Heading> {
 
     headings
 }
+
+pub fn rewrite_link_definition_urls(
+    markdown: &str,
+    mut rewrite: impl FnMut(&str) -> Option<String>,
+) -> String {
+    use ::markdown::{ParseOptions, mdast, to_mdast};
+
+    let options = ParseOptions::gfm();
+    let mut node = to_mdast(markdown, &options).expect("non mdx parsing can't fail");
+    let mut out = StringReplacer::new(markdown);
+
+    fn rec(
+        out: &mut StringReplacer,
+        node: &mut mdast::Node,
+        rewrite: &mut impl FnMut(&str) -> Option<String>,
+    ) {
+        if let Some(children) = node.children_mut() {
+            for child in children.iter_mut().rev() {
+                rec(out, child, rewrite)
+            }
+        } else if let mdast::Node::Definition(def) = node {
+            let pos = def.position.as_ref().expect("position should be set");
+            let start = pos.start.offset;
+            let end = pos.end.offset;
+
+            if let Some(new_url) = rewrite(&def.url) {
+                def.url = new_url;
+                // can't fail unless a bad quote character was chosen in the serialization options
+                let new_str = mdast_util_to_markdown::to_markdown(node)
+                    .expect("serializing a definition should not fail");
+                out.replace(start..end, new_str);
+            }
+        }
+    }
+
+    rec(&mut out, &mut node, &mut rewrite);
+    out.finish()
+}

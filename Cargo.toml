@@ -20,6 +20,8 @@ clap-cargo = "0.16.0"
 color-eyre = { version = "0.6.5", features = ["capture-spantrace"] }
 git2 = { version = "0.20.2", default-features = false }
 macro_rules_attribute = "0.2.2"
+markdown = { version = "1.0.0", default-features = false }
+mdast_util_to_markdown = "0.0.2"
 mimalloc = "0.1.47"
 proc-macro2 = { version = "1.0.97", default-features = false, features = [
     "span-locations",

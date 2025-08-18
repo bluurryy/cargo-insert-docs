@@ -146,5 +146,22 @@ fn extract_docs(
     let new_docs = markdown::clean_code_blocks(&new_docs);
     let new_docs = markdown::shrink_headings(&new_docs);
 
+    let new_docs = markdown::rewrite_link_definition_urls(&new_docs, |url| {
+        let Some(&item_id) = root.links.get(url) else {
+            // not an intra doc link
+            return None;
+        };
+
+        let url = match resolver.item_url(item_id) {
+            Ok(ok) => ok,
+            Err(err) => {
+                on_not_found(url, err);
+                return None;
+            }
+        };
+
+        Some(url)
+    });
+
     Ok(new_docs)
 }
