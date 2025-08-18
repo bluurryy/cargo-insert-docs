@@ -3,7 +3,7 @@ You can configure `cargo-insert-docs` using [cli arguments](cli.md) and by addin
 
 Here is an example what setting fields in the `Cargo.toml` looks like: [../tests/test-config/Cargo.toml](../tests/test-config/Cargo.toml).
 
-Configuration fields are read in the following (in precedence) order:
+Configuration fields are read in the following order (with decreasing precedence):
 - Command line arguments
 - `[package.metadata.insert-docs]`
 - `[workspace.metadata.insert-docs]`
