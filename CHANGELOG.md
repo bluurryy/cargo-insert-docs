@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Fixed
+
+- Fix version control error message to mention `cargo insert-docs` instead of `cargo fix`
+
 ## [0.14.0] - 2025-08-18
 
 ### Added
