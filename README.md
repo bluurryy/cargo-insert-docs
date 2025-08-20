@@ -205,7 +205,7 @@ You can choose a different toolchain with the `--toolchain` argument. See the ta
 
 |Version|Understands the rustdoc JSON output of|
 |---|---|
-|0.12 — 0.14|nightly-2025-08-02 — ?|
+|0.12 — 0.15|nightly-2025-08-02 — ?|
 |0.7 — 0.11|nightly-2025-07-16 — nightly-2025-08-01|
 |0.1 — 0.6|nightly-2025-06-22 — nightly-2025-07-15|
 
