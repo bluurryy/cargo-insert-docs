@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Changed
+
+- Change default target directory to the workspace target directory joined with `insert-docs` to not clean the cache of regular `cargo doc` runs and vice versa
+
 ## [0.15.0] - 2025-08-20
 
 ### Fixed

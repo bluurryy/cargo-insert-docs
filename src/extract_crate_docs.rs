@@ -45,6 +45,11 @@ fn generate_rustdoc_json(cx: &PackageContext) -> Result<PathBuf> {
         cx.log.foreign_write_incoming();
     }
 
+    let target_dir = match cx.cfg.target_dir.clone() {
+        Some(target_dir) => target_dir,
+        None => cx.metadata.target_directory.join("insert-docs").into_std_path_buf(),
+    };
+
     let (output, path) = rustdoc_json::generate(
         &cx.metadata,
         cx.package,
@@ -56,7 +61,7 @@ fn generate_rustdoc_json(cx: &PackageContext) -> Result<PathBuf> {
             features: &mut cx.enabled_features.iter().map(|s| &**s),
             manifest_path: Some(cx.package.manifest_path.as_std_path()),
             target: cx.cfg.target.as_deref(),
-            target_dir: cx.cfg.target_dir.as_deref(),
+            target_dir: Some(&target_dir),
             quiet: cx.cli.cfg.quiet,
             document_private_items: cx.cfg.document_private_items,
             output: command_output,
