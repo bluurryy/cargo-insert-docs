@@ -17,6 +17,7 @@ mod string_replacer;
 #[cfg(test)]
 mod tests;
 
+use core::fmt::Write;
 use std::{
     collections::{HashMap, HashSet},
     ffi::{OsStr, OsString},
@@ -548,8 +549,12 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
 
 // Modified from `fn check_version_control` in `rust-lang/cargo/src/cargo/ops/fix/mod.rs`.
 fn check_version_control(cxs: &[PackageContext]) -> Result<()> {
-    let mut dirty_files = vec![];
-    let mut staged_files = vec![];
+    if cxs.is_empty() {
+        return Ok(());
+    }
+
+    // bool: allow_staged
+    let mut files: Vec<(&Path, bool)> = vec![];
 
     for cx in cxs {
         if cx.cfg.check || cx.cfg.allow_dirty {
@@ -557,71 +562,70 @@ fn check_version_control(cxs: &[PackageContext]) -> Result<()> {
         }
 
         if cx.cfg.feature_into_crate {
-            let lib_path = cx.target.src_path.as_std_path();
-
-            let lib_path_display = lib_path
-                .relative_to(cx.metadata.workspace_root.as_std_path())
-                .map(|p| p.to_string())
-                .unwrap_or_else(|_| lib_path.display().to_string());
-
-            if let Some(status) = git::file_status(lib_path) {
-                match status {
-                    git::Status::Current => (),
-                    git::Status::Staged => {
-                        if !cx.cfg.allow_staged {
-                            staged_files.push(lib_path_display);
-                        }
-                    }
-                    git::Status::Dirty => {
-                        if !cx.cfg.allow_dirty {
-                            dirty_files.push(lib_path_display);
-                        }
-                    }
-                }
-            }
+            let path = cx.target.src_path.as_std_path();
+            files.push((path, cx.cfg.allow_staged));
         }
 
         if cx.cfg.crate_into_readme {
-            let readme_path = cx.readme_path.full_path.as_path();
-
-            let readme_path_display = readme_path
-                .relative_to(cx.metadata.workspace_root.as_std_path())
-                .map(|p| p.to_string())
-                .unwrap_or_else(|_| readme_path.display().to_string());
-
-            if let Some(status) = git::file_status(readme_path) {
-                match status {
-                    git::Status::Current => (),
-                    git::Status::Staged => {
-                        if !cx.cfg.allow_staged {
-                            staged_files.push(readme_path_display);
-                        }
-                    }
-                    git::Status::Dirty => {
-                        if !cx.cfg.allow_dirty {
-                            dirty_files.push(readme_path_display);
-                        }
-                    }
-                }
-            }
+            let path = cx.readme_path.full_path.as_path();
+            files.push((path, cx.cfg.allow_staged));
         }
     }
 
-    if dirty_files.is_empty() && staged_files.is_empty() {
+    let status = git::file_status(files.iter().map(|f| f.0));
+
+    let error_files = files
+        .iter()
+        .zip(status.iter())
+        .filter_map(|((path, _), status)| match status {
+            git::Status::Error(error) => Some((path, error)),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    let dirty_files = files
+        .iter()
+        .zip(status.iter())
+        .filter_map(|((path, _), status)| match status {
+            git::Status::Dirty => Some(path),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    let staged_files = files
+        .iter()
+        .zip(status.iter())
+        .filter_map(|((path, allow_staged), status)| match status {
+            git::Status::Staged if !allow_staged => Some(path),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    if error_files.is_empty() && dirty_files.is_empty() && staged_files.is_empty() {
         return Ok(());
     }
 
+    let display_path = |path: &Path| -> String {
+        path.relative_to(cxs[0].metadata.workspace_root.as_std_path())
+            .map(|p| p.to_string())
+            .unwrap_or_else(|_| path.display().to_string())
+    };
+
     let mut files_list = String::new();
 
-    for file in dirty_files {
-        files_list.push_str("  * ");
-        files_list.push_str(&file);
-        files_list.push_str(" (dirty)\n");
+    for (path, error) in error_files {
+        let path = display_path(path);
+        _ = files_list.write_fmt(format_args!("  * {path} (error: {error})\n"));
     }
-    for file in staged_files {
-        files_list.push_str("  * ");
-        files_list.push_str(&file);
-        files_list.push_str(" (staged)\n");
+
+    for path in dirty_files {
+        let path = display_path(path);
+        _ = files_list.write_fmt(format_args!("  * {path} (dirty)\n"));
+    }
+
+    for path in staged_files {
+        let path = display_path(path);
+        _ = files_list.write_fmt(format_args!("  * {path} (staged)\n"));
     }
 
     bail!(

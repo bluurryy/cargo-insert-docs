@@ -14,11 +14,13 @@ exclude = [".github"]
 [dependencies]
 anstream = "0.6.20"
 anstyle = "1.0.11"
+arcstr = { version = "1.2.0", default-features = false }
 cargo_metadata = "0.21.0"
 clap = { version = "4.5.45", features = ["derive", "wrap_help"] }
 clap-cargo = "0.16.0"
 color-eyre = { version = "0.6.5", features = ["capture-spantrace"] }
-git2 = { version = "0.20.2", default-features = false }
+gix = { version = "0.73.0", default-features = false, features = ["status"] }
+indexmap = { version = "2.10.0", default-features = false, features = ["std"] }
 macro_rules_attribute = "0.2.2"
 markdown = { version = "1.0.0", default-features = false }
 mdast_util_to_markdown = "0.0.2"
@@ -28,7 +30,7 @@ proc-macro2 = { version = "1.0.97", default-features = false, features = [
 ] }
 pulldown-cmark = { version = "0.13.0", default-features = false }
 rangemap = "1.6.0"
-relative-path = "2.0.1"
+relative-path = { version = "2.0.1", default-features = false, features = ["std", "alloc"] }
 rustdoc-types = "0.55.0"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.142"

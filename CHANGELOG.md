@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix version control error message to mention `cargo insert-docs` instead of `cargo fix`
 - Fix error message for an incompatible nightly toolchain to take into account that this error does not happen unless the user chooses a toolchain explicitly
 
+### Changed
+
+- Replace dependency `git2` with `gix`
+
 ## [0.14.0] - 2025-08-18
 
 ### Added
