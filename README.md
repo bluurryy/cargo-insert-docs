@@ -14,7 +14,6 @@
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [FAQ](#faq)
-- [Compatibility](#compatibility)
 - [Acknowledgements](#acknowledgements)
 - [Similar projects](#similar-projects)
 
@@ -192,22 +191,6 @@ See [docs/config.md](docs/config.md) for details.
   Using `cargo-insert-docs` you can also use code sections with `should_panic` and `compile_fail` annotations and [hidden lines](https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html#hiding-portions-of-the-example) with it still rendering nice in the readme.
 
   Furthermore the readme might include things like a header, badges, license that you wouldn't want to include in the crate documentation.
-
-## Compatibility
-
-To extract the crate documentation `cargo-insert-docs` relies on the unstable [rustdoc JSON](https://github.com/rust-lang/rust/issues/76578) format, which requires a recent Rust nightly toolchain.
-
-It invokes `cargo +nightly-2025-08-02 rustdoc` which will automatically install the required nightly toolchain. The chosen nightly version is one that is known to be compatible. 
-
-You can choose a different toolchain with the `--toolchain` argument. See the table below what nightly toolchains are compatible with which `cargo-insert-docs` version.
-
-#### Compatibility Matrix
-
-|Version|Understands the rustdoc JSON output of|
-|---|---|
-|0.12 — 0.15|nightly-2025-08-02 — ?|
-|0.7 — 0.11|nightly-2025-07-16 — nightly-2025-08-01|
-|0.1 — 0.6|nightly-2025-06-22 — nightly-2025-07-15|
 
 ## Acknowledgements
 
