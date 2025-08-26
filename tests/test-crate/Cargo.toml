@@ -38,3 +38,4 @@ phf_macros = "0.12.1"
 [package.metadata.insert-docs]
 feature-section-name = "features"
 crate-section-name = "docs"
+shrink-headings = 2

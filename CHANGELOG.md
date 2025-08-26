@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added 
+
+- Add `shrink-headings` option that allows you to configure the amount markdown headings shrink when inserting documentation into the readme.
+
 ## [0.16.0] - 2025-08-20
 
 ### Changed

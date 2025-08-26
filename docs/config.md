@@ -28,7 +28,8 @@ For the cli, these are not arguments but subcommands instead and calling the sub
 |feature-label|string|``"**\`{feature}\`**"``|Formatting of the feature label
 |feature-section-name|string|`"feature documentation"`|Feature documentation section name|
 |crate-section-name|string|`"crate documentation"`|Crate documentation section name|
-|link-to-latest|bool|false|Link to the "latest" version on docs.rs. This only affects workspace crates.
+|shrink-headings|i8|1|Shrinks headings when inserting documentation into the readme by the given amount. This increases the heading level (the amount of `#`).|
+|link-to-latest|bool|false|Link to the "latest" version on docs.rs. This only affects workspace crates.|
 
 #### Mode Selection
 |Field|Type|Default|Description|
