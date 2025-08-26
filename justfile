@@ -3,7 +3,7 @@ default:
 
 pre-release:
     cargo +nightly test -p test-crate
-    cargo run -- --check -p test-crate --feature-section-name "features" --crate-section-name "docs"
+    cargo run -- --check -p test-crate
     cargo run -- --check -p test-document-features crate-into-readme
     cargo run -- --check -p example-crate
     cargo run -- --check -p test-bin crate-into-readme
