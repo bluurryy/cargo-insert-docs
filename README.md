@@ -62,7 +62,6 @@ Then add a feature documentation section to your `lib.rs` file:
 //! ```
 //! # use example_crate::Image;
 //! let image = Image::load("cat.png");
-//! # println!("this won't show up in the readme");
 //! ```
 ```
 
@@ -103,7 +102,6 @@ Then your `lib.rs` will end up looking like this:
 //! ```
 //! # use example_crate::Image;
 //! let image = Image::load("cat.png");
-//! # println!("this won't show up in the readme");
 //! ```
 ```
 
@@ -143,7 +141,7 @@ Notice how:
 - doc-links like `Image` and `std::io::Read` get resolved to links to `docs.rs` and `doc.rust-lang.org`
 - the code block loses the hidden (`#` prefixed) lines
 - the code block gets marked as `rust`; if the code block already had a marking that is considered rust like `compile_fail`, `ignore`, `should_panic` and such, that would also be replaced by `rust`
-- headings get one `#` added
+- headings get one `#` added (configurable)
 
 To update the sections just run the command again.
 

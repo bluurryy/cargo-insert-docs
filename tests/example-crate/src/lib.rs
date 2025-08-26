@@ -16,7 +16,6 @@
 //! ```
 //! # use example_crate::Image;
 //! let image = Image::load("cat.png");
-//! # println!("this won't show up in the readme");
 //! ```
 
 pub struct Image;
