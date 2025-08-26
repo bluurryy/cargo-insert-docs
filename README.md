@@ -199,7 +199,7 @@ The comment format for adding feature documentation comes from [`document-featur
 #![doc = document_features::document_features!()]
 ```
 
-This project was heavily inspired by `cargo-rdme`. Thank you!
+The crate documentation into readme part was inspired by `cargo-rdme`.
 
 ## Similar projects
 - [`document-features`](https://crates.io/crates/document-features)
