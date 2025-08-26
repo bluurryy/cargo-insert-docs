@@ -3,6 +3,7 @@
 [![Crates.io](https://img.shields.io/crates/v/cargo-insert-docs.svg)](https://crates.io/crates/cargo-insert-docs)
 [![License](https://img.shields.io/crates/l/cargo-insert-docs)](#license)
 [![Build Status](https://github.com/bluurryy/cargo-insert-docs/workflows/Release/badge.svg)](https://github.com/bluurryy/cargo-insert-docs/actions/workflows/release.yml)
+[![Build Status](https://github.com/bluurryy/cargo-insert-docs/workflows/CI/badge.svg)](https://github.com/bluurryy/cargo-insert-docs/actions/workflows/ci.yml)
 
 `cargo-insert-docs` does two jobs:
 1. Insert feature documentation from `Cargo.toml` into your `lib.rs`.
