@@ -13,6 +13,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
+- [CI Integration](#ci-integration)
 - [FAQ](#faq)
 - [Acknowledgements](#acknowledgements)
 - [Similar projects](#similar-projects)
@@ -181,6 +182,20 @@ If you'd like to see what it looks like when used by a real crate then have a lo
 You can configure `cargo-insert-docs` using the cli and via metadata tables inside `Cargo.toml`.
 
 See [docs/config.md](docs/config.md) for details.
+
+## CI Integration
+
+To verify that the documentation is up to date, you can use the `--check` argument.
+
+You can automate this using GitHub Actions with job steps like these:
+
+```yml
+- uses: actions/checkout@v4
+- uses: taiki-e/install-action@v2
+  with:
+    tool: cargo-insert-docs
+- run: cargo insert-docs --check --all-features
+```
 
 ## FAQ
 
