@@ -204,6 +204,7 @@ fn test_shrink_headings() {
     assert_eq!(shrink_headings("## foo", -3), "# foo");
     assert_eq!(shrink_headings("## foo", -2), "# foo");
     assert_eq!(shrink_headings("## foo", -1), "# foo");
+    assert_eq!(shrink_headings("## foo", 0), "## foo");
     assert_eq!(shrink_headings("## foo", 1), "### foo");
     assert_eq!(shrink_headings("## foo", 2), "#### foo");
     assert_eq!(shrink_headings("## foo", 3), "##### foo");
