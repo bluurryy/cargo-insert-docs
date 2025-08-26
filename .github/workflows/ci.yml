@@ -20,3 +20,4 @@ jobs:
           components: clippy
       - run: cargo fmt --check 
       - run: cargo clippy --all-features -- -D warnings
+      - run: cargo xtask ci
