@@ -87,6 +87,13 @@ struct Args {
     #[arg(global = true, long, value_name = "NAME")]
     crate_section_name: Option<String>,
 
+    /// Shrink headings by this amount [default: 1]
+    ///
+    /// Shrinks headings when inserting documentation into the readme by
+    /// the given amount. This increases the heading level (the amount of `#`).
+    #[arg(global = true, long, value_name = "AMOUNT")]
+    shrink_headings: Option<i8>,
+
     #[expect(rustdoc::bare_urls)]
     /// Link to the "latest" version on docs.rs
     ///

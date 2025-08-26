@@ -20,30 +20,30 @@ The html docs already have a table of contents on the left side panel.
 ## Links
 
 <!-- docs rest start -->
-#### Link variants
+##### Link variants
 - A shortcut link: [`Vec`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)!
 - An inline link: [`String`](https://doc.rust-lang.org/alloc/string/struct.String.html)!
 - A reference: [`ThinRope`].
 - A broken reference: [`NotReferringToAnything`]
 
-#### Link special cases
+##### Link special cases
 - A link with title: [`str`](https://doc.rust-lang.org/std/primitive.str.html "A String!")
 - A http link: [rust](https://www.rust-lang.org/)
 - A link with a hash: [`Vec` examples](https://doc.rust-lang.org/alloc/vec/struct.Vec.html#examples).
 - A broken reference: [goes nowhere]
 - A broken link: [goes somewhere](i lied)
 
-#### Inter-doc links
+##### Inter-doc links
 - A link to another crate: [`glob_match`](https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html).
 - A shortcut to another crate [`fast_glob::glob_match`](https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html).
 - A link to a crate from github: [`indoc::indoc!`](https://docs.rs/indoc/2.0.6/indoc/macro.indoc.html).
 
-#### Re-exports
+##### Re-exports
 - A link to a struct that is re-exported: [`Reexport`](https://docs.rs/test-crate/0.0.0/test_crate/reexport/struct.Reexport.html).
 - A link to a struct that is re-exported with `#[doc(inline)]`: [`ReexportInline`](https://docs.rs/test-crate/0.0.0/test_crate/struct.ReexportInline.html).
 - A link to a struct that is re-exported from a private module: [`ReexportPrivate`](https://docs.rs/test-crate/0.0.0/test_crate/struct.ReexportPrivate.html).
 
-#### Glob re-exports
+##### Glob re-exports
 Rustdoc's json glob uses put the burden of resolving exports on the user.
 This is too hard: <https://github.com/rust-lang/rustdoc-types/issues/51#issuecomment-3071677482>
 But we can have a naive implementation and try to not crash.
@@ -54,7 +54,7 @@ But we can have a naive implementation and try to not crash.
 - A link to a struct from a mutually reexporting module: `Batman` (TODO)
 - A link to structs from recursively glob-reexporting modules: `StructInGlobA`, `StructInGlobB`, `StructInGlobC` (TODO)
 
-#### Item variants
+##### Item variants
 - A link to a module: [`my_module`](https://docs.rs/test-crate/0.0.0/test_crate/my_module/index.html)
 - A link to an extern crate: [`alloc`](https://doc.rust-lang.org/alloc/index.html)
 - A link to a use: [`MyStructUse`](https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html)
@@ -84,7 +84,7 @@ But we can have a naive implementation and try to not crash.
 [`ThinRope`]: https://doc.rust-lang.org/alloc/string/struct.String.html
 
 
-## Features
+### Features
 <!-- features start -->
 - **`std`** *(enabled by default)* — Some docs about std
 - **`serde`** — Some docs about serde
@@ -100,7 +100,7 @@ between the features
 - **`something_else`** — Wow
 <!-- features end -->
 
-## Examples
+### Examples
 ```rust
 // this is rust code
 let one = 1;

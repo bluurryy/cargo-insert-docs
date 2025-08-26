@@ -1,5 +1,7 @@
 use expect_test::expect;
 
+use crate::markdown::shrink_headings;
+
 use super::{
     clean_code_blocks, code_blocks, fenced_code_block_is_rust, find_section, find_subsections,
 };
@@ -195,4 +197,19 @@ fn test_fenced_code_block_is_rust() {
     assert!(fenced_code_block_is_rust("ignore-x86_64,ignore-windows"));
 
     assert!(!fenced_code_block_is_rust("c"));
+}
+
+#[test]
+fn test_shrink_headings() {
+    assert_eq!(shrink_headings("## foo", -3), "# foo");
+    assert_eq!(shrink_headings("## foo", -2), "# foo");
+    assert_eq!(shrink_headings("## foo", -1), "# foo");
+    assert_eq!(shrink_headings("## foo", 1), "### foo");
+    assert_eq!(shrink_headings("## foo", 2), "#### foo");
+    assert_eq!(shrink_headings("## foo", 3), "##### foo");
+    assert_eq!(shrink_headings("## foo", 4), "###### foo");
+    assert_eq!(shrink_headings("## foo", 5), "###### foo");
+    assert_eq!(shrink_headings("## foo", 6), "###### foo");
+
+    assert_eq!(shrink_headings("  ####   foo", -2), "  ##   foo");
 }

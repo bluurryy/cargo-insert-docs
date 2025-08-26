@@ -16,6 +16,7 @@ Options:
       --feature-label <FEATURE_LABEL>  Formatting of the feature label [default: "**`{feature}`**"]
       --feature-section-name <NAME>    Feature documentation section name [default: "feature documentation"]
       --crate-section-name <NAME>      Crate documentation section name [default: "crate documentation"]
+      --shrink-headings <AMOUNT>       Shrink headings by this amount [default: 1]
       --link-to-latest                 Link to the "latest" version on docs.rs
       --print-supported-toolchain      Prints a supported nightly toolchain
       --print-config                   Prints configuration values and their sources for debugging

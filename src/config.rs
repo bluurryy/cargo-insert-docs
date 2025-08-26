@@ -17,6 +17,7 @@ pub const DEFAULT_FEATURE_LABEL: &str = "**`{feature}`**";
 pub const DEFAULT_FEATURE_SECTION_NAME: &str = "feature documentation";
 pub const DEFAULT_CRATE_SECTION_NAME: &str = "crate documentation";
 pub const DEFAULT_TOOLCHAIN: &str = "nightly-2025-08-02";
+pub const DEFAULT_SHRINK_HEADINGS: i8 = 1;
 
 macro_rules! Fields {
     (
@@ -159,6 +160,7 @@ pub struct PackageConfig {
     pub feature_label: String,
     pub feature_section_name: String,
     pub crate_section_name: String,
+    pub shrink_headings: i8,
     pub link_to_latest: bool,
     pub document_private_items: bool,
     pub no_deps: bool,
@@ -185,6 +187,7 @@ pub struct PackageConfigPatch {
     pub feature_label: Option<String>,
     pub feature_section_name: Option<String>,
     pub crate_section_name: Option<String>,
+    pub shrink_headings: Option<i8>,
     pub link_to_latest: Option<bool>,
     pub document_private_items: Option<bool>,
     pub no_deps: Option<bool>,
@@ -207,9 +210,10 @@ impl PackageConfigPatch {
     pub fn from_args(args: &Args) -> Self {
         let Args {
             command,
-            feature_label,
-            feature_section_name,
-            crate_section_name,
+            ref feature_label,
+            ref feature_section_name,
+            ref crate_section_name,
+            shrink_headings,
             link_to_latest,
             document_private_items,
             no_deps,
@@ -217,16 +221,16 @@ impl PackageConfigPatch {
             allow_missing_section,
             allow_dirty,
             allow_staged,
-            features,
+            ref features,
             all_features,
             no_default_features,
-            target_selection,
-            toolchain,
-            target,
-            target_dir,
-            readme_path,
+            ref target_selection,
+            ref toolchain,
+            ref target,
+            ref target_dir,
+            ref readme_path,
             ..
-        } = args;
+        } = *args;
 
         Self {
             feature_into_crate: command.map(|c| c == Command::FeatureIntoCrate),
@@ -234,6 +238,7 @@ impl PackageConfigPatch {
             feature_label: feature_label.clone(),
             feature_section_name: feature_section_name.clone(),
             crate_section_name: crate_section_name.clone(),
+            shrink_headings,
             link_to_latest: link_to_latest.then_some(true),
             document_private_items: document_private_items.then_some(true),
             no_deps: no_deps.then_some(true),
@@ -276,6 +281,9 @@ impl PackageConfigPatch {
         }
         if let Some(crate_section_name) = &overwrite.crate_section_name {
             this.crate_section_name = Some(crate_section_name.clone());
+        }
+        if let Some(shrink_headings) = overwrite.shrink_headings {
+            this.shrink_headings = Some(shrink_headings);
         }
         if let Some(link_to_latest) = overwrite.link_to_latest {
             this.link_to_latest = Some(link_to_latest);
@@ -334,6 +342,7 @@ impl PackageConfigPatch {
             feature_label,
             feature_section_name,
             crate_section_name,
+            shrink_headings,
             link_to_latest,
             document_private_items,
             no_deps,
@@ -360,6 +369,7 @@ impl PackageConfigPatch {
                 .unwrap_or_else(|| DEFAULT_FEATURE_SECTION_NAME.to_string()),
             crate_section_name: crate_section_name
                 .unwrap_or_else(|| DEFAULT_CRATE_SECTION_NAME.to_string()),
+            shrink_headings: shrink_headings.unwrap_or(DEFAULT_SHRINK_HEADINGS),
             link_to_latest: link_to_latest.unwrap_or_default(),
             document_private_items: document_private_items.unwrap_or_default(),
             no_deps: no_deps.unwrap_or_default(),

@@ -26,6 +26,7 @@ pub fn extract(cx: &PackageContext) -> Result<String> {
         metadata: &cx.metadata,
         on_not_found: &mut |link, cause| warn!(%cause, %link, "failed to resolve doc link"),
         link_to_latest: cx.cfg.link_to_latest,
+        shrink_headings: cx.cfg.shrink_headings,
     })
 }
 
@@ -89,10 +90,11 @@ struct ExtractDocsOptions<'a> {
     metadata: &'a Metadata,
     on_not_found: &'a mut dyn FnMut(&str, Report),
     link_to_latest: bool,
+    shrink_headings: i8,
 }
 
 fn extract_docs(
-    ExtractDocsOptions { krate, metadata, on_not_found, link_to_latest }: ExtractDocsOptions,
+    ExtractDocsOptions { krate, metadata, on_not_found, link_to_latest, shrink_headings }: ExtractDocsOptions,
 ) -> Result<String, Report> {
     let root = krate.index.get(&krate.root).ok_or_eyre("crate index has no root")?;
     let docs = root.docs.as_deref().unwrap_or("").to_string();
@@ -160,7 +162,7 @@ fn extract_docs(
 
     let new_docs = new_docs.finish();
     let new_docs = markdown::clean_code_blocks(&new_docs);
-    let new_docs = markdown::shrink_headings(&new_docs);
+    let new_docs = markdown::shrink_headings(&new_docs, shrink_headings);
 
     let new_docs = markdown::rewrite_link_definition_urls(&new_docs, |url| {
         let Some(&item_id) = root.links.get(url) else {

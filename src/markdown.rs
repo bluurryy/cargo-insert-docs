@@ -346,11 +346,19 @@ fn fenced_code_block_is_rust(name: &str) -> bool {
     false
 }
 
-pub fn shrink_headings(markdown: &str) -> String {
+pub fn shrink_headings(markdown: &str, amount: i8) -> String {
+    const HASHES: &str = "######"; // 1-6
+
     let mut out = StringReplacer::new(markdown);
 
     for heading in headings(markdown).into_iter().rev() {
-        out.insert(heading.span.start, "#");
+        let hash_start = heading.span.start;
+        let hash_end = hash_start + heading.level as usize;
+
+        let new_level = (heading.level as i8).saturating_add(amount).clamp(1, 6) as usize;
+        let new_hashes = &HASHES[..new_level];
+
+        out.replace(hash_start..hash_end, new_hashes);
     }
 
     out.finish()
@@ -358,7 +366,6 @@ pub fn shrink_headings(markdown: &str) -> String {
 
 struct Heading {
     span: Range<usize>,
-    #[expect(dead_code)]
     level: HeadingLevel,
 }
 
