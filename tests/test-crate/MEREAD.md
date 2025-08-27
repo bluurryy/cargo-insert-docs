@@ -31,7 +31,7 @@ The html docs already have a table of contents on the left side panel.
 - A link with a hash: [`Vec` examples](https://doc.rust-lang.org/alloc/vec/struct.Vec.html#examples).
 - A broken reference: [goes nowhere]
 - A broken link: [goes somewhere](i lied)
-- A link with escaped characters: [Vec \[...\] tor](https://doc.rust-lang.org/alloc/vec/struct.Vec.html "does "this" work?")
+- A link with escaped characters: [Vec \[...\] tor](https://doc.rust-lang.org/alloc/vec/struct.Vec.html "does "this" work?") // TODO
 
 ##### Inter-doc links
 - A link to another crate: [`glob_match`](https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html).
