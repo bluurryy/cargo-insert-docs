@@ -61,7 +61,11 @@ impl Cli {
             cfg: CliConfig {
                 print_supported_toolchain,
                 print_config,
-                color: color.unwrap_or(ColorChoice::Auto),
+                color: match color.unwrap_or(ColorChoice::Auto) {
+                    ColorChoice::Auto => anstream::ColorChoice::Auto,
+                    ColorChoice::Always => anstream::ColorChoice::Always,
+                    ColorChoice::Never => anstream::ColorChoice::Never,
+                },
                 verbose,
                 quiet,
                 quiet_cargo: quiet || quiet_cargo,
@@ -323,7 +327,7 @@ pub struct TargetSelection {
     pub bin: Option<Option<String>>,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+#[derive(Copy, Clone, PartialEq, Eq, ValueEnum)]
 pub enum ColorChoice {
     Auto,
     Always,

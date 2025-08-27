@@ -37,7 +37,7 @@ use tracing::{Level, error_span, info_span, trace};
 use pretty_log::{PrettyLog, WithResultSeverity as _};
 
 use crate::{
-    cli::{Cli, ColorChoice},
+    cli::Cli,
     config::{PackageConfig, PackageConfigPatch, WorkspaceConfig, WorkspaceConfigPatch},
     pretty_log::AnyWrite,
     string_replacer::StringReplacer,
@@ -57,14 +57,7 @@ fn main() -> ExitCode {
     let stream: Box<dyn AnyWrite> = if cli.cfg.quiet {
         Box::new(io::empty())
     } else {
-        Box::new(anstream::AutoStream::new(
-            std::io::stderr(),
-            match cli.cfg.color {
-                ColorChoice::Auto => anstream::ColorChoice::Auto,
-                ColorChoice::Always => anstream::ColorChoice::Always,
-                ColorChoice::Never => anstream::ColorChoice::Never,
-            },
-        ))
+        Box::new(anstream::AutoStream::new(std::io::stderr(), cli.cfg.color))
     };
 
     let log = PrettyLog::new(stream);

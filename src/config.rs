@@ -4,14 +4,13 @@ use std::{
     path::PathBuf,
 };
 
+use anstream::ColorChoice;
 use color_eyre::eyre::{Result, WrapErr as _};
 use macro_rules_attribute::derive;
 use serde::{
     Deserialize, Serialize, Serializer,
     de::{DeserializeOwned, IgnoredAny},
 };
-
-use crate::cli::ColorChoice;
 
 pub const DEFAULT_FEATURE_LABEL: &str = "**`{feature}`**";
 pub const DEFAULT_FEATURE_SECTION_NAME: &str = "feature documentation";
