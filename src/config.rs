@@ -11,7 +11,7 @@ use serde::{
     de::{DeserializeOwned, IgnoredAny},
 };
 
-use crate::{Args, ColorChoice, Command};
+use crate::cli::{self, ColorChoice};
 
 pub const DEFAULT_FEATURE_LABEL: &str = "**`{feature}`**";
 pub const DEFAULT_FEATURE_SECTION_NAME: &str = "feature documentation";
@@ -34,21 +34,6 @@ macro_rules! Fields {
     };
 }
 
-pub struct Cli {
-    pub cfg: CliConfig,
-    pub workspace_patch: WorkspaceConfigPatch,
-    pub package_patch: PackageConfigPatch,
-}
-
-impl Cli {
-    pub fn from_args(args: &Args) -> Self {
-        let cfg = CliConfig::from_args(args);
-        let workspace_patch = WorkspaceConfigPatch::from_args(args);
-        let package_patch = PackageConfigPatch::from_args(args);
-        Self { cfg, workspace_patch, package_patch }
-    }
-}
-
 pub struct CliConfig {
     pub print_supported_toolchain: bool,
     pub print_config: bool,
@@ -60,8 +45,8 @@ pub struct CliConfig {
 }
 
 impl CliConfig {
-    pub fn from_args(args: &Args) -> Self {
-        let Args {
+    pub fn from_args(args: &cli::Args) -> Self {
+        let cli::Args {
             print_supported_toolchain,
             color,
             verbose,
@@ -117,8 +102,8 @@ pub struct WorkspaceConfigPatch {
 }
 
 impl WorkspaceConfigPatch {
-    pub fn from_args(args: &Args) -> Self {
-        let Args { package, exclude, .. } = args;
+    pub fn from_args(args: &cli::Args) -> Self {
+        let cli::Args { package, exclude, .. } = args;
 
         Self {
             package: (!package.is_empty()).then(|| package.clone()),
@@ -207,8 +192,8 @@ pub struct PackageConfigPatch {
 }
 
 impl PackageConfigPatch {
-    pub fn from_args(args: &Args) -> Self {
-        let Args {
+    pub fn from_args(args: &cli::Args) -> Self {
+        let cli::Args {
             command,
             ref feature_label,
             ref feature_section_name,
@@ -233,8 +218,8 @@ impl PackageConfigPatch {
         } = *args;
 
         Self {
-            feature_into_crate: command.map(|c| c == Command::FeatureIntoCrate),
-            crate_into_readme: command.map(|c| c == Command::CrateIntoReadme),
+            feature_into_crate: command.map(|c| c == cli::Command::FeatureIntoCrate),
+            crate_into_readme: command.map(|c| c == cli::Command::CrateIntoReadme),
             feature_label: feature_label.clone(),
             feature_section_name: feature_section_name.clone(),
             crate_section_name: crate_section_name.clone(),

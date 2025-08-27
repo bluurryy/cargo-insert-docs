@@ -5,6 +5,7 @@
     clippy::collapsible_else_if,
 )]
 
+mod cli;
 mod config;
 mod edit_crate_docs;
 mod extract_crate_docs;
@@ -20,7 +21,6 @@ mod tests;
 use core::fmt::Write;
 use std::{
     collections::{HashMap, HashSet},
-    ffi::{OsStr, OsString},
     fs, io,
     path::{Path, PathBuf},
     process::ExitCode,
@@ -28,8 +28,6 @@ use std::{
 };
 
 use cargo_metadata::{Metadata, MetadataCommand, Package, Target};
-use clap::{Parser, ValueEnum};
-use clap_cargo::style::CLAP_STYLING;
 use color_eyre::eyre::{OptionExt, Result, WrapErr as _, bail, eyre};
 use mimalloc::MiMalloc;
 use relative_path::PathExt;
@@ -39,7 +37,8 @@ use tracing::{Level, error_span, info_span, trace};
 use pretty_log::{PrettyLog, WithResultSeverity as _};
 
 use crate::{
-    config::{Cli, PackageConfig, PackageConfigPatch, WorkspaceConfig, WorkspaceConfigPatch},
+    cli::{Cli, ColorChoice},
+    config::{PackageConfig, PackageConfigPatch, WorkspaceConfig, WorkspaceConfigPatch},
     pretty_log::AnyWrite,
     string_replacer::StringReplacer,
 };
@@ -47,232 +46,8 @@ use crate::{
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
 
-mod heading {
-    pub const PACKAGE_SELECTION: &str = "Package Selection";
-    pub const TARGET_SELECTION: &str = "Target Selection";
-    pub const FEATURE_SELECTION: &str = "Feature Selection";
-    pub const COMPILATION_OPTIONS: &str = "Compilation Options";
-    pub const MANIFEST_OPTIONS: &str = "Manifest Options";
-    pub const ERROR_BEHAVIOR: &str = "Error Behavior";
-    pub const MESSAGE_OPTIONS: &str = "Message Options";
-    pub const MODE_SELECTION: &str = "Mode Selection";
-    pub const CARGO_DOC_OPTIONS: &str = "Cargo Doc Options";
-}
-
-#[derive(Parser)]
-#[command(
-    version,
-    about = "Inserts crate docs into a readme file and feature docs into the crate docs.",
-    long_about = "\
-        Inserts feature documentation into the crate documentation and the crate documentation into the readme.\n\n\
-        Website: https://github.com/bluurryy/cargo-insert-docs",
-    bin_name = "cargo insert-docs",
-    styles = CLAP_STYLING
-)]
-struct Args {
-    #[command(subcommand)]
-    command: Option<Command>,
-
-    /// Formatting of the feature label [default: "**`{feature}`**"]
-    ///
-    /// When inserting feature documentation into the crate documentation.
-    #[arg(global = true, long)]
-    feature_label: Option<String>,
-
-    /// Feature documentation section name [default: "feature documentation"]
-    #[arg(global = true, long, value_name = "NAME")]
-    feature_section_name: Option<String>,
-
-    /// Crate documentation section name [default: "crate documentation"]
-    #[arg(global = true, long, value_name = "NAME")]
-    crate_section_name: Option<String>,
-
-    /// Shrink headings by this amount [default: 1]
-    ///
-    /// Shrinks headings when inserting documentation into the readme by
-    /// the given amount. This increases the heading level (the amount of `#`).
-    #[arg(global = true, long, value_name = "AMOUNT")]
-    shrink_headings: Option<i8>,
-
-    #[expect(rustdoc::bare_urls)]
-    /// Link to the "latest" version on docs.rs
-    ///
-    /// For example https://docs.rs/my-crate/latest/my_crate/.
-    /// This only affects workspace crates.
-    #[arg(global = true, long, verbatim_doc_comment)]
-    link_to_latest: bool,
-
-    /// Prints a supported nightly toolchain
-    #[arg(global = true, long)]
-    print_supported_toolchain: bool,
-
-    /// Prints configuration values and their sources for debugging
-    #[arg(global = true, long)]
-    print_config: bool,
-
-    /// Document private items
-    #[arg(global = true, help_heading = heading::CARGO_DOC_OPTIONS, long)]
-    document_private_items: bool,
-
-    /// Don't build documentation for dependencies
-    #[arg(global = true, help_heading = heading::CARGO_DOC_OPTIONS, long)]
-    no_deps: bool,
-
-    /// Runs in 'check' mode, not writing to files but erroring if something is out of date
-    ///
-    /// Exits with 0 if the documentation is up to date.
-    /// Exits with 1 if the documentation is stale or if any errors occured.
-    #[arg(global = true, help_heading = heading::MODE_SELECTION, long, verbatim_doc_comment)]
-    check: bool,
-
-    /// Don't error when a section is missing
-    #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
-    allow_missing_section: bool,
-
-    /// Insert documentation even if the affected file is dirty or has staged changes
-    #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
-    allow_dirty: bool,
-
-    /// Insert documentation even if the affected file has staged changes
-    #[arg(global = true, help_heading = heading::ERROR_BEHAVIOR, long)]
-    allow_staged: bool,
-
-    /// Coloring [default: "auto"]
-    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long, value_name = "WHEN", value_enum)]
-    color: Option<ColorChoice>,
-
-    /// Print more verbose messages
-    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, short, long, action = clap::ArgAction::Count)]
-    verbose: u8,
-
-    /// Do not print anything
-    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long, short = 'q')]
-    quiet: bool,
-
-    /// Do not print cargo log messages
-    #[arg(global = true, help_heading = heading::MESSAGE_OPTIONS, long)]
-    quiet_cargo: bool,
-
-    /// Package(s) to document
-    #[arg(global = true, help_heading = heading::PACKAGE_SELECTION, long, short = 'p', value_name = "SPEC")]
-    package: Vec<String>,
-
-    /// Document all packages in the workspace
-    #[arg(global = true, help_heading = heading::PACKAGE_SELECTION, long)]
-    workspace: bool,
-
-    /// Exclude package(s) from documenting
-    #[arg(global = true, help_heading = heading::PACKAGE_SELECTION, long, value_name = "SPEC", requires = "workspace")]
-    exclude: Vec<String>,
-
-    /// Space or comma separated list of features to activate
-    #[arg(global = true, help_heading = heading::FEATURE_SELECTION, long, short = 'F', value_delimiter = ',')]
-    features: Vec<String>,
-
-    /// Activate all available features
-    #[arg(global = true, help_heading = heading::FEATURE_SELECTION, long)]
-    all_features: bool,
-
-    /// Do not activate the `default` feature
-    #[arg(global = true, help_heading = heading::FEATURE_SELECTION, long)]
-    no_default_features: bool,
-
-    #[command(flatten)]
-    target_selection: TargetSelection,
-
-    /// Which rustup toolchain to use when invoking rustdoc [default: "nightly-2025-08-02"]
-    ///
-    /// The default value is a toolchain that is known to be compatible with
-    /// this version of `cargo-insert-docs`.
-    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, verbatim_doc_comment)]
-    toolchain: Option<String>,
-
-    /// Target triple to document
-    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, value_name = "TRIPLE")]
-    target: Option<String>,
-
-    /// Directory for all generated artifacts
-    #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, value_name = "DIRECTORY")]
-    target_dir: Option<PathBuf>,
-
-    /// Path to Cargo.toml
-    #[arg(global = true, help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
-    manifest_path: Option<PathBuf>,
-
-    /// Readme path relative to the package manifest
-    ///
-    /// This defaults to the `readme` field as specified in the `Cargo.toml`.
-    #[arg(global = true, help_heading = heading::MANIFEST_OPTIONS, long, value_name = "PATH")]
-    readme_path: Option<PathBuf>,
-}
-
-#[derive(clap::Subcommand, Clone, Copy, PartialEq, Eq)]
-enum Command {
-    /// Only inserts feature documentation into crate documentation
-    FeatureIntoCrate,
-    /// Only inserts crate documentation into the readme file
-    CrateIntoReadme,
-}
-
-#[derive(clap::Args)]
-#[group(multiple = false)]
-struct TargetSelection {
-    /// Document only library targets
-    #[arg(help_heading = heading::TARGET_SELECTION, long)]
-    lib: bool,
-
-    /// Document only the specified binary
-    #[arg(help_heading = heading::TARGET_SELECTION, long, value_name = "NAME")]
-    bin: Option<Option<String>>,
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum ColorChoice {
-    Auto,
-    Always,
-    Never,
-}
-
-/// <https://doc.rust-lang.org/cargo/reference/external-tools.html#custom-subcommands>
-///
-/// When executing `cargo-insert-docs` as a cargo subcommand
-/// the first argument will be filename as usual.
-///
-/// The second argument will be `insert-docs`.
-///
-/// To be able to run `cargo-insert-docs` directly and as subcommand
-/// we need to filter out that extra `insert-docs` argument.
-///
-/// To support any executable name and not just the hardcoded "insert-docs"
-/// we parse the filename, remove the "cargo-" prefix and the ".exe" suffix
-/// to get the name of the second argument.
-fn parse_args() -> Args {
-    let command = std::env::args_os().next().expect("first argument is missing");
-    let command = subcommand_name(command.as_os_str());
-    let command = command.as_ref();
-
-    let args_os = std::env::args_os()
-        .enumerate()
-        .filter(|(index, arg)| *index != 1 || Some(arg) != command)
-        .map(|(_, arg)| arg);
-
-    Args::parse_from(args_os)
-}
-
-fn subcommand_name(bin: &OsStr) -> Option<OsString> {
-    Some(
-        Path::new(bin)
-            .file_name()?
-            .to_string_lossy()
-            .strip_prefix("cargo-")?
-            .strip_suffix(std::env::consts::EXE_SUFFIX)?
-            .to_string()
-            .into(),
-    )
-}
-
 fn main() -> ExitCode {
-    let cli = config::Cli::from_args(&parse_args());
+    let cli = Cli::from_args(&cli::parse_args());
 
     if cli.cfg.print_supported_toolchain {
         println!("{}", config::DEFAULT_TOOLCHAIN);
