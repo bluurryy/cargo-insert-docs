@@ -11,20 +11,13 @@ use pulldown_cmark::{
 
 use crate::string_replacer::StringReplacer;
 
+/// The same parser rustdoc uses.
 pub fn parser<'a>(text: &'a str) -> OffsetIter<'a, impl BrokenLinkCallback<'a>> {
     // Interprets `[Vec]` as `[Vec](Vec)` which is fine for rust docs.
     fn broken_link_callback<'a>(broken_link: BrokenLink<'a>) -> Option<(CowStr<'a>, CowStr<'a>)> {
         Some((broken_link.reference, CowStr::Borrowed("")))
     }
 
-    parser_with_broken_link_callback(text, broken_link_callback)
-}
-
-/// The same parser rustdoc uses.
-pub fn parser_with_broken_link_callback<'a, F>(text: &'a str, callback: F) -> OffsetIter<'a, F>
-where
-    F: BrokenLinkCallback<'a>,
-{
     // The same options rustdoc uses.
     let options = Options::ENABLE_TABLES
         | Options::ENABLE_FOOTNOTES
@@ -32,7 +25,8 @@ where
         | Options::ENABLE_TASKLISTS
         | Options::ENABLE_SMART_PUNCTUATION;
 
-    Parser::new_with_broken_link_callback(text, options, Some(callback)).into_offset_iter()
+    Parser::new_with_broken_link_callback(text, options, Some(broken_link_callback))
+        .into_offset_iter()
 }
 
 /// Finds sections like these:
