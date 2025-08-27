@@ -15,7 +15,11 @@ pub struct Cli {
 }
 
 impl Cli {
-    pub fn from_args(args: &Args) -> Self {
+    pub fn parse() -> Self {
+        Self::from_args(&parse_args())
+    }
+
+    fn from_args(args: &Args) -> Self {
         let cfg = CliConfig::from_args(args);
         let workspace_patch = WorkspaceConfigPatch::from_args(args);
         let package_patch = PackageConfigPatch::from_args(args);
@@ -36,7 +40,7 @@ impl Cli {
 /// To support any executable name and not just the hardcoded "insert-docs"
 /// we parse the filename, remove the "cargo-" prefix and the ".exe" suffix
 /// to get the name of the second argument.
-pub fn parse_args() -> Args {
+fn parse_args() -> Args {
     let command = std::env::args_os().next().expect("first argument is missing");
     let command = subcommand_name(command.as_os_str());
     let command = command.as_ref();

@@ -47,7 +47,7 @@ use crate::{
 static GLOBAL: MiMalloc = MiMalloc;
 
 fn main() -> ExitCode {
-    let cli = Cli::from_args(&cli::parse_args());
+    let cli = Cli::parse();
 
     if cli.cfg.print_supported_toolchain {
         println!("{}", config::DEFAULT_TOOLCHAIN);
