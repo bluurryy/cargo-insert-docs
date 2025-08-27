@@ -19,6 +19,7 @@
 //! - A link with a hash: [`Vec` examples](Vec#examples).
 //! - A broken reference: [goes nowhere]
 //! - A broken link: [goes somewhere](i lied)
+//! - A link with escaped characters: [Vec \[...\] tor](std::vec::Vec "does \"this\" work?") // TODO
 //!
 //! ### Inter-doc links
 //! - A link to another crate: [`glob_match`](fast_glob::glob_match).
