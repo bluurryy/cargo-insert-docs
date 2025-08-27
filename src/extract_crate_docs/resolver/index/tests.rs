@@ -16,26 +16,24 @@ fn test_tree() {
         &MetadataCommand::new().manifest_path(format!("{MANIFEST_DIR}/Cargo.toml")).exec().unwrap();
 
     let package = metadata.packages.iter().find(|p| p.name.as_str() == "test-crate").unwrap();
-    let target = package.targets.iter().find(|t| t.is_lib()).unwrap();
+    let package_target = package.targets.iter().find(|t| t.is_lib()).unwrap();
 
-    let (_, path) = rustdoc_json::generate(
+    let (_, path) = rustdoc_json::generate(rustdoc_json::Options {
         metadata,
         package,
-        target,
-        rustdoc_json::Options {
-            toolchain: Some("nightly"),
-            all_features: false,
-            no_default_features: false,
-            features: &mut None.into_iter(),
-            manifest_path: None,
-            target: None,
-            target_dir: None,
-            quiet: false,
-            document_private_items: false,
-            no_deps: false,
-            output: rustdoc_json::CommandOutput::Inherit,
-        },
-    )
+        package_target,
+        toolchain: Some("nightly"),
+        all_features: false,
+        no_default_features: false,
+        features: &mut None.into_iter(),
+        manifest_path: None,
+        target: None,
+        target_dir: None,
+        quiet: false,
+        document_private_items: false,
+        no_deps: false,
+        output: rustdoc_json::CommandOutput::Inherit,
+    })
     .unwrap();
 
     let json = fs::read_to_string(path).expect("failed to read generated rustdoc json");

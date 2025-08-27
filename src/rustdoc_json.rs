@@ -10,6 +10,11 @@ use serde::Deserialize;
 use tracing::error_span;
 
 pub struct Options<'a> {
+    // metadata
+    pub metadata: &'a Metadata,
+    pub package: &'a Package,
+    pub package_target: &'a Target,
+
     // flags for cargo
     pub toolchain: Option<&'a str>,
     pub all_features: bool,
@@ -36,13 +41,11 @@ pub enum CommandOutput {
 }
 
 /// Package must have a `lib` target.
-pub fn generate(
-    metadata: &Metadata,
-    package: &Package,
-    package_target: &Target,
-    options: Options,
-) -> Result<(Output, PathBuf)> {
+pub fn generate(options: Options) -> Result<(Output, PathBuf)> {
     let Options {
+        metadata,
+        package,
+        package_target,
         toolchain,
         all_features,
         no_default_features,

@@ -51,24 +51,22 @@ fn generate_rustdoc_json(cx: &PackageContext) -> Result<PathBuf> {
         None => cx.metadata.target_directory.join("insert-docs").into_std_path_buf(),
     };
 
-    let (output, path) = rustdoc_json::generate(
-        &cx.metadata,
-        cx.package,
-        cx.target,
-        rustdoc_json::Options {
-            toolchain: Some(&cx.cfg.toolchain),
-            all_features: cx.cfg.all_features,
-            no_default_features: cx.cfg.no_default_features,
-            features: &mut cx.enabled_features.iter().map(|s| &**s),
-            manifest_path: Some(cx.package.manifest_path.as_std_path()),
-            target: cx.cfg.target.as_deref(),
-            target_dir: Some(&target_dir),
-            quiet: cx.cli.cfg.quiet,
-            document_private_items: cx.cfg.document_private_items,
-            output: command_output,
-            no_deps: cx.cfg.no_deps,
-        },
-    )?;
+    let (output, path) = rustdoc_json::generate(rustdoc_json::Options {
+        metadata: &cx.metadata,
+        package: cx.package,
+        package_target: cx.target,
+        toolchain: Some(&cx.cfg.toolchain),
+        all_features: cx.cfg.all_features,
+        no_default_features: cx.cfg.no_default_features,
+        features: &mut cx.enabled_features.iter().map(|s| &**s),
+        manifest_path: Some(cx.package.manifest_path.as_std_path()),
+        target: cx.cfg.target.as_deref(),
+        target_dir: Some(&target_dir),
+        quiet: cx.cli.cfg.quiet,
+        document_private_items: cx.cfg.document_private_items,
+        output: command_output,
+        no_deps: cx.cfg.no_deps,
+    })?;
 
     if !output.status.success() {
         if command_output == CommandOutput::Collect {
