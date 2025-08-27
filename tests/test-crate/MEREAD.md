@@ -24,7 +24,6 @@ The html docs already have a table of contents on the left side panel.
 - A shortcut link: [`Vec`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)!
 - An inline link: [`String`](https://doc.rust-lang.org/alloc/string/struct.String.html)!
 - A reference: [`ThinRope`].
-- A broken reference: [`NotReferringToAnything`]
 
 ##### Link special cases
 - A link with title: [`str`](https://doc.rust-lang.org/std/primitive.str.html "A String!")

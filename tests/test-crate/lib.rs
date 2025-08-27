@@ -12,7 +12,6 @@
 //! - A shortcut link: [`Vec`]!
 //! - An inline link: [`String`](std::string::String)!
 //! - A reference: [`ThinRope`].
-//! - A broken reference: [`NotReferringToAnything`]
 //!
 //! ### Link special cases
 //! - A link with title: [`str`](str "A String!")
