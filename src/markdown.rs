@@ -379,6 +379,7 @@ pub fn rewrite_link_definition_urls(
     markdown: &str,
     mut rewrite: impl FnMut(&str) -> Option<String>,
 ) -> String {
+    // `pulldown-cmark` does not parse link definitions so we need to use a different parser
     use ::markdown::{ParseOptions, mdast, to_mdast};
 
     let options = ParseOptions::gfm();

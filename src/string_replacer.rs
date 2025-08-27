@@ -5,10 +5,9 @@ use std::borrow::Cow;
 ///
 /// Ranges and indices must be removed in reverse order and must not overlap.
 ///
-/// This type does not exist solely for optimization.
-/// Replacing ranges (the way we are doing it) would break if we accidentally
-/// replaced overlapping ranges or in the wrong order.
-/// It has the advantage that it will panic in such cases.
+/// This type is more efficient than using `String::replace_range` repeatedly.
+/// It also catches bugs by panicking when ranges are replaced in the wrong
+/// order, or if they overlap.
 pub struct StringReplacer<'a> {
     string: &'a str,
     chunks: Vec<Cow<'a, str>>,
