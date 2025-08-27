@@ -95,14 +95,14 @@ fn extract_docs(
     ExtractDocsOptions { krate, metadata, on_not_found, link_to_latest, shrink_headings }: ExtractDocsOptions,
 ) -> Result<String, Report> {
     let root = krate.index.get(&krate.root).ok_or_eyre("crate index has no root")?;
-    let docs = root.docs.as_deref().unwrap_or("").to_string();
+    let docs = root.docs.as_deref().unwrap_or("");
 
     let resolver_options = ResolverOptions { link_to_latest };
     let resolver = Resolver::new(krate, metadata, &resolver_options)?;
 
-    let mut new_docs = StringReplacer::new(&docs);
+    let mut new_docs = StringReplacer::new(docs);
 
-    for link in markdown::links(&docs).into_iter().rev() {
+    for link in markdown::links(docs).into_iter().rev() {
         let markdown::Link { span, link_type, dest_url, title, id: _, content_span } = link;
 
         if !matches!(
