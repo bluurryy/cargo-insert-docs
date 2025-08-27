@@ -6,7 +6,7 @@ use std::{
 use clap::{Parser, ValueEnum};
 use clap_cargo::style::CLAP_STYLING;
 
-use crate::config::{CliConfig, PackageConfigPatch, WorkspaceConfigPatch};
+use crate::config::{BoolOrString, CliConfig, PackageConfigPatch, WorkspaceConfigPatch};
 
 pub struct Cli {
     pub cfg: CliConfig,
@@ -20,10 +20,89 @@ impl Cli {
     }
 
     fn from_args(args: &Args) -> Self {
-        let cfg = CliConfig::from_args(args);
-        let workspace_patch = WorkspaceConfigPatch::from_args(args);
-        let package_patch = PackageConfigPatch::from_args(args);
-        Self { cfg, workspace_patch, package_patch }
+        let Args {
+            // cli
+            print_supported_toolchain,
+            color,
+            verbose,
+            quiet,
+            quiet_cargo,
+            ref manifest_path,
+            print_config,
+            // workspace
+            ref package,
+            workspace,
+            ref exclude,
+            // package
+            command,
+            ref feature_label,
+            ref feature_section_name,
+            ref crate_section_name,
+            shrink_headings,
+            link_to_latest,
+            document_private_items,
+            no_deps,
+            check,
+            allow_missing_section,
+            allow_dirty,
+            allow_staged,
+            ref features,
+            all_features,
+            no_default_features,
+            ref target_selection,
+            ref toolchain,
+            ref target,
+            ref target_dir,
+            ref readme_path,
+            ..
+        } = *args;
+
+        Self {
+            cfg: CliConfig {
+                print_supported_toolchain,
+                print_config,
+                color: color.unwrap_or(ColorChoice::Auto),
+                verbose,
+                quiet,
+                quiet_cargo: quiet || quiet_cargo,
+                manifest_path: manifest_path.clone(),
+            },
+            workspace_patch: WorkspaceConfigPatch {
+                package: (!package.is_empty()).then(|| package.clone()),
+                workspace: workspace.then_some(true),
+                exclude: (!exclude.is_empty()).then(|| exclude.clone()),
+            },
+            package_patch: PackageConfigPatch {
+                feature_into_crate: command.map(|c| c == Command::FeatureIntoCrate),
+                crate_into_readme: command.map(|c| c == Command::CrateIntoReadme),
+                feature_label: feature_label.clone(),
+                feature_section_name: feature_section_name.clone(),
+                crate_section_name: crate_section_name.clone(),
+                shrink_headings,
+                link_to_latest: link_to_latest.then_some(true),
+                document_private_items: document_private_items.then_some(true),
+                no_deps: no_deps.then_some(true),
+                check: check.then_some(true),
+                allow_missing_section: allow_missing_section.then_some(true),
+                allow_dirty: allow_dirty.then_some(true),
+                allow_staged: allow_staged.then_some(true),
+                features: (!features.is_empty()).then(|| {
+                    // features are already comma separated, we still need to make them space separated
+                    features.iter().flat_map(|f| f.split(' ').map(|s| s.to_string())).collect()
+                }),
+                all_features: all_features.then_some(true),
+                no_default_features: no_default_features.then_some(true),
+                lib: target_selection.lib.then_some(true),
+                bin: target_selection.bin.clone().map(|bin| match bin {
+                    Some(name) => BoolOrString::String(name),
+                    None => BoolOrString::Bool(true),
+                }),
+                toolchain: toolchain.clone(),
+                target: target.clone(),
+                target_dir: target_dir.clone(),
+                readme_path: readme_path.clone(),
+            },
+        }
     }
 }
 

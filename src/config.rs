@@ -11,7 +11,7 @@ use serde::{
     de::{DeserializeOwned, IgnoredAny},
 };
 
-use crate::cli::{self, ColorChoice};
+use crate::cli::ColorChoice;
 
 pub const DEFAULT_FEATURE_LABEL: &str = "**`{feature}`**";
 pub const DEFAULT_FEATURE_SECTION_NAME: &str = "feature documentation";
@@ -44,31 +44,6 @@ pub struct CliConfig {
     pub manifest_path: Option<PathBuf>,
 }
 
-impl CliConfig {
-    pub fn from_args(args: &cli::Args) -> Self {
-        let cli::Args {
-            print_supported_toolchain,
-            color,
-            verbose,
-            quiet,
-            quiet_cargo,
-            ref manifest_path,
-            print_config,
-            ..
-        } = *args;
-
-        Self {
-            print_supported_toolchain,
-            print_config,
-            color: color.unwrap_or(ColorChoice::Auto),
-            verbose,
-            quiet,
-            quiet_cargo: quiet || quiet_cargo,
-            manifest_path: manifest_path.clone(),
-        }
-    }
-}
-
 #[derive(Serialize)]
 pub struct WorkspaceConfig {
     pub package: Vec<String>,
@@ -96,22 +71,12 @@ pub fn read_package_config(toml: &str) -> Result<PackageConfigPatch> {
 #[derive(Default, Clone, Deserialize, Serialize, Fields!)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct WorkspaceConfigPatch {
-    package: Option<Vec<String>>,
-    workspace: Option<bool>,
-    exclude: Option<Vec<String>>,
+    pub package: Option<Vec<String>>,
+    pub workspace: Option<bool>,
+    pub exclude: Option<Vec<String>>,
 }
 
 impl WorkspaceConfigPatch {
-    pub fn from_args(args: &cli::Args) -> Self {
-        let cli::Args { package, exclude, .. } = args;
-
-        Self {
-            package: (!package.is_empty()).then(|| package.clone()),
-            workspace: args.workspace.then_some(true),
-            exclude: (!exclude.is_empty()).then(|| exclude.clone()),
-        }
-    }
-
     pub fn apply(&self, overwrite: &Self) -> Self {
         let mut this = self.clone();
 
@@ -192,63 +157,6 @@ pub struct PackageConfigPatch {
 }
 
 impl PackageConfigPatch {
-    pub fn from_args(args: &cli::Args) -> Self {
-        let cli::Args {
-            command,
-            ref feature_label,
-            ref feature_section_name,
-            ref crate_section_name,
-            shrink_headings,
-            link_to_latest,
-            document_private_items,
-            no_deps,
-            check,
-            allow_missing_section,
-            allow_dirty,
-            allow_staged,
-            ref features,
-            all_features,
-            no_default_features,
-            ref target_selection,
-            ref toolchain,
-            ref target,
-            ref target_dir,
-            ref readme_path,
-            ..
-        } = *args;
-
-        Self {
-            feature_into_crate: command.map(|c| c == cli::Command::FeatureIntoCrate),
-            crate_into_readme: command.map(|c| c == cli::Command::CrateIntoReadme),
-            feature_label: feature_label.clone(),
-            feature_section_name: feature_section_name.clone(),
-            crate_section_name: crate_section_name.clone(),
-            shrink_headings,
-            link_to_latest: link_to_latest.then_some(true),
-            document_private_items: document_private_items.then_some(true),
-            no_deps: no_deps.then_some(true),
-            check: check.then_some(true),
-            allow_missing_section: allow_missing_section.then_some(true),
-            allow_dirty: allow_dirty.then_some(true),
-            allow_staged: allow_staged.then_some(true),
-            features: (!features.is_empty()).then(|| {
-                // features are already comma separated, we still need to make them space separated
-                features.iter().flat_map(|f| f.split(' ').map(|s| s.to_string())).collect()
-            }),
-            all_features: all_features.then_some(true),
-            no_default_features: no_default_features.then_some(true),
-            lib: target_selection.lib.then_some(true),
-            bin: target_selection.bin.clone().map(|bin| match bin {
-                Some(name) => BoolOrString::String(name),
-                None => BoolOrString::Bool(true),
-            }),
-            toolchain: toolchain.clone(),
-            target: target.clone(),
-            target_dir: target_dir.clone(),
-            readme_path: readme_path.clone(),
-        }
-    }
-
     pub fn apply(&self, overwrite: &Self) -> Self {
         let mut this = self.clone();
 
