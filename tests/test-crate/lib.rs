@@ -8,12 +8,18 @@
 //! <!-- docs intro end -->
 //!
 //! <!-- docs rest start -->
-//! ### Link variants
-//! - A shortcut link: [`Vec`]!
-//! - An inline link: [`String`](std::string::String)!
-//! - A reference: [`ThinRope`].
+//! ### Reference variants
 //!
-//! ### Link special cases
+//! ### Links
+//! - A shortcut reference: [`Vec`]
+//! - A collapsed reference: [`Vec`][] // TODO
+//! - A full reference: [`Vector`][`Vec`]
+//!
+//! - A shortcut reference with a definition: [`ThinRope`]
+//! - A collapsed reference with a definition: [`ThinRope`][] // TODO
+//! - A full reference with a definition: [`LeanCord`][`ThinRope`]
+//!
+//! - A link: [`String`](std::string::String)
 //! - A link with title: [`str`](str "A String!")
 //! - A http link: [rust](https://www.rust-lang.org/)
 //! - A link with a hash: [`Vec` examples](Vec#examples).

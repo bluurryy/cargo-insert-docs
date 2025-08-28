@@ -20,12 +20,18 @@ The html docs already have a table of contents on the left side panel.
 ## Links
 
 <!-- docs rest start -->
-##### Link variants
-- A shortcut link: [`Vec`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)!
-- An inline link: [`String`](https://doc.rust-lang.org/alloc/string/struct.String.html)!
-- A reference: [`ThinRope`].
+##### Reference variants
 
-##### Link special cases
+##### Links
+- A shortcut reference: [`Vec`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)
+- A collapsed reference: [`Vec`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)[] // TODO
+- A full reference: [`Vector`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)
+
+- A shortcut reference with a definition: [`ThinRope`]
+- A collapsed reference with a definition: [`ThinRope`][] // TODO
+- A full reference with a definition: [`LeanCord`][`ThinRope`]
+
+- A link: [`String`](https://doc.rust-lang.org/alloc/string/struct.String.html)
 - A link with title: [`str`](https://doc.rust-lang.org/std/primitive.str.html "A String!")
 - A http link: [rust](https://www.rust-lang.org/)
 - A link with a hash: [`Vec` examples](https://doc.rust-lang.org/alloc/vec/struct.Vec.html#examples).
