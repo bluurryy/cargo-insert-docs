@@ -12,11 +12,14 @@ mod extract_crate_docs;
 mod extract_feature_docs;
 mod git;
 mod markdown;
+mod markdown_rs;
 mod pretty_log;
 mod rustdoc_json;
 mod string_replacer;
 #[cfg(test)]
 mod tests;
+
+extern crate alloc;
 
 use core::fmt::Write;
 use std::{

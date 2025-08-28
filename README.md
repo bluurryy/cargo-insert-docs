@@ -237,6 +237,13 @@ This project includes code adapted from the Rust standard library
 Copyright © The Rust Project Developers and cargo (<https://github.com/rust-lang/cargo>).
 Those projects are also licensed under MIT OR Apache-2.0.
 
+---
+
+This project also vendors code from the
+[`markdown-rs`](https://github.com/wooorm/markdown-rs),
+which is licensed under the MIT license only
+([LICENSE](src/markdown_rs/LICENSE))
+
 ### Your contributions
 
 Unless you explicitly state otherwise,
