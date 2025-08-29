@@ -31,13 +31,8 @@ impl<'a> StringReplacer<'a> {
     }
 
     fn replace_inner(&mut self, range: Range<usize>, with: Cow<'a, str>) {
-        dbg!(&range);
-        dbg!(&with);
-
         assert!(range.end >= range.start);
         assert!(range.end <= self.string.len());
-
-        eprintln!("REPLACING old={:?} new={with:?}", &self.string[range.clone()]);
 
         let end_chunk = &self.string[range.end..];
 

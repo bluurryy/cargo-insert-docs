@@ -17,35 +17,8 @@ fn shrink_headings(markdown: &str, shrink_headings: i8) -> String {
 
 #[test]
 fn debug() {
-    let source = r#"
-```
-// this is rust code
-let one = 1;
-# println!("won't show up in readme");
-let two = 2;
-assert_eq!(one + two, 3);
-```
-
-```compile_fail,E69420
-// this is rust code too
-let one = 1;
-# println!("won't show up in readme");
-let two = 2;
-assert_eq!(one + two, 3);
-```
-
-    // this is also rust code believe it or not
-    let one = 1;
-    # println!("won't show up in readme");
-    let two = 2;
-    assert_eq!(one + two, 3);
-
-```python
-# this most certainly isn't though
-def square(n):
-    n * n
-```
-"#;
+    let source = std::fs::read_to_string("/home/z/dev/cargo-insert-docs/target/docs.md").unwrap();
+    let source = source.as_str();
 
     println!("{}", events_to_string(source));
     println!("{}", rewrite_markdown_default(source));

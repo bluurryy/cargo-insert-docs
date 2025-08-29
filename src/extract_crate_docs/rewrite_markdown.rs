@@ -100,8 +100,6 @@ fn process_one<'a>(
                 }
 
                 for child in children(events, index) {
-                    dbg!(&events[child]);
-
                     if events[child].name == Name::CodeFlowChunk {
                         clean_code_chunk(out, markdown, byte_range(events, child));
                     }
@@ -114,8 +112,6 @@ fn process_one<'a>(
                 let insert_point = byte_range(events, fence).end;
 
                 for child in children(events, index) {
-                    dbg!(&events[child]);
-
                     if events[child].name == Name::CodeFlowChunk {
                         clean_code_chunk(out, markdown, byte_range(events, child));
                     }
@@ -276,7 +272,7 @@ fn clean_code_chunk(out: &mut StringReplacer, markdown: &str, range: Range<usize
             }
             Some(b'#') => {
                 // double hash `##`, remove one of the hashes
-                let mid = substr_range(line, line_trim_start).start;
+                let mid = range.start + substr_range(line, line_trim_start).start;
                 out.remove(mid..mid + 1);
             }
             Some(_) => (),
