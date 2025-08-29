@@ -6,6 +6,7 @@ use crate::markdown_rs::{
     event::{Event, Kind},
 };
 
+#[allow(dead_code)]
 pub fn events_to_string(markdown: &str) -> String {
     fn events_to_string(events: &[Event], source: &str) -> String {
         let mut fmt = TreeFormatterStack::new();

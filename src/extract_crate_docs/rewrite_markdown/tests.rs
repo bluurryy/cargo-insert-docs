@@ -1,19 +1,29 @@
 use expect_test::expect;
 
-use crate::{
-    extract_crate_docs::rewrite_markdown::{
-        RewriteMarkdownOptions, code_block_fence_is_rust, rewrite_markdown,
-    },
-    tests::events_to_string,
+use crate::extract_crate_docs::rewrite_markdown::{
+    RewriteMarkdownOptions, code_block_fence_is_rust, rewrite_markdown,
 };
 
 #[test]
 fn debug() {
-    let source = std::fs::read_to_string("/home/z/dev/cargo-insert-docs/target/docs.md").unwrap();
-    let source = source.as_str();
+    let markdown = std::fs::read_to_string("/home/z/dev/cargo-insert-docs/target/docs.md").unwrap();
+    let markdown = markdown.as_str();
 
-    println!("{}", events_to_string(source));
-    println!("{}", rewrite_markdown(source, &RewriteMarkdownOptions::default()));
+    println!(
+        "{}",
+        rewrite_markdown(
+            markdown,
+            &RewriteMarkdownOptions {
+                links: [(
+                    String::from("`Vec`"),
+                    Some(String::from("https://doc.rust-lang.org/alloc/vec/struct.Vec.html")),
+                )]
+                .into_iter()
+                .collect(),
+                ..Default::default()
+            },
+        )
+    );
 }
 
 #[test]
@@ -36,7 +46,32 @@ fn test_link() {
     // TODO: remove unused reference
     assert_eq!(
         result,
-        "[vector](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n\
+        "[vector](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n\n\
+[Vec]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html\n"
+    );
+}
+
+#[test]
+fn test_reference_collapsed() {
+    let markdown = "[Vec][]";
+
+    let result = rewrite_markdown(
+        markdown,
+        &RewriteMarkdownOptions {
+            links: [(
+                String::from("Vec"),
+                Some(String::from("https://doc.rust-lang.org/alloc/vec/struct.Vec.html")),
+            )]
+            .into_iter()
+            .collect(),
+            ..Default::default()
+        },
+    );
+
+    // TODO: remove unused reference
+    assert_eq!(
+        result,
+        "[Vec](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n\n\
 [Vec]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html\n"
     );
 }

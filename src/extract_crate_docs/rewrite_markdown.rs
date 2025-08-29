@@ -16,7 +16,7 @@ use crate::{
 #[derive(Default)]
 pub struct RewriteMarkdownOptions {
     pub shrink_headings: i8,
-    pub links: HashMap<String, Option<String>>,
+    pub links: Vec<(String, Option<String>)>,
 }
 
 pub fn rewrite_markdown(markdown: &str, options: &RewriteMarkdownOptions) -> String {
@@ -35,7 +35,7 @@ fn add_definitions(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     let mut markdown = markdown.to_string();
 
     if !options.links.is_empty() {
-        markdown.push('\n');
+        markdown.push_str("\n\n");
     }
 
     for (identifier, destination) in &options.links {
@@ -47,6 +47,9 @@ fn add_definitions(markdown: &str, options: &RewriteMarkdownOptions) -> String {
 }
 
 fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
+    let links: &HashMap<&str, Option<&str>> =
+        &options.links.iter().map(|(k, v)| (k.as_str(), v.as_deref())).collect();
+
     let parse_options = markdown_rs::ParseOptions::gfm();
 
     let (events, _state) = markdown_rs::parser::parse(markdown, &parse_options)
@@ -66,7 +69,7 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
 
     while let Some(new_index) = find_any_of(events, index, INTERESTING) {
         index = new_index;
-        process_one(&mut out, options, markdown, events, index);
+        process_one(&mut out, options, links, markdown, events, index);
     }
 
     out.finish()
@@ -74,7 +77,8 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
 
 fn process_one<'a>(
     out: &mut StringReplacer<'a>,
-    options: &RewriteMarkdownOptions,
+    options: &'a RewriteMarkdownOptions,
+    links: &HashMap<&'a str, Option<&'a str>>,
     markdown: &'a str,
     events: &[Event],
     index: usize,
@@ -151,8 +155,7 @@ fn process_one<'a>(
                     return;
                 };
 
-                let Some(resolved) = options.links.get(&markdown[byte_range(events, dest_string)])
-                else {
+                let Some(&resolved) = links.get(&markdown[byte_range(events, dest_string)]) else {
                     return;
                 };
 
@@ -167,19 +170,21 @@ fn process_one<'a>(
                 };
 
                 let range = byte_range(events, dest);
-                out.replace(range, new_url.clone());
+                out.replace(range, new_url);
                 // TODO: correctly escape / add angled brackets
                 return;
             }
 
             if let Some(reference) = child(events, index, Name::Reference) {
-                let Some(reference_string) = child(events, reference, Name::ReferenceString) else {
-                    return;
+                let identifier = match child(events, reference, Name::ReferenceString) {
+                    Some(string) => &markdown[byte_range(events, string)],
+                    None => match child(events, label, Name::LabelText) {
+                        Some(label_text) => &markdown[byte_range(events, label_text)],
+                        None => return,
+                    },
                 };
 
-                let Some(resolved) =
-                    options.links.get(&markdown[byte_range(events, reference_string)])
-                else {
+                let Some(&resolved) = links.get(identifier) else {
                     return;
                 };
 
@@ -204,8 +209,7 @@ fn process_one<'a>(
                 return;
             };
 
-            let Some(resolved) = options.links.get(&markdown[byte_range(events, label_text)])
-            else {
+            let Some(&resolved) = links.get(&markdown[byte_range(events, label_text)]) else {
                 return;
             };
 
@@ -225,30 +229,34 @@ fn process_one<'a>(
             // TODO: correctly escape / add angled brackets
         }
         Name::Definition => {
+            dbg!(&markdown[byte_range(events, index)]);
+
             let Some(dest) = child(events, index, Name::DefinitionDestination) else {
                 return;
             };
 
-            let Some(dest_string) = child(events, dest, Name::DefinitionDestinationString) else {
+            let Some(dest_string) = descendant(events, dest, Name::DefinitionDestinationString)
+            else {
                 return;
             };
 
             let dest_string_range = byte_range(events, dest_string);
             let dest_string_str = &markdown[dest_string_range];
+            dbg!(dest_string_str);
 
-            let Some(resolved) = options.links.get(dest_string_str) else {
+            let Some(&resolved) = links.get(dest_string_str) else {
                 return;
             };
 
             let Some(new_url) = resolved else {
-                let range = byte_range(events, index);
-                out.remove(range);
+                // let range = byte_range(events, index);
+                // out.remove(range);
                 // TODO: remove newline
                 return;
             };
 
             let range = byte_range(events, dest);
-            out.replace(range, new_url.clone());
+            out.replace(range, new_url);
             // TODO: correctly escape / add angled brackets
         }
         _ => unreachable!(),

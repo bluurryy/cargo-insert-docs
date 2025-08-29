@@ -21,6 +21,11 @@ The following formats are supported.
 ```rust
 let image = Image::load("cat.png");
 ```
+
+[Image]: https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html
+[`Image`]: https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html
+[`std::io::Read`]: https://doc.rust-lang.org/std/io/trait.Read.html
+
 <!-- crate documentation end -->
 
 License goes there.

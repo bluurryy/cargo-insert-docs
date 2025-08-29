@@ -101,7 +101,7 @@ fn extract_docs(
     let resolver_options = ResolverOptions { link_to_latest };
     let resolver = Resolver::new(krate, metadata, &resolver_options)?;
 
-    let links = root
+    let mut links = root
         .links
         .iter()
         .map(|(url, &item_id)| {
@@ -121,7 +121,9 @@ fn extract_docs(
 
             (url, Some(new_url))
         })
-        .collect();
+        .collect::<Vec<_>>();
+
+    links.sort_by(|(a, _), (b, _)| a.cmp(b));
 
     Ok(rewrite_markdown(docs, &RewriteMarkdownOptions { shrink_headings, links }))
 }

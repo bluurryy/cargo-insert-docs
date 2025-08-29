@@ -24,7 +24,7 @@ The html docs already have a table of contents on the left side panel.
 
 ##### Links
 - A shortcut reference: [`Vec`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)
-- A collapsed reference: [`Vec`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)[] // TODO
+- A collapsed reference: [`Vec`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html) // TODO
 - A full reference: [`Vector`](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)
 
 - A shortcut reference with a definition: [`ThinRope`]
@@ -37,7 +37,7 @@ The html docs already have a table of contents on the left side panel.
 - A link with a hash: [`Vec` examples](https://doc.rust-lang.org/alloc/vec/struct.Vec.html#examples).
 - A broken reference: [goes nowhere]
 - A broken link: [goes somewhere](i lied)
-- A link with escaped characters: [Vec \[...\] tor](https://doc.rust-lang.org/alloc/vec/struct.Vec.html "does "this" work?") // TODO
+- A link with escaped characters: [Vec \[...\] tor](https://doc.rust-lang.org/alloc/vec/struct.Vec.html "does \"this\" work?") // TODO
 
 ##### Inter-doc links
 - A link to another crate: [`glob_match`](https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html).
@@ -88,7 +88,6 @@ But we can have a naive implementation and try to not crash.
 - A link to a method: [`MyStruct::my_method`](https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html#method.my_method)
 
 [`ThinRope`]: https://doc.rust-lang.org/alloc/string/struct.String.html
-
 
 ### Features
 <!-- features start -->
