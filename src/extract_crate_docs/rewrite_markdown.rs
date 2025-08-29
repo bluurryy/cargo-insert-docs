@@ -81,7 +81,7 @@ fn process_one<'a>(
 ) {
     match &events[index].name {
         Name::HeadingAtx => {
-            let Some(hashes) = find_child(events, index, Name::HeadingAtxSequence) else {
+            let Some(hashes) = child(events, index, Name::HeadingAtxSequence) else {
                 return;
             };
 
@@ -92,7 +92,7 @@ fn process_one<'a>(
             out.replace(hashes, new_hashes);
         }
         Name::CodeFenced => {
-            if let Some(fence_info) = find_descendant(events, index, Name::CodeFencedFenceInfo) {
+            if let Some(fence_info) = descendant(events, index, Name::CodeFencedFenceInfo) {
                 let fence_info_range = byte_range(events, fence_info);
 
                 if !code_block_fence_is_rust(&markdown[fence_info_range.clone()]) {
@@ -141,17 +141,16 @@ fn process_one<'a>(
             out.insert(range.start, "```rust\n");
         }
         Name::Link => {
-            let Some(label) = find_child(events, index, Name::Label) else {
+            let Some(label) = child(events, index, Name::Label) else {
                 return;
             };
 
-            if let Some(resource) = find_child(events, index, Name::Resource) {
-                let Some(dest) = find_child(events, resource, Name::ResourceDestination) else {
+            if let Some(resource) = child(events, index, Name::Resource) {
+                let Some(dest) = child(events, resource, Name::ResourceDestination) else {
                     return;
                 };
 
-                let Some(dest_string) = find_child(events, dest, Name::ResourceDestinationString)
-                else {
+                let Some(dest_string) = child(events, dest, Name::ResourceDestinationString) else {
                     return;
                 };
 
@@ -161,7 +160,7 @@ fn process_one<'a>(
                 };
 
                 let Some(new_url) = resolved else {
-                    let Some(label_text) = find_child(events, label, Name::LabelText) else {
+                    let Some(label_text) = child(events, label, Name::LabelText) else {
                         return;
                     };
 
@@ -176,9 +175,8 @@ fn process_one<'a>(
                 return;
             }
 
-            if let Some(reference) = find_child(events, index, Name::Reference) {
-                let Some(reference_string) = find_child(events, reference, Name::ReferenceString)
-                else {
+            if let Some(reference) = child(events, index, Name::Reference) {
+                let Some(reference_string) = child(events, reference, Name::ReferenceString) else {
                     return;
                 };
 
@@ -189,7 +187,7 @@ fn process_one<'a>(
                 };
 
                 let Some(new_url) = resolved else {
-                    let Some(label_text) = find_child(events, label, Name::LabelText) else {
+                    let Some(label_text) = child(events, label, Name::LabelText) else {
                         return;
                     };
 
@@ -205,7 +203,7 @@ fn process_one<'a>(
             }
 
             // shortcut
-            let Some(label_text) = find_child(events, label, Name::LabelText) else {
+            let Some(label_text) = child(events, label, Name::LabelText) else {
                 return;
             };
 
@@ -215,7 +213,7 @@ fn process_one<'a>(
             };
 
             let Some(new_url) = resolved else {
-                let Some(label_text) = find_child(events, label, Name::LabelText) else {
+                let Some(label_text) = child(events, label, Name::LabelText) else {
                     return;
                 };
 
@@ -230,12 +228,11 @@ fn process_one<'a>(
             // TODO: correctly escape / add angled brackets
         }
         Name::Definition => {
-            let Some(dest) = find_child(events, index, Name::DefinitionDestination) else {
+            let Some(dest) = child(events, index, Name::DefinitionDestination) else {
                 return;
             };
 
-            let Some(dest_string) = find_child(events, dest, Name::DefinitionDestinationString)
-            else {
+            let Some(dest_string) = child(events, dest, Name::DefinitionDestinationString) else {
                 return;
             };
 
@@ -293,11 +290,11 @@ fn substr_range(str: &str, substr: &str) -> Range<usize> {
     start..end
 }
 
-fn find_descendant(events: &[Event], index: usize, name: Name) -> Option<usize> {
+fn descendant(events: &[Event], index: usize, name: Name) -> Option<usize> {
     descendants_with_name(events, index, name).next()
 }
 
-fn find_child(events: &[Event], index: usize, name: Name) -> Option<usize> {
+fn child(events: &[Event], index: usize, name: Name) -> Option<usize> {
     children_with_name(events, index, name).next()
 }
 
