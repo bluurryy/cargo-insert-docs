@@ -8,8 +8,9 @@ use pulldown_cmark::{BrokenLink, BrokenLinkCallback, CowStr, Event, OffsetIter, 
 
 use crate::{
     markdown_rs::{
-        self,
+        self, ParseOptions,
         event::{Kind, Name},
+        parser::ParseState,
         unist::Position,
     },
     string_replacer::StringReplacer,
@@ -161,13 +162,21 @@ fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
     })
 }
 
+pub fn parse<'a>(
+    markdown: &'a str,
+    parse_options: &'a ParseOptions,
+) -> (Vec<markdown_rs::event::Event>, ParseState<'a>) {
+    markdown_rs::parser::parse(markdown, parse_options)
+        .expect("should only fail for mdx which we don't enable")
+}
+
+pub fn parse_options() -> ParseOptions {
+    markdown_rs::ParseOptions::gfm()
+}
+
 pub fn extract_definitions(markdown: &str) -> [String; 2] {
     let mut out = StringReplacer::new(markdown);
-    let parse_options = markdown_rs::ParseOptions::gfm();
-
-    let (events, _state) = markdown_rs::parser::parse(markdown, &parse_options)
-        .expect("should only fail for mdx which we don't enable");
-
+    let (events, _state) = parse(markdown, &parse_options());
     let events = events.as_slice();
     let mut definitions: Vec<&str> = vec![];
 

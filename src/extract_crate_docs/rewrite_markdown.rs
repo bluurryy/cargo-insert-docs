@@ -5,11 +5,8 @@ use core::{fmt::Write, ops::Range};
 use std::collections::HashMap;
 
 use crate::{
-    markdown::byte_range,
-    markdown_rs::{
-        self,
-        event::{Event, Kind, Name},
-    },
+    markdown::{byte_range, parse, parse_options},
+    markdown_rs::event::{Event, Kind, Name},
     string_replacer::StringReplacer,
 };
 
@@ -50,11 +47,7 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     let links: &HashMap<&str, Option<&str>> =
         &options.links.iter().map(|(k, v)| (k.as_str(), v.as_deref())).collect();
 
-    let parse_options = markdown_rs::ParseOptions::gfm();
-
-    let (events, _state) = markdown_rs::parser::parse(markdown, &parse_options)
-        .expect("should only fail for mdx which we don't enable");
-
+    let (events, _state) = parse(markdown, &parse_options());
     let events = events.as_slice();
 
     if events.is_empty() {
