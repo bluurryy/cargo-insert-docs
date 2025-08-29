@@ -34,34 +34,6 @@ pub fn parser<'a>(text: &'a str) -> OffsetIter<'a, impl BrokenLinkCallback<'a>> 
         .into_offset_iter()
 }
 
-/// Finds sections like these:
-/// ```md
-/// <!-- section_name start -->
-/// This is the section content.
-/// <!-- section_name end -->
-/// ```
-pub fn find_section(markdown: &str, section_name: &str) -> Option<Section> {
-    let start_marker = format!("<!-- {section_name} start -->");
-    let end_marker = format!("<!-- {section_name} end -->");
-
-    let mut start = None::<Range<usize>>;
-
-    for comment in find_html_comments(markdown) {
-        if let Some(start) = start.clone() {
-            if markdown[comment.clone()] == end_marker {
-                return Some(Section {
-                    span: start.start..comment.end,
-                    content_span: start.end..comment.start,
-                });
-            }
-        } else if markdown[comment.clone()] == start_marker {
-            start = Some(comment);
-        }
-    }
-
-    None
-}
-
 pub struct Section {
     pub span: Range<usize>,
     pub content_span: Range<usize>,
@@ -174,6 +146,50 @@ pub fn parse_options() -> ParseOptions {
     markdown_rs::ParseOptions::gfm()
 }
 
+/// Finds sections like these:
+/// ```md
+/// <!-- section_name start -->
+/// This is the section content.
+/// <!-- section_name end -->
+/// ```
+pub fn find_section(markdown: &str, section_name: &str) -> Option<Section> {
+    let start_marker = format!("<!-- {section_name} start -->");
+    let end_marker = format!("<!-- {section_name} end -->");
+
+    let (events, _state) = parse(markdown, &parse_options());
+    let events = events.as_slice();
+    let mut end = None::<Range<usize>>;
+
+    for index in (0..events.len()).rev() {
+        let event = &events[index];
+
+        if event.kind == Kind::Enter {
+            continue;
+        }
+
+        if !matches!(event.name, Name::HtmlFlow | Name::HtmlText) {
+            continue;
+        }
+
+        let html = byte_range(events, index);
+        let html_str = &markdown[html.clone()];
+        dbg!(html_str);
+
+        if let Some(end) = end.clone() {
+            if html_str == start_marker {
+                return Some(Section {
+                    span: html.start..end.end,
+                    content_span: html.end..end.start,
+                });
+            }
+        } else if html_str == end_marker {
+            end = Some(html);
+        }
+    }
+
+    None
+}
+
 pub fn extract_definitions(markdown: &str) -> [String; 2] {
     let mut out = StringReplacer::new(markdown);
     let (events, _state) = parse(markdown, &parse_options());
@@ -202,8 +218,8 @@ pub fn extract_definitions(markdown: &str) -> [String; 2] {
     [without_definitions, definitions]
 }
 
-pub fn byte_range(events: &[markdown_rs::event::Event], index: usize) -> Range<usize> {
-    let pos = position(events, index);
+pub fn byte_range(events: &[markdown_rs::event::Event], exit_index: usize) -> Range<usize> {
+    let pos = position(events, exit_index);
     pos.start.offset..pos.end.offset
 }
 

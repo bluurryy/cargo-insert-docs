@@ -71,7 +71,7 @@ fn test_reference_collapsed() {
     // TODO: remove unused reference
     assert_eq!(
         result,
-        "[Vec](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n\n\
+        "[Vec][]\n\n\
 [Vec]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html\n"
     );
 }
