@@ -22,19 +22,22 @@ impl<'a> StringReplacer<'a> {
         self.replace_inner(range, with.into())
     }
 
-    #[cfg_attr(not(test), expect(dead_code))]
     pub fn insert(&mut self, idx: usize, with: impl Into<Cow<'a, str>>) {
         self.replace(idx..idx, with)
     }
 
-    #[expect(dead_code)]
     pub fn remove(&mut self, range: Range<usize>) {
         self.replace(range, "")
     }
 
     fn replace_inner(&mut self, range: Range<usize>, with: Cow<'a, str>) {
+        dbg!(&range);
+        dbg!(&with);
+
         assert!(range.end >= range.start);
         assert!(range.end <= self.string.len());
+
+        eprintln!("REPLACING old={:?} new={with:?}", &self.string[range.clone()]);
 
         let end_chunk = &self.string[range.end..];
 

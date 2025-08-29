@@ -6,6 +6,12 @@
 #![allow(clippy::too_many_lines)]
 #![allow(clippy::result_large_err)]
 #![allow(clippy::len_without_is_empty)]
+#![allow(unexpected_cfgs)]
+#![allow(unused_imports)]
+#![allow(clippy::box_collection)]
+#![allow(dead_code)]
+#![allow(clippy::manual_pattern_char_comparison)]
+#![allow(clippy::unnecessary_map_or)]
 
 extern crate alloc;
 mod configuration;
