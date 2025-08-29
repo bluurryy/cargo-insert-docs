@@ -72,7 +72,7 @@ macro_rules! re {
 }
 
 fn test(sh: &Shell) -> Result {
-    let out = cmd!(sh, "cargo test --color always -- --color always").ignore_stderr().read()?;
+    let out = cmd!(sh, "cargo test --color always -- --color always").read()?;
     println!("{out}");
     let out = anstream::adapter::strip_str(&out).to_string();
 
