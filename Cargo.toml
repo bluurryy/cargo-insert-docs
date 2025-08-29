@@ -28,7 +28,6 @@ mimalloc = "0.1.47"
 proc-macro2 = { version = "1.0.101", default-features = false, features = [
     "span-locations",
 ] }
-pulldown-cmark = { version = "0.13.0", default-features = false }
 rangemap = "1.6.0"
 relative-path = { version = "2.0.1", default-features = false, features = [
     "std",
