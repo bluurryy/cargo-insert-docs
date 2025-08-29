@@ -146,7 +146,8 @@ fn process_one<'a>(
                     return;
                 };
 
-                let Some(dest_string) = child(events, dest, Name::ResourceDestinationString) else {
+                let Some(dest_string) = descendant(events, dest, Name::ResourceDestinationString)
+                else {
                     return;
                 };
 

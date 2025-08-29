@@ -17,6 +17,31 @@ fn debug() {
 }
 
 #[test]
+fn test_link() {
+    let markdown = "[vector](Vec)";
+
+    let result = rewrite_markdown(
+        markdown,
+        &RewriteMarkdownOptions {
+            links: [(
+                String::from("Vec"),
+                Some(String::from("https://doc.rust-lang.org/alloc/vec/struct.Vec.html")),
+            )]
+            .into_iter()
+            .collect(),
+            ..Default::default()
+        },
+    );
+
+    // TODO: remove unused reference
+    assert_eq!(
+        result,
+        "[vector](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n\
+[Vec]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html\n"
+    );
+}
+
+#[test]
 fn test_clean_code_blocks() {
     expect![[r#"
 
