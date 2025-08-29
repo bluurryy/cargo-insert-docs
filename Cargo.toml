@@ -22,13 +22,10 @@ color-eyre = { version = "0.6.5", features = ["capture-spantrace"] }
 gix = { version = "0.73.0", default-features = false, features = ["status"] }
 indexmap = { version = "2.10.0", default-features = false, features = ["std"] }
 macro_rules_attribute = "0.2.2"
-markdown = { version = "1.0.0", default-features = false }
-mdast_util_to_markdown = "0.0.2"
 mimalloc = "0.1.47"
 proc-macro2 = { version = "1.0.101", default-features = false, features = [
     "span-locations",
 ] }
-pulldown-cmark = { version = "0.13.0", default-features = false }
 rangemap = "1.6.0"
 relative-path = { version = "2.0.1", default-features = false, features = [
     "std",
@@ -49,6 +46,7 @@ toml_edit = "0.23.3"
 tracing = "0.1.41"
 tracing-error = "0.2.1"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+unicode-id = "0.3.5"
 
 [dev-dependencies]
 expect-test = "1.5.1"

@@ -22,12 +22,10 @@ impl<'a> StringReplacer<'a> {
         self.replace_inner(range, with.into())
     }
 
-    #[cfg_attr(not(test), expect(dead_code))]
     pub fn insert(&mut self, idx: usize, with: impl Into<Cow<'a, str>>) {
         self.replace(idx..idx, with)
     }
 
-    #[expect(dead_code)]
     pub fn remove(&mut self, range: Range<usize>) {
         self.replace(range, "")
     }

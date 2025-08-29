@@ -1,17 +1,18 @@
 mod resolver;
+mod rewrite_markdown;
 
 use std::path::PathBuf;
 
 use cargo_metadata::Metadata;
 use color_eyre::eyre::{OptionExt as _, Report, Result, bail};
-use pulldown_cmark::LinkType;
 use rustdoc_types::Crate;
 use tracing::warn;
 
 use crate::{
-    PackageContext, markdown, read_to_string,
+    PackageContext,
+    extract_crate_docs::rewrite_markdown::{RewriteMarkdownOptions, rewrite_markdown},
+    read_to_string,
     rustdoc_json::{self, CommandOutput},
-    string_replacer::StringReplacer,
 };
 
 use resolver::{Resolver, ResolverOptions};
@@ -100,84 +101,29 @@ fn extract_docs(
     let resolver_options = ResolverOptions { link_to_latest };
     let resolver = Resolver::new(krate, metadata, &resolver_options)?;
 
-    let mut new_docs = StringReplacer::new(docs);
+    let mut links = root
+        .links
+        .iter()
+        .map(|(url, &item_id)| {
+            let url = url.clone();
 
-    for link in markdown::links(docs).into_iter().rev() {
-        let markdown::Link { span, link_type, dest_url, title, id: _, content_span } = link;
-
-        if !matches!(
-            link_type,
-            LinkType::Inline
-                | LinkType::ReferenceUnknown
-                | LinkType::CollapsedUnknown
-                | LinkType::ShortcutUnknown
-        ) {
-            // we only handle inline links and unknown references
-            continue;
-        }
-
-        let Some(&item_id) = root.links.get(&*dest_url) else {
-            // rustdoc has no item for this url
-            // the link could be dead because of conditional compilation
-            // we keep such links as they are
-            continue;
-        };
-
-        let url = match resolver.item_url(item_id) {
-            Ok(ok) => Some(ok),
-            Err(err) => {
-                on_not_found(&dest_url, err);
-                None
-            }
-        };
-
-        let content = &docs[content_span.clone().unwrap_or(0..0)];
-
-        let replace_with = match url {
-            Some(mut url) => {
-                // You can link to sections within an item's documentation by writing `[Vec](Vec#guarantees)`.
-                if let Some(hash) = dest_url.find("#") {
-                    url.push_str(&dest_url[hash..]);
+            let mut new_url = match resolver.item_url(item_id) {
+                Ok(ok) => ok,
+                Err(err) => {
+                    on_not_found(&url, err);
+                    return (url, None);
                 }
+            };
 
-                use std::fmt::Write;
-                let mut s = String::new();
-
-                write!(s, "[{content}]({url}").unwrap();
-
-                if !title.is_empty() {
-                    write!(s, " \"{title}\"").unwrap();
-                }
-
-                write!(s, ")").unwrap();
-                s
+            if let Some(hash) = url.find("#") {
+                new_url.push_str(&url[hash..]);
             }
-            None => content.to_string(),
-        };
 
-        new_docs.replace(span, replace_with);
-    }
+            (url, Some(new_url))
+        })
+        .collect::<Vec<_>>();
 
-    let new_docs = new_docs.finish();
-    let new_docs = markdown::clean_code_blocks(&new_docs);
-    let new_docs = markdown::shrink_headings(&new_docs, shrink_headings);
+    links.sort_by(|(a, _), (b, _)| a.cmp(b));
 
-    let new_docs = markdown::rewrite_link_definition_urls(&new_docs, |url| {
-        let Some(&item_id) = root.links.get(url) else {
-            // not an intra doc link
-            return None;
-        };
-
-        let url = match resolver.item_url(item_id) {
-            Ok(ok) => ok,
-            Err(err) => {
-                on_not_found(url, err);
-                return None;
-            }
-        };
-
-        Some(url)
-    });
-
-    Ok(new_docs)
+    Ok(rewrite_markdown(docs, &RewriteMarkdownOptions { shrink_headings, links }))
 }
