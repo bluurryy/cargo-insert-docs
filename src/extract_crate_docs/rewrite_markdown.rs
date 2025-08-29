@@ -44,8 +44,8 @@ fn add_definitions(markdown: &str, options: &RewriteMarkdownOptions) -> String {
 }
 
 fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
-    let links: &HashMap<&str, Option<&str>> =
-        &options.links.iter().map(|(k, v)| (k.as_str(), v.as_deref())).collect();
+    let links: HashMap<&str, Option<&str>> =
+        options.links.iter().map(|(k, v)| (k.as_str(), v.as_deref())).collect();
 
     let (events, _state) = parse(markdown, &parse_options());
     let events = events.as_slice();
