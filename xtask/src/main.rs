@@ -72,9 +72,16 @@ macro_rules! re {
 }
 
 fn test(sh: &Shell) -> Result {
-    let out = cmd!(sh, "cargo test --color always -- --color always").read()?;
-    println!("{out}");
-    let out = anstream::adapter::strip_str(&out).to_string();
+    // TODO: tee stderr/stdout
+    let out = cmd!(sh, "cargo test --color always -- --color always").ignore_status().output()?;
+    println!("\nstdout: {}\n", String::from_utf8_lossy(&out.stdout));
+    println!("\nstderr: {}\n", String::from_utf8_lossy(&out.stderr));
+
+    if !out.status.success() {
+        bail!("cargo test failed: {:?}", out.status);
+    }
+
+    let out = anstream::adapter::strip_str(&String::from_utf8_lossy(&out.stdout)).to_string();
 
     let tests_that_need_to_be_run_separately: Vec<_> =
         re!(r"(?m)^test (?<name>.*)? \.\.\. (?<result>.*)$")
