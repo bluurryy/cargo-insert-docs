@@ -103,10 +103,7 @@ mod tests {
             "should expose an `ExpressionParse` type (1)"
         );
 
-        assert!(
-            func_accepting(Box::new(func)),
-            "should expose an `ExpressionParse` type (2)"
-        );
+        assert!(func_accepting(Box::new(func)), "should expose an `ExpressionParse` type (2)");
     }
 
     #[test]
@@ -117,14 +114,8 @@ mod tests {
 
         let func_accepting = |_a: Box<EsmParse>| true;
 
-        assert!(
-            matches!(func("a"), Signal::Ok),
-            "should expose an `EsmParse` type (1)"
-        );
+        assert!(matches!(func("a"), Signal::Ok), "should expose an `EsmParse` type (1)");
 
-        assert!(
-            func_accepting(Box::new(func)),
-            "should expose an `EsmParse` type (2)"
-        );
+        assert!(func_accepting(Box::new(func)), "should expose an `EsmParse` type (2)");
     }
 }

@@ -242,11 +242,7 @@ pub fn whitespace(tokenizer: &mut Tokenizer) -> State {
 ///      ^
 /// ```
 pub fn whitespace_after(tokenizer: &mut Tokenizer) -> State {
-    if let Some(b'\t' | b' ') = tokenizer.current {
-        State::Nok
-    } else {
-        State::Ok
-    }
+    if let Some(b'\t' | b' ') = tokenizer.current { State::Nok } else { State::Ok }
 }
 
 /// After marker, followed by no indent or more indent that needed.
@@ -280,17 +276,10 @@ pub fn after(tokenizer: &mut Tokenizer) -> State {
     if blank && tokenizer.interrupt {
         State::Nok
     } else {
-        let start = skip::to_back(
-            &tokenizer.events,
-            tokenizer.events.len() - 1,
-            &[Name::ListItem],
-        );
+        let start = skip::to_back(&tokenizer.events, tokenizer.events.len() - 1, &[Name::ListItem]);
         let mut prefix = Slice::from_position(
             tokenizer.parse_state.bytes,
-            &Position {
-                start: &tokenizer.events[start].point,
-                end: &tokenizer.point,
-            },
+            &Position { start: &tokenizer.events[start].point, end: &tokenizer.point },
         )
         .len();
 

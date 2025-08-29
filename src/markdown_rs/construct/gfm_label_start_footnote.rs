@@ -49,11 +49,7 @@ use crate::markdown_rs::tokenizer::{LabelKind, LabelStart, Tokenizer};
 ///       ^
 /// ```
 pub fn start(tokenizer: &mut Tokenizer) -> State {
-    if tokenizer
-        .parse_state
-        .options
-        .constructs
-        .gfm_label_start_footnote
+    if tokenizer.parse_state.options.constructs.gfm_label_start_footnote
         && tokenizer.current == Some(b'[')
     {
         tokenizer.enter(Name::GfmFootnoteCallLabel);

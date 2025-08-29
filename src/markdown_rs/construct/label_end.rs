@@ -284,11 +284,7 @@ pub fn after(tokenizer: &mut Tokenizer) -> State {
         Some(b'(') => {
             tokenizer.attempt(
                 State::Next(StateName::LabelEndOk),
-                State::Next(if defined {
-                    StateName::LabelEndOk
-                } else {
-                    StateName::LabelEndNok
-                }),
+                State::Next(if defined { StateName::LabelEndOk } else { StateName::LabelEndNok }),
             );
             State::Retry(StateName::LabelEndResourceStart)
         }
@@ -305,11 +301,7 @@ pub fn after(tokenizer: &mut Tokenizer) -> State {
             State::Retry(StateName::LabelEndReferenceFull)
         }
         // Shortcut (`[asd]`) reference?
-        _ => State::Retry(if defined {
-            StateName::LabelEndOk
-        } else {
-            StateName::LabelEndNok
-        }),
+        _ => State::Retry(if defined { StateName::LabelEndOk } else { StateName::LabelEndNok }),
     }
 }
 
@@ -324,10 +316,7 @@ pub fn after(tokenizer: &mut Tokenizer) -> State {
 ///        ^
 /// ```
 pub fn reference_not_full(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.attempt(
-        State::Next(StateName::LabelEndOk),
-        State::Next(StateName::LabelEndNok),
-    );
+    tokenizer.attempt(State::Next(StateName::LabelEndOk), State::Next(StateName::LabelEndNok));
     State::Retry(StateName::LabelEndReferenceCollapsed)
 }
 
@@ -506,10 +495,7 @@ pub fn resource_between(tokenizer: &mut Tokenizer) -> State {
             tokenizer.tokenize_state.token_1 = Name::ResourceTitle;
             tokenizer.tokenize_state.token_2 = Name::ResourceTitleMarker;
             tokenizer.tokenize_state.token_3 = Name::ResourceTitleString;
-            tokenizer.attempt(
-                State::Next(StateName::LabelEndResourceTitleAfter),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::LabelEndResourceTitleAfter), State::Nok);
             State::Retry(StateName::TitleStart)
         }
         _ => State::Retry(StateName::LabelEndResourceEnd),

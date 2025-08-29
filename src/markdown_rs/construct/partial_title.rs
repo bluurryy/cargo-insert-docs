@@ -35,7 +35,9 @@
 //! [character_reference]: crate::markdown_rs::construct::character_reference
 //! [label_end]: crate::markdown_rs::construct::label_end
 
-use crate::markdown_rs::construct::partial_space_or_tab_eol::{space_or_tab_eol_with_options, Options};
+use crate::markdown_rs::construct::partial_space_or_tab_eol::{
+    Options, space_or_tab_eol_with_options,
+};
 use crate::markdown_rs::event::{Content, Link, Name};
 use crate::markdown_rs::state::{Name as StateName, State};
 use crate::markdown_rs::subtokenize::link;
@@ -97,10 +99,8 @@ pub fn at_break(tokenizer: &mut Tokenizer) -> State {
             tokenizer.exit(tokenizer.tokenize_state.token_3.clone());
             State::Retry(StateName::TitleBegin)
         } else if byte == b'\n' {
-            tokenizer.attempt(
-                State::Next(StateName::TitleAfterEol),
-                State::Next(StateName::TitleNok),
-            );
+            tokenizer
+                .attempt(State::Next(StateName::TitleAfterEol), State::Next(StateName::TitleNok));
             State::Retry(space_or_tab_eol_with_options(
                 tokenizer,
                 Options {
@@ -111,11 +111,7 @@ pub fn at_break(tokenizer: &mut Tokenizer) -> State {
         } else {
             tokenizer.enter_link(
                 Name::Data,
-                Link {
-                    previous: None,
-                    next: None,
-                    content: Content::String,
-                },
+                Link { previous: None, next: None, content: Content::String },
             );
 
             if tokenizer.tokenize_state.connect {

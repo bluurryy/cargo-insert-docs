@@ -84,22 +84,14 @@ impl<'a> Slice<'a> {
             end += 1;
         }
 
-        Slice {
-            bytes: &bytes[start..end],
-            before,
-            after,
-        }
+        Slice { bytes: &bytes[start..end], before, after }
     }
 
     /// Get a slice for two indices.
     ///
     /// > 👉 **Note**: indices cannot represent virtual spaces.
     pub fn from_indices(bytes: &'a [u8], start: usize, end: usize) -> Slice<'a> {
-        Slice {
-            bytes: &bytes[start..end],
-            before: 0,
-            after: 0,
-        }
+        Slice { bytes: &bytes[start..end], before: 0, after: 0 }
     }
 
     /// Get the size of this slice, including virtual spaces.

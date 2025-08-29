@@ -167,8 +167,8 @@ use crate::markdown_rs::state::{Name as StateName, State};
 use crate::markdown_rs::tokenizer::Tokenizer;
 use crate::markdown_rs::util::{
     char::{
-        after_index as char_after_index, format_byte, format_opt as format_char_opt,
-        kind_after_index, Kind as CharacterKind,
+        Kind as CharacterKind, after_index as char_after_index, format_byte,
+        format_opt as format_char_opt, kind_after_index,
     },
     identifier::{id_cont, id_start},
 };
@@ -224,19 +224,13 @@ pub fn name_before(tokenizer: &mut Tokenizer) -> State {
             tokenizer.enter(Name::MdxJsxTagClosingMarker);
             tokenizer.consume();
             tokenizer.exit(Name::MdxJsxTagClosingMarker);
-            tokenizer.attempt(
-                State::Next(StateName::MdxJsxClosingTagNameBefore),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::MdxJsxClosingTagNameBefore), State::Nok);
             State::Next(StateName::MdxJsxEsWhitespaceStart)
         }
         // Fragment opening tag.
         Some(b'>') => State::Retry(StateName::MdxJsxTagEnd),
         _ => {
-            if id_start_opt(char_after_index(
-                tokenizer.parse_state.bytes,
-                tokenizer.point.index,
-            )) {
+            if id_start_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)) {
                 tokenizer.enter(Name::MdxJsxTagName);
                 tokenizer.enter(Name::MdxJsxTagNamePrimary);
                 tokenizer.consume();
@@ -273,10 +267,7 @@ pub fn closing_tag_name_before(tokenizer: &mut Tokenizer) -> State {
         State::Retry(StateName::MdxJsxTagEnd)
     }
     // Start of a closing tag name.
-    else if id_start_opt(char_after_index(
-        tokenizer.parse_state.bytes,
-        tokenizer.point.index,
-    )) {
+    else if id_start_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)) {
         tokenizer.enter(Name::MdxJsxTagName);
         tokenizer.enter(Name::MdxJsxTagNamePrimary);
         tokenizer.consume();
@@ -316,10 +307,7 @@ pub fn primary_name(tokenizer: &mut Tokenizer) -> State {
     // Continuation of name: remain.
     // Allow continuation bytes.
     else if matches!(tokenizer.current, Some(0x80..=0xBF))
-        || id_cont_opt(char_after_index(
-            tokenizer.parse_state.bytes,
-            tokenizer.point.index,
-        ))
+        || id_cont_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index))
     {
         tokenizer.consume();
         State::Next(StateName::MdxJsxPrimaryName)
@@ -379,7 +367,7 @@ pub fn primary_name_after(tokenizer: &mut Tokenizer) -> State {
                 crash(
                     tokenizer,
                     "after name",
-                    "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag"
+                    "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag",
                 )
             }
         }
@@ -394,10 +382,7 @@ pub fn primary_name_after(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn member_name_before(tokenizer: &mut Tokenizer) -> State {
     // Start of a member name.
-    if id_start_opt(char_after_index(
-        tokenizer.parse_state.bytes,
-        tokenizer.point.index,
-    )) {
+    if id_start_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)) {
         tokenizer.enter(Name::MdxJsxTagNameMember);
         tokenizer.consume();
         State::Next(StateName::MdxJsxMemberName)
@@ -405,7 +390,7 @@ pub fn member_name_before(tokenizer: &mut Tokenizer) -> State {
         crash(
             tokenizer,
             "before member name",
-            "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag"
+            "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag",
         )
     }
 }
@@ -430,10 +415,7 @@ pub fn member_name(tokenizer: &mut Tokenizer) -> State {
     // Continuation of name: remain.
     // Allow continuation bytes.
     else if matches!(tokenizer.current, Some(0x80..=0xBF))
-        || id_cont_opt(char_after_index(
-            tokenizer.parse_state.bytes,
-            tokenizer.point.index,
-        ))
+        || id_cont_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index))
     {
         tokenizer.consume();
         State::Next(StateName::MdxJsxMemberName)
@@ -485,7 +467,7 @@ pub fn member_name_after(tokenizer: &mut Tokenizer) -> State {
                 crash(
                     tokenizer,
                     "after member name",
-                    "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag"
+                    "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag",
                 )
             }
         }
@@ -500,10 +482,7 @@ pub fn member_name_after(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn local_name_before(tokenizer: &mut Tokenizer) -> State {
     // Start of a local name.
-    if id_start_opt(char_after_index(
-        tokenizer.parse_state.bytes,
-        tokenizer.point.index,
-    )) {
+    if id_start_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)) {
         tokenizer.enter(Name::MdxJsxTagNameLocal);
         tokenizer.consume();
         State::Next(StateName::MdxJsxLocalName)
@@ -542,10 +521,7 @@ pub fn local_name(tokenizer: &mut Tokenizer) -> State {
     // Continuation of name: remain.
     // Allow continuation bytes.
     else if matches!(tokenizer.current, Some(0x80..=0xBF))
-        || id_cont_opt(char_after_index(
-            tokenizer.parse_state.bytes,
-            tokenizer.point.index,
-        ))
+        || id_cont_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index))
     {
         tokenizer.consume();
         State::Next(StateName::MdxJsxLocalName)
@@ -553,7 +529,7 @@ pub fn local_name(tokenizer: &mut Tokenizer) -> State {
         crash(
             tokenizer,
             "in local name",
-            "a name character such as letters, digits, `$`, or `_`; whitespace before attributes; or the end of the tag"
+            "a name character such as letters, digits, `$`, or `_`; whitespace before attributes; or the end of the tag",
         )
     }
 }
@@ -572,10 +548,7 @@ pub fn local_name(tokenizer: &mut Tokenizer) -> State {
 pub fn local_name_after(tokenizer: &mut Tokenizer) -> State {
     // End of name.
     if matches!(tokenizer.current, Some(b'/' | b'>' | b'{'))
-        || id_start_opt(char_after_index(
-            tokenizer.parse_state.bytes,
-            tokenizer.point.index,
-        ))
+        || id_start_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index))
     {
         tokenizer.exit(Name::MdxJsxTagName);
         State::Retry(StateName::MdxJsxAttributeBefore)
@@ -583,7 +556,7 @@ pub fn local_name_after(tokenizer: &mut Tokenizer) -> State {
         crash(
             tokenizer,
             "after local name",
-            "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag"
+            "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag",
         )
     }
 }
@@ -616,18 +589,12 @@ pub fn attribute_before(tokenizer: &mut Tokenizer) -> State {
         Some(b'{') => {
             tokenizer.tokenize_state.token_2 = tokenizer.tokenize_state.token_1.clone();
             tokenizer.tokenize_state.token_1 = Name::MdxJsxTagAttributeExpression;
-            tokenizer.attempt(
-                State::Next(StateName::MdxJsxAttributeExpressionAfter),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::MdxJsxAttributeExpressionAfter), State::Nok);
             State::Retry(StateName::MdxExpressionStart)
         }
         _ => {
             // Start of an attribute name.
-            if id_start_opt(char_after_index(
-                tokenizer.parse_state.bytes,
-                tokenizer.point.index,
-            )) {
+            if id_start_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)) {
                 tokenizer.enter(Name::MdxJsxTagAttribute);
                 tokenizer.enter(Name::MdxJsxTagAttributeName);
                 tokenizer.enter(Name::MdxJsxTagAttributePrimaryName);
@@ -637,7 +604,7 @@ pub fn attribute_before(tokenizer: &mut Tokenizer) -> State {
                 crash(
                     tokenizer,
                     "before attribute name",
-                    "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag"
+                    "a character that can start an attribute name, such as a letter, `$`, or `_`; whitespace before attributes; or the end of the tag",
                 )
             }
         }
@@ -674,19 +641,13 @@ pub fn attribute_primary_name(tokenizer: &mut Tokenizer) -> State {
         || matches!(tokenizer.current, Some(b'/' | b':' | b'=' | b'>' | b'{'))
     {
         tokenizer.exit(Name::MdxJsxTagAttributePrimaryName);
-        tokenizer.attempt(
-            State::Next(StateName::MdxJsxAttributePrimaryNameAfter),
-            State::Nok,
-        );
+        tokenizer.attempt(State::Next(StateName::MdxJsxAttributePrimaryNameAfter), State::Nok);
         State::Retry(StateName::MdxJsxEsWhitespaceStart)
     }
     // Continuation of name: remain.
     // Allow continuation bytes.
     else if matches!(tokenizer.current, Some(0x80..=0xBF))
-        || id_cont_opt(char_after_index(
-            tokenizer.parse_state.bytes,
-            tokenizer.point.index,
-        ))
+        || id_cont_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index))
     {
         tokenizer.consume();
         State::Next(StateName::MdxJsxAttributePrimaryName)
@@ -694,7 +655,7 @@ pub fn attribute_primary_name(tokenizer: &mut Tokenizer) -> State {
         crash(
             tokenizer,
             "in attribute name",
-            "an attribute name character such as letters, digits, `$`, or `_`; `=` to initialize a value; whitespace before attributes; or the end of the tag"
+            "an attribute name character such as letters, digits, `$`, or `_`; `=` to initialize a value; whitespace before attributes; or the end of the tag",
         )
     }
 }
@@ -716,10 +677,7 @@ pub fn attribute_primary_name_after(tokenizer: &mut Tokenizer) -> State {
             tokenizer.enter(Name::MdxJsxTagAttributeNamePrefixMarker);
             tokenizer.consume();
             tokenizer.exit(Name::MdxJsxTagAttributeNamePrefixMarker);
-            tokenizer.attempt(
-                State::Next(StateName::MdxJsxAttributeLocalNameBefore),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::MdxJsxAttributeLocalNameBefore), State::Nok);
             State::Next(StateName::MdxJsxEsWhitespaceStart)
         }
         // Initializer: start of an attribute value.
@@ -728,10 +686,7 @@ pub fn attribute_primary_name_after(tokenizer: &mut Tokenizer) -> State {
             tokenizer.enter(Name::MdxJsxTagAttributeInitializerMarker);
             tokenizer.consume();
             tokenizer.exit(Name::MdxJsxTagAttributeInitializerMarker);
-            tokenizer.attempt(
-                State::Next(StateName::MdxJsxAttributeValueBefore),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::MdxJsxAttributeValueBefore), State::Nok);
             State::Retry(StateName::MdxJsxEsWhitespaceStart)
         }
         _ => {
@@ -752,7 +707,7 @@ pub fn attribute_primary_name_after(tokenizer: &mut Tokenizer) -> State {
                 crash(
                     tokenizer,
                     "after attribute name",
-                    "a character that can start an attribute name, such as a letter, `$`, or `_`; `=` to initialize a value; or the end of the tag"
+                    "a character that can start an attribute name, such as a letter, `$`, or `_`; `=` to initialize a value; or the end of the tag",
                 )
             }
         }
@@ -767,10 +722,7 @@ pub fn attribute_primary_name_after(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn attribute_local_name_before(tokenizer: &mut Tokenizer) -> State {
     // Start of a local name.
-    if id_start_opt(char_after_index(
-        tokenizer.parse_state.bytes,
-        tokenizer.point.index,
-    )) {
+    if id_start_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index)) {
         tokenizer.enter(Name::MdxJsxTagAttributeNameLocal);
         tokenizer.consume();
         State::Next(StateName::MdxJsxAttributeLocalName)
@@ -778,7 +730,7 @@ pub fn attribute_local_name_before(tokenizer: &mut Tokenizer) -> State {
         crash(
             tokenizer,
             "before local attribute name",
-            "a character that can start an attribute name, such as a letter, `$`, or `_`; `=` to initialize a value; or the end of the tag"
+            "a character that can start an attribute name, such as a letter, `$`, or `_`; `=` to initialize a value; or the end of the tag",
         )
     }
 }
@@ -799,19 +751,13 @@ pub fn attribute_local_name(tokenizer: &mut Tokenizer) -> State {
     {
         tokenizer.exit(Name::MdxJsxTagAttributeNameLocal);
         tokenizer.exit(Name::MdxJsxTagAttributeName);
-        tokenizer.attempt(
-            State::Next(StateName::MdxJsxAttributeLocalNameAfter),
-            State::Nok,
-        );
+        tokenizer.attempt(State::Next(StateName::MdxJsxAttributeLocalNameAfter), State::Nok);
         State::Retry(StateName::MdxJsxEsWhitespaceStart)
     }
     // Continuation of name: remain.
     // Allow continuation bytes.
     else if matches!(tokenizer.current, Some(0x80..=0xBF))
-        || id_cont_opt(char_after_index(
-            tokenizer.parse_state.bytes,
-            tokenizer.point.index,
-        ))
+        || id_cont_opt(char_after_index(tokenizer.parse_state.bytes, tokenizer.point.index))
     {
         tokenizer.consume();
         State::Next(StateName::MdxJsxAttributeLocalName)
@@ -819,7 +765,7 @@ pub fn attribute_local_name(tokenizer: &mut Tokenizer) -> State {
         crash(
             tokenizer,
             "in local attribute name",
-            "an attribute name character such as letters, digits, `$`, or `_`; `=` to initialize a value; whitespace before attributes; or the end of the tag"
+            "an attribute name character such as letters, digits, `$`, or `_`; `=` to initialize a value; whitespace before attributes; or the end of the tag",
         )
     }
 }
@@ -839,10 +785,7 @@ pub fn attribute_local_name_after(tokenizer: &mut Tokenizer) -> State {
             tokenizer.enter(Name::MdxJsxTagAttributeInitializerMarker);
             tokenizer.consume();
             tokenizer.exit(Name::MdxJsxTagAttributeInitializerMarker);
-            tokenizer.attempt(
-                State::Next(StateName::MdxJsxAttributeValueBefore),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::MdxJsxAttributeValueBefore), State::Nok);
             State::Next(StateName::MdxJsxEsWhitespaceStart)
         }
         _ => {
@@ -859,7 +802,7 @@ pub fn attribute_local_name_after(tokenizer: &mut Tokenizer) -> State {
                 crash(
                     tokenizer,
                     "after local attribute name",
-                    "a character that can start an attribute name, such as a letter, `$`, or `_`; `=` to initialize a value; or the end of the tag"
+                    "a character that can start an attribute name, such as a letter, `$`, or `_`; `=` to initialize a value; or the end of the tag",
                 )
             }
         }
@@ -889,10 +832,8 @@ pub fn attribute_value_before(tokenizer: &mut Tokenizer) -> State {
         Some(b'{') => {
             tokenizer.tokenize_state.token_2 = tokenizer.tokenize_state.token_1.clone();
             tokenizer.tokenize_state.token_1 = Name::MdxJsxTagAttributeValueExpression;
-            tokenizer.attempt(
-                State::Next(StateName::MdxJsxAttributeValueExpressionAfter),
-                State::Nok,
-            );
+            tokenizer
+                .attempt(State::Next(StateName::MdxJsxAttributeValueExpressionAfter), State::Nok);
             State::Retry(StateName::MdxExpressionStart)
         }
         _ => crash(
@@ -942,10 +883,7 @@ pub fn attribute_value_quoted_start(tokenizer: &mut Tokenizer) -> State {
             tokenizer.attempt(State::Next(StateName::MdxJsxAttributeBefore), State::Nok);
             State::Next(StateName::MdxJsxEsWhitespaceStart)
         } else if byte == b'\n' {
-            tokenizer.attempt(
-                State::Next(StateName::MdxJsxAttributeValueQuotedStart),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::MdxJsxAttributeValueQuotedStart), State::Nok);
             State::Retry(StateName::MdxJsxEsWhitespaceStart)
         } else {
             tokenizer.enter(Name::MdxJsxTagAttributeValueLiteralValue);
@@ -1133,11 +1071,7 @@ fn crash(tokenizer: &Tokenizer, at: &str, expect: &str) -> State {
         ),
         rule_id: Box::new(format!(
             "unexpected-{}",
-            if tokenizer.current.is_none() {
-                "eof"
-            } else {
-                "character"
-            }
+            if tokenizer.current.is_none() { "eof" } else { "character" }
         )),
         source: Box::new("markdown-rs".into()),
     })

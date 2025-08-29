@@ -50,13 +50,7 @@ pub fn space_or_tab(tokenizer: &mut Tokenizer) -> StateName {
 pub fn space_or_tab_min_max(tokenizer: &mut Tokenizer, min: usize, max: usize) -> StateName {
     space_or_tab_with_options(
         tokenizer,
-        Options {
-            kind: Name::SpaceOrTab,
-            min,
-            max,
-            content: None,
-            connect: false,
-        },
+        Options { kind: Name::SpaceOrTab, min, max, content: None, connect: false },
     )
 }
 
@@ -83,11 +77,7 @@ pub fn start(tokenizer: &mut Tokenizer) -> State {
         if let Some(ref content) = tokenizer.tokenize_state.space_or_tab_content {
             tokenizer.enter_link(
                 tokenizer.tokenize_state.space_or_tab_token.clone(),
-                Link {
-                    previous: None,
-                    next: None,
-                    content: content.clone(),
-                },
+                Link { previous: None, next: None, content: content.clone() },
             );
         } else {
             tokenizer.enter(tokenizer.tokenize_state.space_or_tab_token.clone());

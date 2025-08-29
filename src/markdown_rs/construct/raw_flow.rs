@@ -160,10 +160,7 @@ pub fn start(tokenizer: &mut Tokenizer) -> State {
         || tokenizer.parse_state.options.constructs.math_flow
     {
         if matches!(tokenizer.current, Some(b'\t' | b' ')) {
-            tokenizer.attempt(
-                State::Next(StateName::RawFlowBeforeSequenceOpen),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::RawFlowBeforeSequenceOpen), State::Nok);
             return State::Retry(space_or_tab_min_max(
                 tokenizer,
                 0,
@@ -313,11 +310,7 @@ pub fn info_before(tokenizer: &mut Tokenizer) -> State {
             tokenizer.enter(tokenizer.tokenize_state.token_4.clone());
             tokenizer.enter_link(
                 Name::Data,
-                Link {
-                    previous: None,
-                    next: None,
-                    content: Content::String,
-                },
+                Link { previous: None, next: None, content: Content::String },
             );
             State::Retry(StateName::RawFlowInfo)
         }
@@ -384,11 +377,7 @@ pub fn meta_before(tokenizer: &mut Tokenizer) -> State {
             tokenizer.enter(tokenizer.tokenize_state.token_5.clone());
             tokenizer.enter_link(
                 Name::Data,
-                Link {
-                    previous: None,
-                    next: None,
-                    content: Content::String,
-                },
+                Link { previous: None, next: None, content: Content::String },
             );
             State::Retry(StateName::RawFlowMeta)
         }
@@ -466,10 +455,7 @@ pub fn close_start(tokenizer: &mut Tokenizer) -> State {
     tokenizer.enter(tokenizer.tokenize_state.token_2.clone());
 
     if matches!(tokenizer.current, Some(b'\t' | b' ')) {
-        tokenizer.attempt(
-            State::Next(StateName::RawFlowBeforeSequenceClose),
-            State::Nok,
-        );
+        tokenizer.attempt(State::Next(StateName::RawFlowBeforeSequenceClose), State::Nok);
 
         State::Retry(space_or_tab_min_max(
             tokenizer,
@@ -520,10 +506,7 @@ pub fn sequence_close(tokenizer: &mut Tokenizer) -> State {
         tokenizer.exit(tokenizer.tokenize_state.token_3.clone());
 
         if matches!(tokenizer.current, Some(b'\t' | b' ')) {
-            tokenizer.attempt(
-                State::Next(StateName::RawFlowAfterSequenceClose),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::RawFlowAfterSequenceClose), State::Nok);
             State::Retry(space_or_tab(tokenizer))
         } else {
             State::Retry(StateName::RawFlowAfterSequenceClose)
@@ -577,15 +560,8 @@ pub fn content_before(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn content_start(tokenizer: &mut Tokenizer) -> State {
     if matches!(tokenizer.current, Some(b'\t' | b' ')) {
-        tokenizer.attempt(
-            State::Next(StateName::RawFlowBeforeContentChunk),
-            State::Nok,
-        );
-        State::Retry(space_or_tab_min_max(
-            tokenizer,
-            0,
-            tokenizer.tokenize_state.size_c,
-        ))
+        tokenizer.attempt(State::Next(StateName::RawFlowBeforeContentChunk), State::Nok);
+        State::Retry(space_or_tab_min_max(tokenizer, 0, tokenizer.tokenize_state.size_c))
     } else {
         State::Retry(StateName::RawFlowBeforeContentChunk)
     }

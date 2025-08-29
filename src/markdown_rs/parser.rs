@@ -1,12 +1,12 @@
 //! Turn bytes of markdown into events.
 
+use crate::markdown_rs::ParseOptions;
 use crate::markdown_rs::event::{Event, Point};
 use crate::markdown_rs::message;
 use crate::markdown_rs::state::{Name as StateName, State};
 use crate::markdown_rs::subtokenize::subtokenize;
 use crate::markdown_rs::tokenizer::Tokenizer;
 use crate::markdown_rs::util::location::Location;
-use crate::markdown_rs::ParseOptions;
 use alloc::{string::String, vec, vec::Vec};
 
 /// Info needed, in all content types, when parsing markdown.
@@ -48,19 +48,11 @@ pub fn parse<'a>(
         gfm_footnote_definitions: vec![],
     };
 
-    let start = Point {
-        line: 1,
-        column: 1,
-        index: 0,
-        vs: 0,
-    };
+    let start = Point { line: 1, column: 1, index: 0, vs: 0 };
     let mut tokenizer = Tokenizer::new(start, &parse_state);
 
-    let state = tokenizer.push(
-        (0, 0),
-        (parse_state.bytes.len(), 0),
-        State::Next(StateName::DocumentStart),
-    );
+    let state =
+        tokenizer.push((0, 0), (parse_state.bytes.len(), 0), State::Next(StateName::DocumentStart));
     let mut result = tokenizer.flush(state, true)?;
     let mut events = tokenizer.events;
 

@@ -148,7 +148,7 @@ use crate::markdown_rs::event::{Event, Kind, Name};
 use crate::markdown_rs::state::{Name as StateName, State};
 use crate::markdown_rs::tokenizer::Tokenizer;
 use crate::markdown_rs::util::{
-    char::{kind_after_index, Kind as CharacterKind},
+    char::{Kind as CharacterKind, kind_after_index},
     slice::{Position, Slice},
 };
 use alloc::vec::Vec;
@@ -170,14 +170,8 @@ pub fn protocol_start(tokenizer: &mut Tokenizer) -> State {
             && !matches!(tokenizer.previous, Some(b'A'..=b'Z' | b'a'..=b'z'))
     {
         tokenizer.enter(Name::GfmAutolinkLiteralProtocol);
-        tokenizer.attempt(
-            State::Next(StateName::GfmAutolinkLiteralProtocolAfter),
-            State::Nok,
-        );
-        tokenizer.attempt(
-            State::Next(StateName::GfmAutolinkLiteralDomainInside),
-            State::Nok,
-        );
+        tokenizer.attempt(State::Next(StateName::GfmAutolinkLiteralProtocolAfter), State::Nok);
+        tokenizer.attempt(State::Next(StateName::GfmAutolinkLiteralDomainInside), State::Nok);
         tokenizer.tokenize_state.start = tokenizer.point.index;
         State::Retry(StateName::GfmAutolinkLiteralProtocolPrefixInside)
     } else {
@@ -274,16 +268,10 @@ pub fn www_start(tokenizer: &mut Tokenizer) -> State {
             && matches!(tokenizer.previous, None | Some(b'\t' | b'\n' | b' ' | b'(' | b'*' | b'_' | b'[' | b']' | b'~'))
     {
         tokenizer.enter(Name::GfmAutolinkLiteralWww);
-        tokenizer.attempt(
-            State::Next(StateName::GfmAutolinkLiteralWwwAfter),
-            State::Nok,
-        );
+        tokenizer.attempt(State::Next(StateName::GfmAutolinkLiteralWwwAfter), State::Nok);
         // Note: we *check*, so we can discard the `www.` we parsed.
         // If it worked, we consider it as a part of the domain.
-        tokenizer.check(
-            State::Next(StateName::GfmAutolinkLiteralDomainInside),
-            State::Nok,
-        );
+        tokenizer.check(State::Next(StateName::GfmAutolinkLiteralDomainInside), State::Nok);
         State::Retry(StateName::GfmAutolinkLiteralWwwPrefixInside)
     } else {
         State::Nok
@@ -334,11 +322,7 @@ pub fn www_prefix_inside(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn www_prefix_after(tokenizer: &mut Tokenizer) -> State {
     // If there is *anything*, we can link.
-    if tokenizer.current.is_none() {
-        State::Nok
-    } else {
-        State::Ok
-    }
+    if tokenizer.current.is_none() { State::Nok } else { State::Ok }
 }
 
 /// In domain.
@@ -567,10 +551,7 @@ pub fn trail(tokenizer: &mut Tokenizer) -> State {
 pub fn trail_bracket_after(tokenizer: &mut Tokenizer) -> State {
     // Whitespace or something that could start a resource or reference is the end.
     // Switch back to trail otherwise.
-    if matches!(
-        tokenizer.current,
-        None | Some(b'\t' | b'\n' | b' ' | b'(' | b'[')
-    ) {
+    if matches!(tokenizer.current, None | Some(b'\t' | b'\n' | b' ' | b'(' | b'[')) {
         State::Ok
     } else {
         State::Retry(StateName::GfmAutolinkLiteralTrail)
@@ -764,11 +745,7 @@ fn peek_bytes_atext(bytes: &[u8], min: usize, end: usize) -> Option<usize> {
     // The reference code is a bit weird, but that’s what it results in.
     // Source: <https://github.com/github/cmark-gfm/blob/ef1cfcb/extensions/autolink.c#L307>.
     // Other than slash, every preceding character is allowed.
-    if index == end || (index > min && bytes[index - 1] == b'/') {
-        None
-    } else {
-        Some(index)
-    }
+    if index == end || (index > min && bytes[index - 1] == b'/') { None } else { Some(index) }
 }
 
 /// Move back past a `mailto:` or `xmpp:` protocol.

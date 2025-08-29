@@ -109,10 +109,7 @@ pub fn blank_line_before(tokenizer: &mut Tokenizer) -> State {
 ///     ^
 /// ```
 pub fn before_code_indented(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.attempt(
-        State::Next(StateName::FlowAfter),
-        State::Next(StateName::FlowBeforeRaw),
-    );
+    tokenizer.attempt(State::Next(StateName::FlowAfter), State::Next(StateName::FlowBeforeRaw));
     State::Retry(StateName::CodeIndentedStart)
 }
 
@@ -123,10 +120,7 @@ pub fn before_code_indented(tokenizer: &mut Tokenizer) -> State {
 ///     ^
 /// ````
 pub fn before_raw(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.attempt(
-        State::Next(StateName::FlowAfter),
-        State::Next(StateName::FlowBeforeHtml),
-    );
+    tokenizer.attempt(State::Next(StateName::FlowAfter), State::Next(StateName::FlowBeforeHtml));
     State::Retry(StateName::RawFlowStart)
 }
 
@@ -137,10 +131,7 @@ pub fn before_raw(tokenizer: &mut Tokenizer) -> State {
 ///     ^
 /// ```
 pub fn before_html(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.attempt(
-        State::Next(StateName::FlowAfter),
-        State::Next(StateName::FlowBeforeMdxJsx),
-    );
+    tokenizer.attempt(State::Next(StateName::FlowAfter), State::Next(StateName::FlowBeforeMdxJsx));
     State::Retry(StateName::HtmlFlowStart)
 }
 
@@ -151,10 +142,8 @@ pub fn before_html(tokenizer: &mut Tokenizer) -> State {
 ///     ^
 /// ```
 pub fn before_mdx_jsx(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.attempt(
-        State::Next(StateName::FlowAfter),
-        State::Next(StateName::FlowBeforeHeadingAtx),
-    );
+    tokenizer
+        .attempt(State::Next(StateName::FlowAfter), State::Next(StateName::FlowBeforeHeadingAtx));
     State::Retry(StateName::MdxJsxFlowStart)
 }
 
@@ -208,10 +197,8 @@ pub fn before_thematic_break(tokenizer: &mut Tokenizer) -> State {
 ///     ^
 /// ```
 pub fn before_mdx_expression(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.attempt(
-        State::Next(StateName::FlowAfter),
-        State::Next(StateName::FlowBeforeGfmTable),
-    );
+    tokenizer
+        .attempt(State::Next(StateName::FlowAfter), State::Next(StateName::FlowBeforeGfmTable));
     State::Retry(StateName::MdxExpressionFlowStart)
 }
 
@@ -222,10 +209,7 @@ pub fn before_mdx_expression(tokenizer: &mut Tokenizer) -> State {
 ///     ^
 /// ```
 pub fn before_gfm_table(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.attempt(
-        State::Next(StateName::FlowAfter),
-        State::Next(StateName::FlowBeforeContent),
-    );
+    tokenizer.attempt(State::Next(StateName::FlowAfter), State::Next(StateName::FlowBeforeContent));
     State::Retry(StateName::GfmTableStart)
 }
 

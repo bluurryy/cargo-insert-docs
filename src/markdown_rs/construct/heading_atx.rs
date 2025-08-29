@@ -165,11 +165,7 @@ pub fn at_break(tokenizer: &mut Tokenizer) -> State {
         Some(_) => {
             tokenizer.enter_link(
                 Name::Data,
-                Link {
-                    previous: None,
-                    next: None,
-                    content: Content::Text,
-                },
+                Link { previous: None, next: None, content: Content::Text },
             );
             State::Retry(StateName::HeadingAtxData)
         }

@@ -11,8 +11,8 @@
 use crate::markdown_rs::event::{Content, Event, Kind, Link, Name, Point, VOID_EVENTS};
 use crate::markdown_rs::message;
 use crate::markdown_rs::parser::ParseState;
-use crate::markdown_rs::resolve::{call as call_resolve, Name as ResolveName};
-use crate::markdown_rs::state::{call, State};
+use crate::markdown_rs::resolve::{Name as ResolveName, call as call_resolve};
+use crate::markdown_rs::state::{State, call};
 use crate::markdown_rs::subtokenize::Subresult;
 
 #[cfg(feature = "log")]
@@ -446,7 +446,10 @@ impl<'a> Tokenizer<'a> {
     /// Each state function is expected to call this to signal that this code is
     /// used, or call a next function.
     pub fn consume(&mut self) {
-        debug_assert!(!self.consumed, "expected code to *not* have been consumed: this might be because `State::Retry(x)` instead of `State::Next(x)` was returned");
+        debug_assert!(
+            !self.consumed,
+            "expected code to *not* have been consumed: this might be because `State::Retry(x)` instead of `State::Next(x)` was returned"
+        );
         self.move_one();
 
         self.previous = self.current;
@@ -546,12 +549,7 @@ impl<'a> Tokenizer<'a> {
         #[cfg(feature = "log")]
         log::debug!("exit:    `{:?}`", name);
 
-        let event = Event {
-            kind: Kind::Exit,
-            name,
-            point,
-            link: None,
-        };
+        let event = Event { kind: Kind::Exit, name, point, link: None };
         self.events.push(event);
     }
 
@@ -590,12 +588,7 @@ impl<'a> Tokenizer<'a> {
         // No need to capture (and restore) when `nok` is `State::Nok`, because the
         // parent attempt will do it.
         let progress = Some(self.capture());
-        let attempt = Attempt {
-            kind: AttemptKind::Check,
-            progress,
-            ok,
-            nok,
-        };
+        let attempt = Attempt { kind: AttemptKind::Check, progress, ok, nok };
         self.attempts.push(attempt);
     }
 
@@ -605,18 +598,9 @@ impl<'a> Tokenizer<'a> {
         // Always capture (and restore) when checking.
         // No need to capture (and restore) when `nok` is `State::Nok`, because the
         // parent attempt will do it.
-        let progress = if nok == State::Nok {
-            None
-        } else {
-            Some(self.capture())
-        };
+        let progress = if nok == State::Nok { None } else { Some(self.capture()) };
 
-        let attempt = Attempt {
-            kind: AttemptKind::Attempt,
-            progress,
-            ok,
-            nok,
-        };
+        let attempt = Attempt { kind: AttemptKind::Attempt, progress, ok, nok };
         self.attempts.push(attempt);
     }
 
@@ -679,12 +663,7 @@ fn enter_impl(tokenizer: &mut Tokenizer, name: Name, link: Option<Link>) {
     log::debug!("enter:   `{:?}`", name);
 
     tokenizer.stack.push(name.clone());
-    tokenizer.events.push(Event {
-        kind: Kind::Enter,
-        name,
-        point,
-        link,
-    });
+    tokenizer.events.push(Event { kind: Kind::Enter, name, point, link });
 }
 
 /// Run the tokenizer.
@@ -716,11 +695,7 @@ fn push_impl(
 
                     tokenizer.consumed = true;
 
-                    let next = if state == State::Ok {
-                        attempt.ok
-                    } else {
-                        attempt.nok
-                    };
+                    let next = if state == State::Ok { attempt.ok } else { attempt.nok };
 
                     #[cfg(feature = "log")]
                     log::trace!("attempt: `{:?}` -> `{:?}`", state, next);
@@ -772,10 +747,7 @@ fn push_impl(
     if flush {
         debug_assert!(matches!(state, State::Ok | State::Error(_)), "must be ok");
     } else {
-        debug_assert!(
-            matches!(state, State::Next(_) | State::Error(_)),
-            "must have a next state"
-        );
+        debug_assert!(matches!(state, State::Next(_) | State::Error(_)), "must have a next state");
     }
 
     state
@@ -797,19 +769,11 @@ fn byte_action(bytes: &[u8], point: &Point) -> ByteAction {
             }
         } else if byte == b'\t' {
             let remainder = point.column % TAB_SIZE;
-            let vs = if remainder == 0 {
-                0
-            } else {
-                TAB_SIZE - remainder
-            };
+            let vs = if remainder == 0 { 0 } else { TAB_SIZE - remainder };
 
             // On the tab itself, first send it.
             if point.vs == 0 {
-                if vs == 0 {
-                    ByteAction::Normal(byte)
-                } else {
-                    ByteAction::Insert(byte)
-                }
+                if vs == 0 { ByteAction::Normal(byte) } else { ByteAction::Insert(byte) }
             } else if vs == 0 {
                 ByteAction::Normal(b' ')
             } else {

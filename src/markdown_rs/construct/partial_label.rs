@@ -61,7 +61,9 @@
 //! [raw_text]: crate::markdown_rs::construct::raw_text
 //! [link_reference_size_max]: crate::markdown_rs::util::constant::LINK_REFERENCE_SIZE_MAX
 
-use crate::markdown_rs::construct::partial_space_or_tab_eol::{space_or_tab_eol_with_options, Options};
+use crate::markdown_rs::construct::partial_space_or_tab_eol::{
+    Options, space_or_tab_eol_with_options,
+};
 use crate::markdown_rs::event::{Content, Link, Name};
 use crate::markdown_rs::state::{Name as StateName, State};
 use crate::markdown_rs::subtokenize::link;
@@ -125,11 +127,7 @@ pub fn at_break(tokenizer: &mut Tokenizer) -> State {
             _ => {
                 tokenizer.enter_link(
                     Name::Data,
-                    Link {
-                        previous: None,
-                        next: None,
-                        content: Content::String,
-                    },
+                    Link { previous: None, next: None, content: Content::String },
                 );
 
                 if tokenizer.tokenize_state.connect {

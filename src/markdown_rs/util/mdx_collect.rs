@@ -19,10 +19,7 @@ pub fn collect(
     names: &[Name],
     stop: &[Name],
 ) -> Result {
-    let mut result = Result {
-        value: String::new(),
-        stops: vec![],
-    };
+    let mut result = Result { value: String::new(), stops: vec![] };
     let mut index = from;
 
     while index < events.len() {
@@ -31,15 +28,10 @@ pub fn collect(
                 // Include virtual spaces, and assume void.
                 let value = Slice::from_position(
                     bytes,
-                    &Position {
-                        start: &events[index].point,
-                        end: &events[index + 1].point,
-                    },
+                    &Position { start: &events[index].point, end: &events[index + 1].point },
                 )
                 .serialize();
-                result
-                    .stops
-                    .push((result.value.len(), events[index].point.index));
+                result.stops.push((result.value.len(), events[index].point.index));
                 result.value.push_str(&value);
             }
         } else if stop.contains(&events[index].name) {

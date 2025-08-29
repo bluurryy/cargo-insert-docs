@@ -66,11 +66,7 @@ impl Location {
                     index += 1;
                 }
 
-                let previous = if index > 0 {
-                    self.indices[index - 1]
-                } else {
-                    0
-                };
+                let previous = if index > 0 { self.indices[index - 1] } else { 0 };
                 return Some(Point::new(index + 1, offset + 1 - previous, offset));
             }
         }
@@ -196,15 +192,7 @@ mod tests {
     fn test_empty() {
         let location = Location::new("".as_bytes());
         assert_eq!(location.to_point(0), Some(Point::new(1, 1, 0)), "to_point");
-        assert_eq!(
-            location.relative_to_point(&[], 0),
-            None,
-            "relative_to_point"
-        );
-        assert_eq!(
-            Location::relative_to_absolute(&[], 0),
-            None,
-            "relative_to_absolute"
-        );
+        assert_eq!(location.relative_to_point(&[], 0), None, "relative_to_point");
+        assert_eq!(Location::relative_to_absolute(&[], 0), None, "relative_to_absolute");
     }
 }

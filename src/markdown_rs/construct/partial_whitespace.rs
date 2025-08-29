@@ -150,12 +150,7 @@ fn trim_data(
                         point: enter_point.clone(),
                         link: None,
                     },
-                    Event {
-                        kind: Kind::Exit,
-                        name,
-                        point: exit_point,
-                        link: None,
-                    },
+                    Event { kind: Kind::Exit, name, point: exit_point, link: None },
                 ],
             );
 

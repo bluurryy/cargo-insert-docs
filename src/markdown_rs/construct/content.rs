@@ -27,7 +27,7 @@ use crate::markdown_rs::event::{Content, Kind, Link, Name};
 use crate::markdown_rs::message;
 use crate::markdown_rs::resolve::Name as ResolveName;
 use crate::markdown_rs::state::{Name as StateName, State};
-use crate::markdown_rs::subtokenize::{subtokenize, Subresult};
+use crate::markdown_rs::subtokenize::{Subresult, subtokenize};
 use crate::markdown_rs::tokenizer::Tokenizer;
 use alloc::vec;
 
@@ -43,11 +43,7 @@ pub fn chunk_start(tokenizer: &mut Tokenizer) -> State {
         _ => {
             tokenizer.enter_link(
                 Name::Content,
-                Link {
-                    previous: None,
-                    next: None,
-                    content: Content::Content,
-                },
+                Link { previous: None, next: None, content: Content::Content },
             );
             State::Retry(StateName::ContentChunkInside)
         }
@@ -160,11 +156,8 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Result<Option<Subresult>, message::
 
                 // Link Enter:Content to Enter:Content on this line and vice versa.
                 tokenizer.events[exit_index - 1].link.as_mut().unwrap().next = Some(enter_index);
-                tokenizer.events[enter_index]
-                    .link
-                    .as_mut()
-                    .unwrap()
-                    .previous = Some(exit_index - 1);
+                tokenizer.events[enter_index].link.as_mut().unwrap().previous =
+                    Some(exit_index - 1);
 
                 // Potential next start.
                 exit_index = enter_index + 1;
@@ -179,11 +172,8 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Result<Option<Subresult>, message::
 
     tokenizer.map.consume(&mut tokenizer.events);
 
-    let result = subtokenize(
-        &mut tokenizer.events,
-        tokenizer.parse_state,
-        Some(&Content::Content),
-    )?;
+    let result =
+        subtokenize(&mut tokenizer.events, tokenizer.parse_state, Some(&Content::Content))?;
 
     Ok(Some(result))
 }

@@ -19,11 +19,7 @@ pub struct Point {
 impl Point {
     #[must_use]
     pub fn new(line: usize, column: usize, offset: usize) -> Point {
-        Point {
-            line,
-            column,
-            offset,
-        }
+        Point { line, column, offset }
     }
 }
 
@@ -84,11 +80,7 @@ mod tests {
     #[test]
     fn point() {
         let point = Point::new(1, 1, 0);
-        assert_eq!(
-            format!("{:?}", point),
-            "1:1 (0)",
-            "should support `Debug` on unist points"
-        );
+        assert_eq!(format!("{:?}", point), "1:1 (0)", "should support `Debug` on unist points");
     }
 
     #[test]

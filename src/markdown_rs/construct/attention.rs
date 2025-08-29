@@ -82,8 +82,8 @@ use crate::markdown_rs::state::{Name as StateName, State};
 use crate::markdown_rs::subtokenize::Subresult;
 use crate::markdown_rs::tokenizer::Tokenizer;
 use crate::markdown_rs::util::char::{
-    after_index as char_after_index, before_index as char_before_index, classify_opt,
-    Kind as CharacterKind,
+    Kind as CharacterKind, after_index as char_after_index, before_index as char_before_index,
+    classify_opt,
 };
 use alloc::{vec, vec::Vec};
 
@@ -302,11 +302,7 @@ fn match_sequences(
     let mut next = close;
 
     // Number of markers to use from the sequence.
-    let take = if sequences[open].size > 1 && sequences[close].size > 1 {
-        2
-    } else {
-        1
-    };
+    let take = if sequences[open].size > 1 && sequences[close].size > 1 { 2 } else { 1 };
 
     // We’re *on* a closing sequence, with a matching opening
     // sequence.
@@ -328,11 +324,7 @@ fn match_sequences(
     }
 
     let (group_name, seq_name, text_name) = if sequences[open].marker == b'~' {
-        (
-            Name::GfmStrikethrough,
-            Name::GfmStrikethroughSequence,
-            Name::GfmStrikethroughText,
-        )
+        (Name::GfmStrikethrough, Name::GfmStrikethroughSequence, Name::GfmStrikethroughText)
     } else if take == 1 {
         (Name::Emphasis, Name::EmphasisSequence, Name::EmphasisText)
     } else {
@@ -375,12 +367,7 @@ fn match_sequences(
                 point: open_exit.clone(),
                 link: None,
             },
-            Event {
-                kind: Kind::Enter,
-                name: text_name.clone(),
-                point: open_exit,
-                link: None,
-            },
+            Event { kind: Kind::Enter, name: text_name.clone(), point: open_exit, link: None },
         ],
     );
     // Closing.
@@ -388,18 +375,8 @@ fn match_sequences(
         close_index,
         0,
         vec![
-            Event {
-                kind: Kind::Exit,
-                name: text_name,
-                point: close_enter.clone(),
-                link: None,
-            },
-            Event {
-                kind: Kind::Enter,
-                name: seq_name.clone(),
-                point: close_enter,
-                link: None,
-            },
+            Event { kind: Kind::Exit, name: text_name, point: close_enter.clone(), link: None },
+            Event { kind: Kind::Enter, name: seq_name.clone(), point: close_enter, link: None },
             Event {
                 kind: Kind::Exit,
                 name: seq_name,

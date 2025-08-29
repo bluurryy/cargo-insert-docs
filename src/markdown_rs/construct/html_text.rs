@@ -466,10 +466,8 @@ pub fn tag_open_attribute_name(tokenizer: &mut Tokenizer) -> State {
 pub fn tag_open_attribute_name_after(tokenizer: &mut Tokenizer) -> State {
     match tokenizer.current {
         Some(b'\n') => {
-            tokenizer.attempt(
-                State::Next(StateName::HtmlTextTagOpenAttributeNameAfter),
-                State::Nok,
-            );
+            tokenizer
+                .attempt(State::Next(StateName::HtmlTextTagOpenAttributeNameAfter), State::Nok);
             State::Retry(StateName::HtmlTextLineEndingBefore)
         }
         Some(b'\t' | b' ') => {
@@ -495,10 +493,8 @@ pub fn tag_open_attribute_value_before(tokenizer: &mut Tokenizer) -> State {
     match tokenizer.current {
         None | Some(b'<' | b'=' | b'>' | b'`') => State::Nok,
         Some(b'\n') => {
-            tokenizer.attempt(
-                State::Next(StateName::HtmlTextTagOpenAttributeValueBefore),
-                State::Nok,
-            );
+            tokenizer
+                .attempt(State::Next(StateName::HtmlTextTagOpenAttributeValueBefore), State::Nok);
             State::Retry(StateName::HtmlTextLineEndingBefore)
         }
         Some(b'\t' | b' ') => {
@@ -633,10 +629,7 @@ pub fn line_ending_before(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn line_ending_after(tokenizer: &mut Tokenizer) -> State {
     if matches!(tokenizer.current, Some(b'\t' | b' ')) {
-        tokenizer.attempt(
-            State::Next(StateName::HtmlTextLineEndingAfterPrefix),
-            State::Nok,
-        );
+        tokenizer.attempt(State::Next(StateName::HtmlTextLineEndingAfterPrefix), State::Nok);
         State::Retry(space_or_tab(tokenizer))
     } else {
         State::Retry(StateName::HtmlTextLineEndingAfterPrefix)

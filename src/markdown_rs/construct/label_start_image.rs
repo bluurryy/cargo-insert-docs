@@ -99,11 +99,7 @@ pub fn open(tokenizer: &mut Tokenizer) -> State {
 /// <p>!<a href=\"c\">^a</a></p>
 /// ```
 pub fn after(tokenizer: &mut Tokenizer) -> State {
-    if tokenizer
-        .parse_state
-        .options
-        .constructs
-        .gfm_label_start_footnote
+    if tokenizer.parse_state.options.constructs.gfm_label_start_footnote
         && tokenizer.current == Some(b'^')
     {
         State::Nok

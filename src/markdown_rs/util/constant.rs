@@ -87,17 +87,8 @@ pub const GFM_HTML_TAGFILTER_SIZE_MAX: usize = 9;
 /// ## References
 ///
 /// * [*§ 6.1 Disallowed Raw HTML (extension)* in GFM](https://github.github.com/gfm/#disallowed-raw-html-extension-)
-pub const GFM_HTML_TAGFILTER_NAMES: [&str; 9] = [
-    "iframe",
-    "noembed",
-    "noframes",
-    "plaintext",
-    "script",
-    "style",
-    "textarea",
-    "title",
-    "xmp",
-];
+pub const GFM_HTML_TAGFILTER_NAMES: [&str; 9] =
+    ["iframe", "noembed", "noframes", "plaintext", "script", "style", "textarea", "title", "xmp"];
 
 /// The number of preceding spaces needed for a [hard break
 /// (trailing)][whitespace] to form.

@@ -59,10 +59,7 @@ pub enum AlignKind {
 pub fn list_loose(events: &[Event], mut index: usize, include_items: bool) -> bool {
     let mut balance = 0;
     let name = &events[index].name;
-    debug_assert!(
-        matches!(name, Name::ListOrdered | Name::ListUnordered),
-        "expected list"
-    );
+    debug_assert!(matches!(name, Name::ListOrdered | Name::ListUnordered), "expected list");
 
     while index < events.len() {
         let event = &events[index];
@@ -136,10 +133,7 @@ pub fn list_loose(events: &[Event], mut index: usize, include_items: bool) -> bo
 
 /// Figure out if an item is spread or not.
 pub fn list_item_loose(events: &[Event], mut index: usize) -> bool {
-    debug_assert!(
-        matches!(events[index].name, Name::ListItem),
-        "expected list item"
-    );
+    debug_assert!(matches!(events[index].name, Name::ListItem), "expected list item");
     let mut balance = 0;
 
     while index < events.len() {
@@ -190,10 +184,7 @@ pub fn list_item_loose(events: &[Event], mut index: usize) -> bool {
 
 /// Figure out the alignment of a GFM table.
 pub fn gfm_table_align(events: &[Event], mut index: usize) -> Vec<AlignKind> {
-    debug_assert!(
-        matches!(events[index].name, Name::GfmTable),
-        "expected table"
-    );
+    debug_assert!(matches!(events[index].name, Name::GfmTable), "expected table");
     let mut in_delimiter_row = false;
     let mut align = vec![];
 

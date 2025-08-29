@@ -53,11 +53,7 @@ fn skip_opt_impl(events: &[Event], mut index: usize, names: &[Name], forward: bo
         balance += 1;
 
         loop {
-            balance = if events[index].kind == open {
-                balance + 1
-            } else {
-                balance - 1
-            };
+            balance = if events[index].kind == open { balance + 1 } else { balance - 1 };
 
             let next = if forward {
                 index + 1

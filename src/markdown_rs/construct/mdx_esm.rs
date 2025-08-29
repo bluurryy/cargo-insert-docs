@@ -29,12 +29,12 @@
 //! [flow]: crate::markdown_rs::construct::flow
 //! [parse_options]: crate::markdown_rs::ParseOptions
 
+use crate::markdown_rs::MdxSignal;
 use crate::markdown_rs::event::Name;
 use crate::markdown_rs::message;
 use crate::markdown_rs::state::{Name as StateName, State};
 use crate::markdown_rs::tokenizer::Tokenizer;
 use crate::markdown_rs::util::{mdx_collect::collect, slice::Slice};
-use crate::markdown_rs::MdxSignal;
 use alloc::boxed::Box;
 
 /// Start of MDX ESM.
@@ -187,12 +187,7 @@ pub fn at_end(tokenizer: &mut Tokenizer) -> State {
 /// Parse ESM with a given function.
 fn parse_esm(tokenizer: &mut Tokenizer) -> State {
     // We can `unwrap` because we don’t parse if this is `None`.
-    let parse = tokenizer
-        .parse_state
-        .options
-        .mdx_esm_parse
-        .as_ref()
-        .unwrap();
+    let parse = tokenizer.parse_state.options.mdx_esm_parse.as_ref().unwrap();
 
     // Collect the body of the ESM and positional info for each run of it.
     let result = collect(

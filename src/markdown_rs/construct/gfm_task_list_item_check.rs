@@ -57,9 +57,7 @@ use crate::markdown_rs::tokenizer::Tokenizer;
 /// ```
 pub fn start(tokenizer: &mut Tokenizer) -> State {
     if tokenizer.parse_state.options.constructs.gfm_task_list_item
-        && tokenizer
-            .tokenize_state
-            .document_at_first_paragraph_of_list_item
+        && tokenizer.tokenize_state.document_at_first_paragraph_of_list_item
         && tokenizer.current == Some(b'[')
         && tokenizer.previous.is_none()
     {
@@ -130,10 +128,8 @@ pub fn after(tokenizer: &mut Tokenizer) -> State {
         // Check what comes after.
         Some(b'\t' | b' ') => {
             tokenizer.check(State::Ok, State::Nok);
-            tokenizer.attempt(
-                State::Next(StateName::GfmTaskListItemCheckAfterSpaceOrTab),
-                State::Nok,
-            );
+            tokenizer
+                .attempt(State::Next(StateName::GfmTaskListItemCheckAfterSpaceOrTab), State::Nok);
             State::Retry(space_or_tab(tokenizer))
         }
         // EOF, or non-whitespace, both wrong.
@@ -149,9 +145,5 @@ pub fn after(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn after_space_or_tab(tokenizer: &mut Tokenizer) -> State {
     // End of paragraph, after whitespace, after check, is not okay.
-    if tokenizer.current.is_none() {
-        State::Nok
-    } else {
-        State::Ok
-    }
+    if tokenizer.current.is_none() { State::Nok } else { State::Ok }
 }

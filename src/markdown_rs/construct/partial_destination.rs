@@ -111,11 +111,7 @@ pub fn start(tokenizer: &mut Tokenizer) -> State {
             tokenizer.enter(tokenizer.tokenize_state.token_5.clone());
             tokenizer.enter_link(
                 Name::Data,
-                Link {
-                    previous: None,
-                    next: None,
-                    content: Content::String,
-                },
+                Link { previous: None, next: None, content: Content::String },
             );
             State::Retry(StateName::DestinationRaw)
         }
@@ -138,14 +134,8 @@ pub fn enclosed_before(tokenizer: &mut Tokenizer) -> State {
         State::Ok
     } else {
         tokenizer.enter(tokenizer.tokenize_state.token_5.clone());
-        tokenizer.enter_link(
-            Name::Data,
-            Link {
-                previous: None,
-                next: None,
-                content: Content::String,
-            },
-        );
+        tokenizer
+            .enter_link(Name::Data, Link { previous: None, next: None, content: Content::String });
         State::Retry(StateName::DestinationEnclosed)
     }
 }
@@ -219,10 +209,7 @@ pub fn raw(tokenizer: &mut Tokenizer) -> State {
         State::Next(StateName::DestinationRaw)
     }
     // ASCII control (but *not* `\0`) and space and `(`.
-    else if matches!(
-        tokenizer.current,
-        None | Some(0x01..=0x1F | b' ' | b'(' | 0x7F)
-    ) {
+    else if matches!(tokenizer.current, None | Some(0x01..=0x1F | b' ' | b'(' | 0x7F)) {
         tokenizer.tokenize_state.size = 0;
         State::Nok
     } else if tokenizer.current == Some(b'\\') {

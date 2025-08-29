@@ -41,9 +41,5 @@ pub fn start(tokenizer: &mut Tokenizer) -> State {
 ///     ^
 /// ```
 pub fn after(tokenizer: &mut Tokenizer) -> State {
-    if tokenizer.lazy {
-        State::Nok
-    } else {
-        State::Ok
-    }
+    if tokenizer.lazy { State::Nok } else { State::Ok }
 }

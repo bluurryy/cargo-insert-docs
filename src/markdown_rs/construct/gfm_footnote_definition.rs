@@ -183,19 +183,11 @@ use crate::markdown_rs::util::{
 ///     ^
 /// ```
 pub fn start(tokenizer: &mut Tokenizer) -> State {
-    if tokenizer
-        .parse_state
-        .options
-        .constructs
-        .gfm_footnote_definition
-    {
+    if tokenizer.parse_state.options.constructs.gfm_footnote_definition {
         tokenizer.enter(Name::GfmFootnoteDefinition);
 
         if matches!(tokenizer.current, Some(b'\t' | b' ')) {
-            tokenizer.attempt(
-                State::Next(StateName::GfmFootnoteDefinitionLabelBefore),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::GfmFootnoteDefinitionLabelBefore), State::Nok);
             State::Retry(space_or_tab_min_max(
                 tokenizer,
                 1,
@@ -245,14 +237,8 @@ pub fn label_at_marker(tokenizer: &mut Tokenizer) -> State {
         tokenizer.consume();
         tokenizer.exit(Name::GfmFootnoteDefinitionMarker);
         tokenizer.enter(Name::GfmFootnoteDefinitionLabelString);
-        tokenizer.enter_link(
-            Name::Data,
-            Link {
-                previous: None,
-                next: None,
-                content: Content::String,
-            },
-        );
+        tokenizer
+            .enter_link(Name::Data, Link { previous: None, next: None, content: Content::String });
         State::Next(StateName::GfmFootnoteDefinitionLabelInside)
     } else {
         State::Nok
@@ -352,10 +338,8 @@ pub fn label_after(tokenizer: &mut Tokenizer) -> State {
             tokenizer.enter(Name::DefinitionMarker);
             tokenizer.consume();
             tokenizer.exit(Name::DefinitionMarker);
-            tokenizer.attempt(
-                State::Next(StateName::GfmFootnoteDefinitionWhitespaceAfter),
-                State::Nok,
-            );
+            tokenizer
+                .attempt(State::Next(StateName::GfmFootnoteDefinitionWhitespaceAfter), State::Nok);
             // Any whitespace after the marker is eaten, forming indented code
             // is not possible.
             // No space is also fine, just like a block quote marker.

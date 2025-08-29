@@ -63,10 +63,7 @@ const MARKERS: [u8; 16] = [
 /// ```
 pub fn start(tokenizer: &mut Tokenizer) -> State {
     tokenizer.tokenize_state.markers = &MARKERS;
-    tokenizer.attempt(
-        State::Next(StateName::TextBefore),
-        State::Next(StateName::TextBefore),
-    );
+    tokenizer.attempt(State::Next(StateName::TextBefore), State::Next(StateName::TextBefore));
     State::Retry(StateName::GfmTaskListItemCheckStart)
 }
 
@@ -176,10 +173,7 @@ pub fn before(tokenizer: &mut Tokenizer) -> State {
 ///       ^
 /// ```
 pub fn before_html(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.attempt(
-        State::Next(StateName::TextBefore),
-        State::Next(StateName::TextBeforeMdxJsx),
-    );
+    tokenizer.attempt(State::Next(StateName::TextBefore), State::Next(StateName::TextBeforeMdxJsx));
     State::Retry(StateName::HtmlTextStart)
 }
 
@@ -192,10 +186,7 @@ pub fn before_html(tokenizer: &mut Tokenizer) -> State {
 ///       ^
 /// ```
 pub fn before_mdx_jsx(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.attempt(
-        State::Next(StateName::TextBefore),
-        State::Next(StateName::TextBeforeData),
-    );
+    tokenizer.attempt(State::Next(StateName::TextBefore), State::Next(StateName::TextBeforeData));
     State::Retry(StateName::MdxJsxTextStart)
 }
 
@@ -208,10 +199,7 @@ pub fn before_mdx_jsx(tokenizer: &mut Tokenizer) -> State {
 ///       ^
 /// ```
 pub fn before_hard_break_escape(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.attempt(
-        State::Next(StateName::TextBefore),
-        State::Next(StateName::TextBeforeData),
-    );
+    tokenizer.attempt(State::Next(StateName::TextBefore), State::Next(StateName::TextBeforeData));
     State::Retry(StateName::HardBreakEscapeStart)
 }
 
@@ -224,10 +212,7 @@ pub fn before_hard_break_escape(tokenizer: &mut Tokenizer) -> State {
 ///     ^
 /// ```
 pub fn before_label_start_link(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.attempt(
-        State::Next(StateName::TextBefore),
-        State::Next(StateName::TextBeforeData),
-    );
+    tokenizer.attempt(State::Next(StateName::TextBefore), State::Next(StateName::TextBeforeData));
     State::Retry(StateName::LabelStartLinkStart)
 }
 
@@ -250,12 +235,7 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Option<Subresult> {
         true,
     );
 
-    if tokenizer
-        .parse_state
-        .options
-        .constructs
-        .gfm_autolink_literal
-    {
+    if tokenizer.parse_state.options.constructs.gfm_autolink_literal {
         resolve_gfm_autolink_literal(tokenizer);
     }
 

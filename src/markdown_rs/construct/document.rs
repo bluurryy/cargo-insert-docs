@@ -55,10 +55,8 @@ enum Phase {
 ///     ^
 /// ```
 pub fn start(tokenizer: &mut Tokenizer) -> State {
-    tokenizer.tokenize_state.document_child = Some(Box::new(Tokenizer::new(
-        tokenizer.point.clone(),
-        tokenizer.parse_state,
-    )));
+    tokenizer.tokenize_state.document_child =
+        Some(Box::new(Tokenizer::new(tokenizer.point.clone(), tokenizer.parse_state)));
 
     tokenizer.attempt(
         State::Next(StateName::DocumentBeforeFrontmatter),
@@ -159,14 +157,11 @@ pub fn container_new_before(tokenizer: &mut Tokenizer) -> State {
     // Block quote?
     // Add a new container at the end of the stack.
     let tail = tokenizer.tokenize_state.document_container_stack.len();
-    tokenizer
-        .tokenize_state
-        .document_container_stack
-        .push(ContainerState {
-            kind: Container::BlockQuote,
-            blank_initial: false,
-            size: 0,
-        });
+    tokenizer.tokenize_state.document_container_stack.push(ContainerState {
+        kind: Container::BlockQuote,
+        blank_initial: false,
+        size: 0,
+    });
     // Swap the existing container with the new one.
     tokenizer
         .tokenize_state
@@ -190,11 +185,8 @@ pub fn container_new_before_not_block_quote(tokenizer: &mut Tokenizer) -> State 
     // List item?
     // We replace the empty block quote container for this new list item one.
     tokenizer.tokenize_state.document_container_stack
-        [tokenizer.tokenize_state.document_continued] = ContainerState {
-        kind: Container::ListItem,
-        blank_initial: false,
-        size: 0,
-    };
+        [tokenizer.tokenize_state.document_continued] =
+        ContainerState { kind: Container::ListItem, blank_initial: false, size: 0 };
 
     tokenizer.attempt(
         State::Next(StateName::DocumentContainerNewAfter),
@@ -214,11 +206,8 @@ pub fn container_new_before_not_list(tokenizer: &mut Tokenizer) -> State {
     // We replace the empty list item container for this new footnote
     // definition one.
     tokenizer.tokenize_state.document_container_stack
-        [tokenizer.tokenize_state.document_continued] = ContainerState {
-        kind: Container::GfmFootnoteDefinition,
-        blank_initial: false,
-        size: 0,
-    };
+        [tokenizer.tokenize_state.document_continued] =
+        ContainerState { kind: Container::GfmFootnoteDefinition, blank_initial: false, size: 0 };
 
     tokenizer.attempt(
         State::Next(StateName::DocumentContainerNewAfter),
@@ -273,17 +262,9 @@ pub fn container_new_after(tokenizer: &mut Tokenizer) -> State {
     }
 
     // We are “piercing” into the flow with a new container.
-    tokenizer
-        .tokenize_state
-        .document_child
-        .as_mut()
-        .unwrap()
-        .pierce = true;
+    tokenizer.tokenize_state.document_child.as_mut().unwrap().pierce = true;
 
-    tokenizer
-        .tokenize_state
-        .document_container_stack
-        .push(container);
+    tokenizer.tokenize_state.document_container_stack.push(container);
     tokenizer.tokenize_state.document_continued += 1;
     tokenizer.interrupt = false;
     State::Retry(StateName::DocumentContainerNewBefore)
@@ -313,14 +294,7 @@ pub fn containers_after(tokenizer: &mut Tokenizer) -> State {
             tokenizer.events[previous].link.as_mut().unwrap().next = Some(current);
         }
         tokenizer.tokenize_state.document_data_index = Some(current);
-        tokenizer.enter_link(
-            Name::Data,
-            Link {
-                previous,
-                next: None,
-                content: Content::Flow,
-            },
-        );
+        tokenizer.enter_link(Name::Data, Link { previous, next: None, content: Content::Flow });
         State::Retry(StateName::DocumentFlowInside)
     }
 }
@@ -542,10 +516,7 @@ fn resolve(tokenizer: &mut Tokenizer) {
 
     while child_index < child.events.len() {
         if child.events[child_index].kind == Kind::Exit
-            && matches!(
-                child.events[child_index].name,
-                Name::LineEnding | Name::BlankLineEnding
-            )
+            && matches!(child.events[child_index].name, Name::LineEnding | Name::BlankLineEnding)
         {
             // Inject before `Enter:LineEnding`.
             let mut inject_index = child_index - 1;
@@ -590,13 +561,7 @@ fn resolve(tokenizer: &mut Tokenizer) {
     }
 
     // Now, add all child events into our parent document tokenizer.
-    divide_events(
-        &mut tokenizer.map,
-        &tokenizer.events,
-        flow_index,
-        &mut child.events,
-        (0, 0),
-    );
+    divide_events(&mut tokenizer.map, &tokenizer.events, flow_index, &mut child.events, (0, 0));
 
     // Replace the flow data with actual events.
     tokenizer.map.consume(&mut tokenizer.events);
@@ -617,12 +582,7 @@ fn resolve(tokenizer: &mut Tokenizer) {
     }
 
     // Add the resolvers from child.
-    tokenizer
-        .resolvers
-        .append(&mut child.resolvers.split_off(0));
+    tokenizer.resolvers.append(&mut child.resolvers.split_off(0));
 
-    tokenizer
-        .tokenize_state
-        .definitions
-        .append(&mut child.tokenize_state.definitions.split_off(0));
+    tokenizer.tokenize_state.definitions.append(&mut child.tokenize_state.definitions.split_off(0));
 }

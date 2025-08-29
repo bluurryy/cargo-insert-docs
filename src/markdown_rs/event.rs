@@ -3530,11 +3530,7 @@ pub struct Point {
 impl Point {
     /// Create a unist point.
     pub fn to_unist(&self) -> unist::Point {
-        unist::Point {
-            line: self.line,
-            column: self.column,
-            offset: self.index,
-        }
+        unist::Point { line: self.line, column: self.column, offset: self.index }
     }
 
     /// Create a new point, that is shifted from the close earlier current
@@ -3548,11 +3544,7 @@ impl Point {
                 b'\n' | b'\r' => unreachable!("cannot move past line endings"),
                 b'\t' => {
                     let remainder = next.column % TAB_SIZE;
-                    let vs = if remainder == 0 {
-                        0
-                    } else {
-                        TAB_SIZE - remainder
-                    };
+                    let vs = if remainder == 0 { 0 } else { TAB_SIZE - remainder };
                     next.index += 1;
                     next.column += 1 + vs;
                 }

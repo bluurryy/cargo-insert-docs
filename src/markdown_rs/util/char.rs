@@ -50,11 +50,7 @@ pub fn before_index(bytes: &[u8], index: usize) -> Option<char> {
 /// In most cases, markdown operates on ASCII bytes.
 /// In a few cases, it is unicode aware, so we need to find an actual char.
 pub fn after_index(bytes: &[u8], index: usize) -> Option<char> {
-    let end = if index + 4 > bytes.len() {
-        bytes.len()
-    } else {
-        index + 4
-    };
+    let end = if index + 4 > bytes.len() { bytes.len() } else { index + 4 };
     String::from_utf8_lossy(&bytes[index..end]).chars().next()
 }
 
@@ -109,17 +105,13 @@ pub fn classify_opt(char_opt: Option<char>) -> Kind {
 
 /// Format an optional `char` (`none` means eof).
 pub fn format_opt(char: Option<char>) -> String {
-    char.map_or("end of file".into(), |char| {
-        format!("character {}", format(char))
-    })
+    char.map_or("end of file".into(), |char| format!("character {}", format(char)))
 }
 
 /// Format an optional `byte` (`none` means eof).
 #[cfg(feature = "log")]
 pub fn format_byte_opt(byte: Option<u8>) -> String {
-    byte.map_or("end of file".into(), |byte| {
-        format!("byte {}", format_byte(byte))
-    })
+    byte.map_or("end of file".into(), |byte| format!("byte {}", format_byte(byte)))
 }
 
 /// Format a `char`.
@@ -161,17 +153,9 @@ mod tests {
 
     #[test]
     fn test_classify() {
-        assert_eq!(
-            classify(' '),
-            Kind::Whitespace,
-            "should classify whitespace"
-        );
+        assert_eq!(classify(' '), Kind::Whitespace, "should classify whitespace");
 
-        assert_eq!(
-            classify('.'),
-            Kind::Punctuation,
-            "should classify punctuation"
-        );
+        assert_eq!(classify('.'), Kind::Punctuation, "should classify punctuation");
 
         assert_eq!(classify('a'), Kind::Other, "should classify other");
     }
@@ -215,17 +199,9 @@ mod tests {
             "should format a char: grave accent"
         );
 
-        assert_eq!(
-            format('!'),
-            "`!` (U+0021)".to_string(),
-            "should format a char: regular"
-        );
+        assert_eq!(format('!'), "`!` (U+0021)".to_string(), "should format a char: regular");
 
-        assert_eq!(
-            format(' '),
-            "U+0020".to_string(),
-            "should format a char: unprintable"
-        );
+        assert_eq!(format(' '), "U+0020".to_string(), "should format a char: unprintable");
     }
 
     #[test]
@@ -236,16 +212,8 @@ mod tests {
             "should format a byte: grave accent"
         );
 
-        assert_eq!(
-            format_byte(b'!'),
-            "`!` (U+0021)".to_string(),
-            "should format a byte: regular"
-        );
+        assert_eq!(format_byte(b'!'), "`!` (U+0021)".to_string(), "should format a byte: regular");
 
-        assert_eq!(
-            format_byte(b' '),
-            "U+0020".to_string(),
-            "should format a byte: unprintable"
-        );
+        assert_eq!(format_byte(b' '), "U+0020".to_string(), "should format a byte: unprintable");
     }
 }

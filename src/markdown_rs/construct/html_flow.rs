@@ -99,7 +99,7 @@
 //! [html_parsing]: https://html.spec.whatwg.org/multipage/parsing.html#parsing
 
 use crate::markdown_rs::construct::partial_space_or_tab::{
-    space_or_tab_with_options, Options as SpaceOrTabOptions,
+    Options as SpaceOrTabOptions, space_or_tab_with_options,
 };
 use crate::markdown_rs::event::Name;
 use crate::markdown_rs::state::{Name as StateName, State};

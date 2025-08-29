@@ -507,10 +507,7 @@ pub fn head_delimiter_before(tokenizer: &mut Tokenizer) -> State {
 pub fn head_delimiter_cell_before(tokenizer: &mut Tokenizer) -> State {
     match tokenizer.current {
         Some(b'\t' | b' ') => {
-            tokenizer.attempt(
-                State::Next(StateName::GfmTableHeadDelimiterValueBefore),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::GfmTableHeadDelimiterValueBefore), State::Nok);
             State::Retry(space_or_tab(tokenizer))
         }
         _ => State::Retry(StateName::GfmTableHeadDelimiterValueBefore),
@@ -602,10 +599,7 @@ pub fn head_delimiter_filler(tokenizer: &mut Tokenizer) -> State {
 pub fn head_delimiter_right_alignment_after(tokenizer: &mut Tokenizer) -> State {
     match tokenizer.current {
         Some(b'\t' | b' ') => {
-            tokenizer.attempt(
-                State::Next(StateName::GfmTableHeadDelimiterCellAfter),
-                State::Nok,
-            );
+            tokenizer.attempt(State::Next(StateName::GfmTableHeadDelimiterCellAfter), State::Nok);
             State::Retry(space_or_tab(tokenizer))
         }
         _ => State::Retry(StateName::GfmTableHeadDelimiterCellAfter),
@@ -894,16 +888,10 @@ fn flush_cell(
     in_delimiter_row: bool,
     row_end: Option<usize>,
 ) {
-    let group_name = if in_delimiter_row {
-        Name::GfmTableDelimiterCell
-    } else {
-        Name::GfmTableCell
-    };
-    let value_name = if in_delimiter_row {
-        Name::GfmTableDelimiterCellValue
-    } else {
-        Name::GfmTableCellText
-    };
+    let group_name =
+        if in_delimiter_row { Name::GfmTableDelimiterCell } else { Name::GfmTableCell };
+    let value_name =
+        if in_delimiter_row { Name::GfmTableDelimiterCellValue } else { Name::GfmTableCellText };
 
     // Insert an exit for the previous cell, if there is one.
     //
@@ -966,11 +954,8 @@ fn flush_cell(
         debug_assert_ne!(range.3, 0);
 
         if !in_delimiter_row {
-            tokenizer.events[range.2].link = Some(Link {
-                previous: None,
-                next: None,
-                content: Content::Text,
-            });
+            tokenizer.events[range.2].link =
+                Some(Link { previous: None, next: None, content: Content::Text });
 
             // To do: positional info of the remaining `data` nodes likely have
             // to be fixed.

@@ -1,8 +1,8 @@
 //! Helpers for character references.
 
 use crate::markdown_rs::util::constant::{
-    CHARACTER_REFERENCES, CHARACTER_REFERENCES_HTML_4, CHARACTER_REFERENCE_DECIMAL_SIZE_MAX,
-    CHARACTER_REFERENCE_HEXADECIMAL_SIZE_MAX, CHARACTER_REFERENCE_NAMED_SIZE_MAX,
+    CHARACTER_REFERENCE_DECIMAL_SIZE_MAX, CHARACTER_REFERENCE_HEXADECIMAL_SIZE_MAX,
+    CHARACTER_REFERENCE_NAMED_SIZE_MAX, CHARACTER_REFERENCES, CHARACTER_REFERENCES_HTML_4,
 };
 use alloc::string::String;
 use core::str;
@@ -37,11 +37,8 @@ use core::str;
 /// * [`wooorm/decode-named-character-reference`](https://github.com/wooorm/decode-named-character-reference)
 /// * [*§ 2.5 Entity and numeric character references* in `CommonMark`](https://spec.commonmark.org/0.31/#entity-and-numeric-character-references)
 pub fn decode_named(value: &str, html5: bool) -> Option<String> {
-    let mut iter = if html5 {
-        CHARACTER_REFERENCES.iter()
-    } else {
-        CHARACTER_REFERENCES_HTML_4.iter()
-    };
+    let mut iter =
+        if html5 { CHARACTER_REFERENCES.iter() } else { CHARACTER_REFERENCES_HTML_4.iter() };
     iter.find(|d| d.0 == value).map(|d| d.1.into())
 }
 
@@ -194,11 +191,9 @@ pub fn parse(value: &str) -> String {
 
             // Non empty and terminated.
             if value_index > 0 && bytes[value_end] == b';' {
-                if let Some(decoded) = decode(
-                    str::from_utf8(&bytes[value_start..value_end]).unwrap(),
-                    marker,
-                    false,
-                ) {
+                if let Some(decoded) =
+                    decode(str::from_utf8(&bytes[value_start..value_end]).unwrap(), marker, false)
+                {
                     result.push_str(&value[start..index]);
                     result.push_str(&decoded);
                     start = value_end + 1;

@@ -187,11 +187,7 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Option<Subresult> {
     let mut enter = skip::to(&tokenizer.events, 0, &[Name::HeadingSetextUnderline]);
 
     while enter < tokenizer.events.len() {
-        let exit = skip::to(
-            &tokenizer.events,
-            enter + 1,
-            &[Name::HeadingSetextUnderline],
-        );
+        let exit = skip::to(&tokenizer.events, enter + 1, &[Name::HeadingSetextUnderline]);
 
         // Find paragraph before
         let paragraph_exit_before = skip::opt_back(
@@ -202,11 +198,8 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Option<Subresult> {
 
         // There’s a paragraph before: this is a setext heading.
         if tokenizer.events[paragraph_exit_before].name == Name::Paragraph {
-            let paragraph_enter = skip::to_back(
-                &tokenizer.events,
-                paragraph_exit_before - 1,
-                &[Name::Paragraph],
-            );
+            let paragraph_enter =
+                skip::to_back(&tokenizer.events, paragraph_exit_before - 1, &[Name::Paragraph]);
 
             // Change types of Enter:Paragraph, Exit:Paragraph.
             tokenizer.events[paragraph_enter].name = Name::HeadingSetextText;
@@ -233,11 +226,8 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Option<Subresult> {
                 // Move new data (was line ending) back to include whole line,
                 // and link data together.
                 tokenizer.events[exit + 1].point = tokenizer.events[enter].point.clone();
-                tokenizer.events[exit + 1].link = Some(Link {
-                    previous: None,
-                    next: Some(exit + 4),
-                    content: Content::Text,
-                });
+                tokenizer.events[exit + 1].link =
+                    Some(Link { previous: None, next: Some(exit + 4), content: Content::Text });
                 tokenizer.events[exit + 4].link.as_mut().unwrap().previous = Some(exit + 1);
                 // Remove *including* HeadingSetextUnderline:Exit, until the line ending.
                 tokenizer.map.add(enter + 1, exit - enter, vec![]);
@@ -256,11 +246,7 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Option<Subresult> {
                             name: Name::Data,
                             kind: Kind::Enter,
                             point: tokenizer.events[enter].point.clone(),
-                            link: Some(Link {
-                                previous: None,
-                                next: None,
-                                content: Content::Text,
-                            }),
+                            link: Some(Link { previous: None, next: None, content: Content::Text }),
                         },
                         Event {
                             name: Name::Data,

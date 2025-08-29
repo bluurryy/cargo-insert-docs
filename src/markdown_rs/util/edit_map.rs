@@ -76,8 +76,7 @@ impl EditMap {
     }
     /// Done, change the events.
     pub fn consume(&mut self, events: &mut Vec<Event>) {
-        self.map
-            .sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        self.map.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
 
         if self.map.is_empty() {
             return;

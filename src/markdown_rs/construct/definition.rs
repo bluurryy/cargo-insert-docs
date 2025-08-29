@@ -255,10 +255,8 @@ pub fn destination_after(tokenizer: &mut Tokenizer) -> State {
     tokenizer.tokenize_state.token_4 = Name::Data;
     tokenizer.tokenize_state.token_5 = Name::Data;
     tokenizer.tokenize_state.size_b = 0;
-    tokenizer.attempt(
-        State::Next(StateName::DefinitionAfter),
-        State::Next(StateName::DefinitionAfter),
-    );
+    tokenizer
+        .attempt(State::Next(StateName::DefinitionAfter), State::Next(StateName::DefinitionAfter));
     State::Retry(StateName::DefinitionTitleBefore)
 }
 
@@ -284,10 +282,7 @@ pub fn destination_missing(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn after(tokenizer: &mut Tokenizer) -> State {
     if matches!(tokenizer.current, Some(b'\t' | b' ')) {
-        tokenizer.attempt(
-            State::Next(StateName::DefinitionAfterWhitespace),
-            State::Nok,
-        );
+        tokenizer.attempt(State::Next(StateName::DefinitionAfterWhitespace), State::Nok);
         State::Retry(space_or_tab(tokenizer))
     } else {
         State::Retry(StateName::DefinitionAfterWhitespace)
@@ -344,10 +339,7 @@ pub fn after_whitespace(tokenizer: &mut Tokenizer) -> State {
 /// ```
 pub fn title_before(tokenizer: &mut Tokenizer) -> State {
     if matches!(tokenizer.current, Some(b'\t' | b'\n' | b' ')) {
-        tokenizer.attempt(
-            State::Next(StateName::DefinitionTitleBeforeMarker),
-            State::Nok,
-        );
+        tokenizer.attempt(State::Next(StateName::DefinitionTitleBeforeMarker), State::Nok);
         State::Retry(space_or_tab_eol(tokenizer))
     } else {
         State::Nok
@@ -380,10 +372,8 @@ pub fn title_after(tokenizer: &mut Tokenizer) -> State {
     tokenizer.tokenize_state.token_2 = Name::Data;
     tokenizer.tokenize_state.token_3 = Name::Data;
     if matches!(tokenizer.current, Some(b'\t' | b' ')) {
-        tokenizer.attempt(
-            State::Next(StateName::DefinitionTitleAfterOptionalWhitespace),
-            State::Nok,
-        );
+        tokenizer
+            .attempt(State::Next(StateName::DefinitionTitleAfterOptionalWhitespace), State::Nok);
         State::Retry(space_or_tab(tokenizer))
     } else {
         State::Retry(StateName::DefinitionTitleAfterOptionalWhitespace)

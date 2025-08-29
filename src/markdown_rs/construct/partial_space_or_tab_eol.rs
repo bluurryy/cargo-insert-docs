@@ -20,7 +20,7 @@
 //! [title]: crate::markdown_rs::construct::partial_title
 
 use crate::markdown_rs::construct::partial_space_or_tab::{
-    space_or_tab_with_options, Options as SpaceOrTabOptions,
+    Options as SpaceOrTabOptions, space_or_tab_with_options,
 };
 use crate::markdown_rs::event::{Content, Link, Name};
 use crate::markdown_rs::state::{Name as StateName, State};
@@ -38,13 +38,7 @@ pub struct Options {
 
 /// `space_or_tab_eol`
 pub fn space_or_tab_eol(tokenizer: &mut Tokenizer) -> StateName {
-    space_or_tab_eol_with_options(
-        tokenizer,
-        Options {
-            content: None,
-            connect: false,
-        },
-    )
+    space_or_tab_eol_with_options(tokenizer, Options { content: None, connect: false })
 }
 
 /// `space_or_tab_eol`, with the given options.
@@ -122,11 +116,7 @@ pub fn at_eol(tokenizer: &mut Tokenizer) -> State {
         if let Some(ref content) = tokenizer.tokenize_state.space_or_tab_eol_content {
             tokenizer.enter_link(
                 Name::LineEnding,
-                Link {
-                    previous: None,
-                    next: None,
-                    content: content.clone(),
-                },
+                Link { previous: None, next: None, content: content.clone() },
             );
         } else {
             tokenizer.enter(Name::LineEnding);
@@ -147,11 +137,7 @@ pub fn at_eol(tokenizer: &mut Tokenizer) -> State {
         tokenizer.tokenize_state.space_or_tab_eol_content = None;
         tokenizer.tokenize_state.space_or_tab_eol_connect = false;
         tokenizer.tokenize_state.space_or_tab_eol_ok = false;
-        if ok {
-            State::Ok
-        } else {
-            State::Nok
-        }
+        if ok { State::Ok } else { State::Nok }
     }
 }
 
@@ -194,10 +180,7 @@ pub fn after_eol(tokenizer: &mut Tokenizer) -> State {
 ///       ^
 /// ```
 pub fn after_more(tokenizer: &mut Tokenizer) -> State {
-    debug_assert!(
-        !matches!(tokenizer.current, None | Some(b'\n')),
-        "did not expect blank line"
-    );
+    debug_assert!(!matches!(tokenizer.current, None | Some(b'\n')), "did not expect blank line");
     // If the above ever starts erroring, gracefully `State::Nok` on it.
     // Currently it doesn’t happen, as we only use this in content, which does
     // not allow blank lines.
