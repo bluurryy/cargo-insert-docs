@@ -219,8 +219,6 @@ fn process_one<'a>(
             _ = new_url;
         }
         Name::Definition => {
-            dbg!(&markdown[byte_range(events, index)]);
-
             let Some(dest) = child(events, index, Name::DefinitionDestination) else {
                 return;
             };
@@ -232,7 +230,13 @@ fn process_one<'a>(
 
             let dest_string_range = byte_range(events, dest_string);
             let dest_string_str = &markdown[dest_string_range];
-            dbg!(dest_string_str);
+
+            if dest_string_str == PLACEHOLDER_DESTINATION {
+                let mut range = byte_range(events, index);
+                range.end = end_of_line(markdown, range.end);
+                out.remove(range);
+                return;
+            }
 
             let Some(&resolved) = links.get(dest_string_str) else {
                 return;

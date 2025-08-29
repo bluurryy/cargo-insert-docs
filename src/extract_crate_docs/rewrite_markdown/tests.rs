@@ -77,6 +77,22 @@ fn test_reference_collapsed() {
 }
 
 #[test]
+fn test_reference_unresolved() {
+    let markdown = "[Vec]";
+
+    let result = rewrite_markdown(
+        markdown,
+        &RewriteMarkdownOptions {
+            links: [(String::from("Vec"), None)].into_iter().collect(),
+            ..Default::default()
+        },
+    );
+
+    // TODO: remove unused reference
+    assert_eq!(result, "Vec\n\n");
+}
+
+#[test]
 fn test_clean_code_blocks() {
     expect![[r#"
 
