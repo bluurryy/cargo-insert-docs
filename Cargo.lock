@@ -193,7 +193,6 @@ dependencies = [
  "indexmap",
  "indoc 2.0.6",
  "macro_rules_attribute",
- "markdown",
  "mdast_util_to_markdown",
  "mimalloc",
  "proc-macro2",
