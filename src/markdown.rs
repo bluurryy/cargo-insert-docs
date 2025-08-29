@@ -15,6 +15,61 @@ use crate::{
     string_replacer::StringReplacer,
 };
 
+pub fn parse<'a>(
+    markdown: &'a str,
+    parse_options: &'a ParseOptions,
+) -> (Vec<markdown_rs::event::Event>, ParseState<'a>) {
+    markdown_rs::parser::parse(markdown, parse_options)
+        .expect("should only fail for mdx which we don't enable")
+}
+
+pub fn parse_options() -> ParseOptions {
+    markdown_rs::ParseOptions::gfm()
+}
+
+/// Finds sections like these:
+/// ```md
+/// <!-- section_name start -->
+/// This is the section content.
+/// <!-- section_name end -->
+/// ```
+pub fn find_section(markdown: &str, section_name: &str) -> Option<Section> {
+    let start_marker = format!("<!-- {section_name} start -->");
+    let end_marker = format!("<!-- {section_name} end -->");
+
+    let (events, _state) = parse(markdown, &parse_options());
+    let events = events.as_slice();
+    let mut end = None::<Range<usize>>;
+
+    for index in (0..events.len()).rev() {
+        let event = &events[index];
+
+        if event.kind == Kind::Enter {
+            continue;
+        }
+
+        if !matches!(event.name, Name::HtmlFlow | Name::HtmlText) {
+            continue;
+        }
+
+        let html = byte_range(events, index);
+        let html_str = &markdown[html.clone()];
+
+        if let Some(end) = end.clone() {
+            if html_str == start_marker {
+                return Some(Section {
+                    span: html.start..end.end,
+                    content_span: html.end..end.start,
+                });
+            }
+        } else if html_str == end_marker {
+            end = Some(html);
+        }
+    }
+
+    None
+}
+
 pub struct Section {
     pub span: Range<usize>,
     pub content_span: Range<usize>,
@@ -125,61 +180,6 @@ fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
 
         Some(byte_range(&events, index))
     })
-}
-
-pub fn parse<'a>(
-    markdown: &'a str,
-    parse_options: &'a ParseOptions,
-) -> (Vec<markdown_rs::event::Event>, ParseState<'a>) {
-    markdown_rs::parser::parse(markdown, parse_options)
-        .expect("should only fail for mdx which we don't enable")
-}
-
-pub fn parse_options() -> ParseOptions {
-    markdown_rs::ParseOptions::gfm()
-}
-
-/// Finds sections like these:
-/// ```md
-/// <!-- section_name start -->
-/// This is the section content.
-/// <!-- section_name end -->
-/// ```
-pub fn find_section(markdown: &str, section_name: &str) -> Option<Section> {
-    let start_marker = format!("<!-- {section_name} start -->");
-    let end_marker = format!("<!-- {section_name} end -->");
-
-    let (events, _state) = parse(markdown, &parse_options());
-    let events = events.as_slice();
-    let mut end = None::<Range<usize>>;
-
-    for index in (0..events.len()).rev() {
-        let event = &events[index];
-
-        if event.kind == Kind::Enter {
-            continue;
-        }
-
-        if !matches!(event.name, Name::HtmlFlow | Name::HtmlText) {
-            continue;
-        }
-
-        let html = byte_range(events, index);
-        let html_str = &markdown[html.clone()];
-
-        if let Some(end) = end.clone() {
-            if html_str == start_marker {
-                return Some(Section {
-                    span: html.start..end.end,
-                    content_span: html.end..end.start,
-                });
-            }
-        } else if html_str == end_marker {
-            end = Some(html);
-        }
-    }
-
-    None
 }
 
 pub fn extract_definitions(markdown: &str) -> [String; 2] {
