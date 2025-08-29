@@ -64,7 +64,7 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
             continue;
         }
 
-        match &events[index].name {
+        match event.name {
             Name::HeadingAtx => {
                 let Some(hashes) = child(events, index, Name::HeadingAtxSequence) else {
                     continue;
