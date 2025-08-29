@@ -81,7 +81,10 @@ fn process_one<'a>(
 ) {
     match &events[index].name {
         Name::HeadingAtx => {
-            let hashes = find(events, index, Name::HeadingAtxSequence);
+            let Some(hashes) = find_child(events, index, Name::HeadingAtxSequence) else {
+                return;
+            };
+
             let hashes = byte_range(events, hashes);
             let level = hashes.len() as i8;
             let new_level = level.saturating_add(options.shrink_headings).clamp(1, 6);
@@ -227,8 +230,15 @@ fn process_one<'a>(
             // TODO: correctly escape / add angled brackets
         }
         Name::Definition => {
-            let dest = find(events, index, Name::DefinitionDestination);
-            let dest_string = find(events, dest, Name::DefinitionDestinationString);
+            let Some(dest) = find_child(events, index, Name::DefinitionDestination) else {
+                return;
+            };
+
+            let Some(dest_string) = find_child(events, dest, Name::DefinitionDestinationString)
+            else {
+                return;
+            };
+
             let dest_string_range = byte_range(events, dest_string);
             let dest_string_str = &markdown[dest_string_range];
 
@@ -352,19 +362,6 @@ fn find_any_of(events: &[Event], index: usize, names: &[Name]) -> Option<usize> 
         let event = &events[index];
         event.kind == Kind::Exit && names.contains(&event.name)
     })
-}
-
-fn find(events: &[Event], index: usize, name: Name) -> usize {
-    let new_index = (0..index).rev().find(|&index| {
-        let event = &events[index];
-        event.kind == Kind::Exit && event.name == name
-    });
-
-    if let Some(new_index) = new_index {
-        new_index
-    } else {
-        panic!("expected a markdown event of type {name:?}");
-    }
 }
 
 fn position(events: &[Event], exit_index: usize) -> Position {
