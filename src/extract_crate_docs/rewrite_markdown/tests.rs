@@ -1,16 +1,10 @@
-use core::ops::Range;
-
 use expect_test::expect;
 
 use crate::{
     extract_crate_docs::rewrite_markdown::{
         RewriteMarkdownOptions, code_block_fence_is_rust, rewrite_markdown,
     },
-    markdown_rs::{
-        self,
-        event::{Event, Kind},
-    },
-    tests::{TreeFormatterStack, events_to_string},
+    tests::events_to_string,
 };
 
 fn rewrite_markdown_default(markdown: &str) -> String {
@@ -86,8 +80,7 @@ fn test_clean_code_blocks() {
         # this most certainly isn't though
         def square(n):
             n * n
-        ```
-    "#]]
+        ```"#]]
     .assert_eq(&rewrite_markdown_default(
         r#"
 ```
@@ -116,8 +109,7 @@ assert_eq!(one + two, 3);
 # this most certainly isn't though
 def square(n):
     n * n
-```
-"#,
+```"#,
     ));
 }
 

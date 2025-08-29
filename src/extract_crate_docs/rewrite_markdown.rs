@@ -34,7 +34,9 @@ const PLACEHOLDER_DESTINATION: &str = "__PLACEHOLDER_DESTINATION__";
 fn add_definitions(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     let mut markdown = markdown.to_string();
 
-    markdown.push('\n');
+    if !options.links.is_empty() {
+        markdown.push('\n');
+    }
 
     for (identifier, destination) in &options.links {
         let destination = destination.as_deref().unwrap_or(PLACEHOLDER_DESTINATION);
@@ -246,31 +248,6 @@ fn process_one<'a>(
             // TODO: correctly escape / add angled brackets
         }
         _ => unreachable!(),
-    }
-}
-
-fn clean_code<'a>(events: &[Event], index: usize, markdown: &'a str, out: &mut StringReplacer<'a>) {
-    for chunk in children_with_name(events, index, Name::CodeFlowChunk) {
-        let range = byte_range(events, chunk);
-
-        if let Some(line) = clean_code_line(&markdown[range.clone()]) {
-            out.replace(range, line);
-        } else {
-            out.remove(expand_to_line(markdown, range));
-        }
-    }
-}
-
-fn expand_to_line(markdown: &str, mut range: Range<usize>) -> Range<usize> {
-    range.start = start_of_line(markdown, range.start);
-    range.end = end_of_line(markdown, range.end);
-    range
-}
-
-fn start_of_line(markdown: &str, index: usize) -> usize {
-    match markdown[..index].bytes().rposition(|b| b == b'\n') {
-        Some(i) => i + 1,
-        None => 0,
     }
 }
 
