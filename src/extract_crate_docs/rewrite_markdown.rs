@@ -5,10 +5,10 @@ use core::{fmt::Write, ops::Range};
 use std::collections::HashMap;
 
 use crate::{
+    markdown::byte_range,
     markdown_rs::{
         self,
         event::{Event, Kind, Name},
-        unist::Position,
     },
     string_replacer::StringReplacer,
 };
@@ -364,26 +364,6 @@ fn find_any_of(events: &[Event], index: usize, names: &[Name]) -> Option<usize> 
         let event = &events[index];
         event.kind == Kind::Exit && names.contains(&event.name)
     })
-}
-
-fn position(events: &[Event], exit_index: usize) -> Position {
-    let event = &events[exit_index];
-    let end = event.point.to_unist();
-    let name = event.name.clone();
-    let enter_index = (0..exit_index)
-        .rev()
-        .find(|&index| {
-            let event = &events[index];
-            event.kind == Kind::Enter && event.name == name
-        })
-        .expect("unpaired enter/exit event");
-    let start = events[enter_index].point.to_unist();
-    Position { start, end }
-}
-
-fn byte_range(events: &[Event], index: usize) -> Range<usize> {
-    let pos = position(events, index);
-    pos.start.offset..pos.end.offset
 }
 
 fn code_block_fence_is_rust(info: &str) -> bool {

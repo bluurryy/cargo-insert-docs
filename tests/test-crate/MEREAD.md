@@ -87,7 +87,6 @@ But we can have a naive implementation and try to not crash.
 - A link to a keyword is not possible
 - A link to a method: [`MyStruct::my_method`](https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html#method.my_method)
 
-[`ThinRope`]: https://doc.rust-lang.org/alloc/string/struct.String.html
 
 ### Features
 <!-- features start -->
@@ -175,6 +174,47 @@ let s = "foo
 assert_eq!(s, "foo\n## bar # baz");
 ```
 
+
+[str]: https://doc.rust-lang.org/std/primitive.str.html
+[std::vec::Vec]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html
+[std::string::String]: https://doc.rust-lang.org/alloc/string/struct.String.html
+[fast_glob::glob_match]: https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html
+[`phf_macros::phf_map`]: https://docs.rs/phf_macros/0.12.1/phf_macros/macro.phf_map.html
+[`my_module`]: https://docs.rs/test-crate/0.0.0/test_crate/my_module/index.html
+[`my_macro`]: https://docs.rs/test-crate/0.0.0/test_crate/macro.my_macro.html
+[`my_inline_glob_imported_fn`]: https://docs.rs/test-crate/0.0.0/test_crate/fn.my_inline_glob_imported_fn.html
+[`my_glob_imported_fn`]: https://docs.rs/test-crate/0.0.0/test_crate/to_be_glob_imported/fn.my_glob_imported_fn.html
+[`my_glob_imported_fn_from_private_mod`]: https://docs.rs/test-crate/0.0.0/test_crate/fn.my_glob_imported_fn_from_private_mod.html
+[`my_function`]: https://docs.rs/test-crate/0.0.0/test_crate/fn.my_function.html
+[`indoc::indoc!`]: https://docs.rs/indoc/2.0.6/indoc/macro.indoc.html
+[`i32`]: https://doc.rust-lang.org/std/primitive.i32.html
+[`fast_glob::glob_match`]: https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html
+[`alloc`]: https://doc.rust-lang.org/alloc/index.html
+[`Vec`]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html
+[`Reexport`]: https://docs.rs/test-crate/0.0.0/test_crate/reexport/struct.Reexport.html
+[`ReexportPrivate`]: https://docs.rs/test-crate/0.0.0/test_crate/struct.ReexportPrivate.html
+[`ReexportInline`]: https://docs.rs/test-crate/0.0.0/test_crate/struct.ReexportInline.html
+[`MyUnion`]: https://docs.rs/test-crate/0.0.0/test_crate/union.MyUnion.html
+[`MyTrait`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html
+[`MyTrait::MyAssociatedType`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#associatedtype.MyAssociatedType
+[`MyTrait::MY_ASSOCIATED_CONSTANT`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#associatedconstant.MY_ASSOCIATED_CONSTANT
+[`MyStruct`]: https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html
+[`MyStructUse`]: https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html
+[`MyStructAlias`]: https://docs.rs/test-crate/0.0.0/test_crate/type.MyStructAlias.html
+[`MyStruct::my_method`]: https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html#method.my_method
+[`MyStruct::my_field`]: https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html#structfield.my_field
+[`MyInlineGlobImportedStruct`]: https://docs.rs/test-crate/0.0.0/test_crate/struct.MyInlineGlobImportedStruct.html
+[`MyGlobImportedStruct`]: https://docs.rs/test-crate/0.0.0/test_crate/to_be_glob_imported/struct.MyGlobImportedStruct.html
+[`MyGlobImportedStructFromPrivateMod`]: https://docs.rs/test-crate/0.0.0/test_crate/struct.MyGlobImportedStructFromPrivateMod.html
+[`MyExternType`]: https://docs.rs/test-crate/0.0.0/test_crate/foreigntype.MyExternType.html
+[`MyEnum`]: https://docs.rs/test-crate/0.0.0/test_crate/enum.MyEnum.html
+[`MyEnum::MyVariant`]: https://docs.rs/test-crate/0.0.0/test_crate/enum.MyEnum.html#variant.MyVariant
+[`MY_STATIC`]: https://docs.rs/test-crate/0.0.0/test_crate/static.MY_STATIC.html
+[`MY_CONSTANT`]: https://docs.rs/test-crate/0.0.0/test_crate/constant.MY_CONSTANT.html
+[`Debug`]: https://doc.rust-lang.org/core/fmt/macros/derive.Debug.html
+[Vec#examples]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html#examples
+[String]: https://doc.rust-lang.org/alloc/string/struct.String.html
+[`ThinRope`]: https://doc.rust-lang.org/alloc/string/struct.String.html
 <!-- docs rest end -->
 
 This is after the crate docs.

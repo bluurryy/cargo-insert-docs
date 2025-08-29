@@ -6,6 +6,15 @@ use std::ops::Range;
 use color_eyre::eyre::{self, bail};
 use pulldown_cmark::{BrokenLink, BrokenLinkCallback, CowStr, Event, OffsetIter, Options, Parser};
 
+use crate::{
+    markdown_rs::{
+        self,
+        event::{Kind, Name},
+        unist::Position,
+    },
+    string_replacer::StringReplacer,
+};
+
 /// The same parser rustdoc uses.
 pub fn parser<'a>(text: &'a str) -> OffsetIter<'a, impl BrokenLinkCallback<'a>> {
     // Interprets `[Vec]` as `[Vec](Vec)` which is fine for rust docs.
@@ -150,4 +159,63 @@ fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
     parser(markdown).filter_map(|(event, range)| {
         matches!(event, Event::Html(_) | Event::InlineHtml(_)).then_some(range)
     })
+}
+
+pub fn extract_definitions(markdown: &str) -> [String; 2] {
+    let mut out = StringReplacer::new(markdown);
+    let parse_options = markdown_rs::ParseOptions::gfm();
+
+    let (events, _state) = markdown_rs::parser::parse(markdown, &parse_options)
+        .expect("should only fail for mdx which we don't enable");
+
+    let events = events.as_slice();
+    let mut definitions: Vec<&str> = vec![];
+
+    for index in (0..events.len()).rev() {
+        let event = &events[index];
+
+        if event.kind == Kind::Enter {
+            continue;
+        }
+
+        if event.name == Name::Definition {
+            let mut range = byte_range(events, index);
+            range.end = end_of_line(markdown, range.end);
+            let value = &markdown[range.clone()];
+            definitions.push(value);
+            out.remove(range);
+        }
+    }
+
+    let without_definitions = out.finish();
+    let definitions = definitions.join("");
+
+    [without_definitions, definitions]
+}
+
+pub fn byte_range(events: &[markdown_rs::event::Event], index: usize) -> Range<usize> {
+    let pos = position(events, index);
+    pos.start.offset..pos.end.offset
+}
+
+fn position(events: &[markdown_rs::event::Event], exit_index: usize) -> Position {
+    let event = &events[exit_index];
+    let end = event.point.to_unist();
+    let name = event.name.clone();
+    let enter_index = (0..exit_index)
+        .rev()
+        .find(|&index| {
+            let event = &events[index];
+            event.kind == Kind::Enter && event.name == name
+        })
+        .expect("unpaired enter/exit event");
+    let start = events[enter_index].point.to_unist();
+    Position { start, end }
+}
+
+pub fn end_of_line(markdown: &str, index: usize) -> usize {
+    match markdown[index..].bytes().position(|b| b == b'\n') {
+        Some(i) => index + i + 1,
+        None => markdown.len(),
+    }
 }
