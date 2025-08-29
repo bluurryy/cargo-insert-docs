@@ -55,15 +55,23 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     }
 
     let mut out = StringReplacer::new(markdown);
-    let mut index = events.len();
 
     const INTERESTING: &[Name] =
         &[Name::HeadingAtx, Name::CodeFenced, Name::CodeIndented, Name::Definition, Name::Link];
 
     let unused_definitions = unused_definitions(markdown, events, options);
 
-    while let Some(new_index) = find_any_of(events, index, INTERESTING) {
-        index = new_index;
+    for index in (0..events.len()).rev() {
+        let event = &events[index];
+
+        if event.kind != Kind::Exit {
+            continue;
+        }
+
+        if !INTERESTING.contains(&event.name) {
+            continue;
+        }
+
         process_one(&mut out, options, links, &unused_definitions, markdown, events, index);
     }
 
@@ -399,13 +407,6 @@ fn children(events: &[Event], index: usize) -> impl Iterator<Item = usize> {
             Some((i, depth))
         })
         .filter_map(|(i, depth)| (depth == 1 && events[i].kind == Kind::Exit).then_some(i))
-}
-
-fn find_any_of(events: &[Event], index: usize, names: &[Name]) -> Option<usize> {
-    (0..index).rev().find(|&index| {
-        let event = &events[index];
-        event.kind == Kind::Exit && names.contains(&event.name)
-    })
 }
 
 fn code_block_fence_is_rust(info: &str) -> bool {
