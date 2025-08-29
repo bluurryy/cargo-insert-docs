@@ -50,6 +50,7 @@ after sections
     let result = find_subsections(markdown, "my section")
         .unwrap()
         .into_iter()
+        .rev()
         .map(|(range, name)| (name, &markdown[range.span], &markdown[range.content_span]))
         .collect::<Vec<_>>();
 

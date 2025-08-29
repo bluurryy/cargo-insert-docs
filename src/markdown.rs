@@ -4,7 +4,6 @@ mod tests;
 use std::ops::Range;
 
 use color_eyre::eyre::{self, bail};
-use pulldown_cmark::{BrokenLink, BrokenLinkCallback, CowStr, Event, OffsetIter, Options, Parser};
 
 use crate::{
     markdown_rs::{
@@ -15,24 +14,6 @@ use crate::{
     },
     string_replacer::StringReplacer,
 };
-
-/// The same parser rustdoc uses.
-pub fn parser<'a>(text: &'a str) -> OffsetIter<'a, impl BrokenLinkCallback<'a>> {
-    // Interprets `[Vec]` as `[Vec](Vec)` which is fine for rust docs.
-    fn broken_link_callback<'a>(broken_link: BrokenLink<'a>) -> Option<(CowStr<'a>, CowStr<'a>)> {
-        Some((broken_link.reference, CowStr::Borrowed("")))
-    }
-
-    // The same options rustdoc uses.
-    let options = Options::ENABLE_TABLES
-        | Options::ENABLE_FOOTNOTES
-        | Options::ENABLE_STRIKETHROUGH
-        | Options::ENABLE_TASKLISTS
-        | Options::ENABLE_SMART_PUNCTUATION;
-
-    Parser::new_with_broken_link_callback(text, options, Some(broken_link_callback))
-        .into_offset_iter()
-}
 
 pub struct Section {
     pub span: Range<usize>,
@@ -45,25 +26,25 @@ pub fn find_subsections<'a>(
 ) -> eyre::Result<Vec<(Section, &'a str)>> {
     let mut sections = vec![];
 
-    let mut start = None::<(Range<usize>, &'a str)>;
+    let mut end = None::<(Range<usize>, &'a str)>;
 
     for (range, kind, name) in find_subsection_tags(markdown, section_name) {
-        if let Some((start_range, start_name)) = start {
-            if name == start_name && kind == SectionTagKind::End {
+        if let Some((end_range, end_name)) = end {
+            if name == end_name && kind == SectionTagKind::Start {
                 sections.push((
                     Section {
-                        span: start_range.start..range.end,
-                        content_span: start_range.end..range.start,
+                        span: range.start..end_range.end,
+                        content_span: range.end..end_range.start,
                     },
                     name,
                 ));
-                start = None;
+                end = None;
             } else {
                 bail!("subsections must be disjoint");
             }
         } else {
-            if kind == SectionTagKind::Start {
-                start = Some((range, name));
+            if kind == SectionTagKind::End {
+                end = Some((range, name));
             } else {
                 bail!("subsection end without start");
             }
@@ -129,8 +110,20 @@ fn find_html_comments(markdown: &str) -> impl Iterator<Item = Range<usize>> {
 }
 
 fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
-    parser(markdown).filter_map(|(event, range)| {
-        matches!(event, Event::Html(_) | Event::InlineHtml(_)).then_some(range)
+    let (events, _state) = parse(markdown, &parse_options());
+
+    (0..events.len()).rev().filter_map(move |index| {
+        let event = &events[index];
+
+        if event.kind == Kind::Enter {
+            return None;
+        }
+
+        if !matches!(event.name, Name::HtmlFlow | Name::HtmlText) {
+            return None;
+        }
+
+        Some(byte_range(&events, index))
     })
 }
 
@@ -173,7 +166,6 @@ pub fn find_section(markdown: &str, section_name: &str) -> Option<Section> {
 
         let html = byte_range(events, index);
         let html_str = &markdown[html.clone()];
-        dbg!(html_str);
 
         if let Some(end) = end.clone() {
             if html_str == start_marker {
