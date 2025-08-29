@@ -55,10 +55,6 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     }
 
     let mut out = StringReplacer::new(markdown);
-
-    const INTERESTING: &[Name] =
-        &[Name::HeadingAtx, Name::CodeFenced, Name::CodeIndented, Name::Definition, Name::Link];
-
     let unused_definitions = unused_definitions(markdown, events, options);
 
     for index in (0..events.len()).rev() {
@@ -68,11 +64,193 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
             continue;
         }
 
-        if !INTERESTING.contains(&event.name) {
-            continue;
-        }
+        match &events[index].name {
+            Name::HeadingAtx => {
+                let Some(hashes) = child(events, index, Name::HeadingAtxSequence) else {
+                    continue;
+                };
 
-        process_one(&mut out, options, links, &unused_definitions, markdown, events, index);
+                let hashes = byte_range(events, hashes);
+                let level = hashes.len() as i8;
+                let new_level = level.saturating_add(options.shrink_headings).clamp(1, 6);
+                let new_hashes = &"######"[..new_level as usize];
+                out.replace(hashes, new_hashes);
+            }
+            Name::CodeFenced => {
+                if let Some(fence_info) = descendant(events, index, Name::CodeFencedFenceInfo) {
+                    let fence_info_range = byte_range(events, fence_info);
+
+                    if !code_block_fence_is_rust(&markdown[fence_info_range.clone()]) {
+                        continue;
+                    }
+
+                    for child in children(events, index) {
+                        if events[child].name == Name::CodeFlowChunk {
+                            clean_code_chunk(&mut out, markdown, byte_range(events, child));
+                        }
+                    }
+
+                    out.replace(fence_info_range, "rust");
+                } else if let Some(fence) =
+                    descendants_with_name(events, index, Name::CodeFencedFenceSequence).nth(1)
+                {
+                    let insert_point = byte_range(events, fence).end;
+
+                    for child in children(events, index) {
+                        if events[child].name == Name::CodeFlowChunk {
+                            clean_code_chunk(&mut out, markdown, byte_range(events, child));
+                        }
+                    }
+
+                    out.insert(insert_point, "rust");
+                }
+            }
+            Name::CodeIndented => {
+                let range = byte_range(events, index);
+                out.insert(range.end, "\n```");
+
+                for child in children(events, index) {
+                    match events[child].name {
+                        Name::SpaceOrTab => out.remove(byte_range(events, child)),
+                        Name::CodeFlowChunk => {
+                            clean_code_chunk(&mut out, markdown, byte_range(events, child));
+                        }
+                        _ => (),
+                    }
+                }
+
+                out.insert(range.start, "```rust\n");
+            }
+            Name::Link => {
+                let Some(label) = child(events, index, Name::Label) else {
+                    continue;
+                };
+
+                if let Some(resource) = child(events, index, Name::Resource) {
+                    let Some(dest) = child(events, resource, Name::ResourceDestination) else {
+                        continue;
+                    };
+
+                    let Some(dest_string) =
+                        descendant(events, dest, Name::ResourceDestinationString)
+                    else {
+                        continue;
+                    };
+
+                    let Some(&resolved) = links.get(&markdown[byte_range(events, dest_string)])
+                    else {
+                        continue;
+                    };
+
+                    let Some(new_url) = resolved else {
+                        let Some(label_text) = child(events, label, Name::LabelText) else {
+                            continue;
+                        };
+
+                        let range = byte_range(events, index);
+                        out.replace(range, &markdown[byte_range(events, label_text)]);
+                        continue;
+                    };
+
+                    let range = byte_range(events, dest);
+                    out.replace(range, new_url);
+                    // TODO: correctly escape / add angled brackets
+                    continue;
+                }
+
+                if let Some(reference) = child(events, index, Name::Reference) {
+                    let identifier = match child(events, reference, Name::ReferenceString) {
+                        Some(string) => &markdown[byte_range(events, string)],
+                        None => match child(events, label, Name::LabelText) {
+                            Some(label_text) => &markdown[byte_range(events, label_text)],
+                            None => continue,
+                        },
+                    };
+
+                    let Some(&resolved) = links.get(identifier) else {
+                        continue;
+                    };
+
+                    let Some(new_url) = resolved else {
+                        let Some(label_text) = child(events, label, Name::LabelText) else {
+                            continue;
+                        };
+
+                        let range = byte_range(events, index);
+                        out.replace(range, &markdown[byte_range(events, label_text)]);
+                        continue;
+                    };
+
+                    // refers to a definition
+                    _ = new_url;
+                    continue;
+                }
+
+                // shortcut
+                let Some(label_text) = child(events, label, Name::LabelText) else {
+                    continue;
+                };
+
+                let Some(&resolved) = links.get(&markdown[byte_range(events, label_text)]) else {
+                    continue;
+                };
+
+                let Some(new_url) = resolved else {
+                    let Some(label_text) = child(events, label, Name::LabelText) else {
+                        continue;
+                    };
+
+                    let range = byte_range(events, index);
+                    out.replace(range, &markdown[byte_range(events, label_text)]);
+                    continue;
+                };
+
+                // refers to a definition
+                _ = new_url;
+            }
+            Name::Definition => {
+                let Some(dest) = child(events, index, Name::DefinitionDestination) else {
+                    continue;
+                };
+
+                let Some(dest_string) = descendant(events, dest, Name::DefinitionDestinationString)
+                else {
+                    continue;
+                };
+
+                let Some(label) = descendant(events, index, Name::DefinitionLabelString) else {
+                    continue;
+                };
+
+                let dest_string_str = &markdown[byte_range(events, dest_string)];
+                let label_str = &markdown[byte_range(events, label)];
+
+                if dest_string_str == PLACEHOLDER_DESTINATION
+                    || unused_definitions.contains(label_str)
+                {
+                    let mut range = byte_range(events, index);
+                    range.end = end_of_line(markdown, range.end);
+                    out.remove(range);
+                    continue;
+                }
+
+                let Some(&resolved) = links.get(dest_string_str) else {
+                    continue;
+                };
+
+                let Some(new_url) = resolved else {
+                    // let range = byte_range(events, index);
+                    // out.remove(range);
+                    // TODO: remove newline
+                    continue;
+                };
+
+                let range = byte_range(events, dest);
+                out.replace(range, new_url);
+                // TODO: correctly escape / add angled brackets
+            }
+            _ => (),
+        }
     }
 
     out.finish()
@@ -116,201 +294,6 @@ fn unused_definitions<'a>(
 
     let all_definitions: HashSet<&str> = options.links.iter().map(|(k, _)| k.as_str()).collect();
     all_definitions.difference(&used_definitions).copied().collect()
-}
-
-fn process_one<'a>(
-    out: &mut StringReplacer<'a>,
-    options: &'a RewriteMarkdownOptions,
-    links: &HashMap<&'a str, Option<&'a str>>,
-    unused_definitions: &HashSet<&'a str>,
-    markdown: &'a str,
-    events: &[Event],
-    index: usize,
-) {
-    match &events[index].name {
-        Name::HeadingAtx => {
-            let Some(hashes) = child(events, index, Name::HeadingAtxSequence) else {
-                return;
-            };
-
-            let hashes = byte_range(events, hashes);
-            let level = hashes.len() as i8;
-            let new_level = level.saturating_add(options.shrink_headings).clamp(1, 6);
-            let new_hashes = &"######"[..new_level as usize];
-            out.replace(hashes, new_hashes);
-        }
-        Name::CodeFenced => {
-            if let Some(fence_info) = descendant(events, index, Name::CodeFencedFenceInfo) {
-                let fence_info_range = byte_range(events, fence_info);
-
-                if !code_block_fence_is_rust(&markdown[fence_info_range.clone()]) {
-                    return;
-                }
-
-                for child in children(events, index) {
-                    if events[child].name == Name::CodeFlowChunk {
-                        clean_code_chunk(out, markdown, byte_range(events, child));
-                    }
-                }
-
-                out.replace(fence_info_range, "rust");
-            } else if let Some(fence) =
-                descendants_with_name(events, index, Name::CodeFencedFenceSequence).nth(1)
-            {
-                let insert_point = byte_range(events, fence).end;
-
-                for child in children(events, index) {
-                    if events[child].name == Name::CodeFlowChunk {
-                        clean_code_chunk(out, markdown, byte_range(events, child));
-                    }
-                }
-
-                out.insert(insert_point, "rust");
-            }
-        }
-        Name::CodeIndented => {
-            let range = byte_range(events, index);
-            out.insert(range.end, "\n```");
-
-            for child in children(events, index) {
-                match events[child].name {
-                    Name::SpaceOrTab => out.remove(byte_range(events, child)),
-                    Name::CodeFlowChunk => {
-                        clean_code_chunk(out, markdown, byte_range(events, child));
-                    }
-                    _ => (),
-                }
-            }
-
-            out.insert(range.start, "```rust\n");
-        }
-        Name::Link => {
-            let Some(label) = child(events, index, Name::Label) else {
-                return;
-            };
-
-            if let Some(resource) = child(events, index, Name::Resource) {
-                let Some(dest) = child(events, resource, Name::ResourceDestination) else {
-                    return;
-                };
-
-                let Some(dest_string) = descendant(events, dest, Name::ResourceDestinationString)
-                else {
-                    return;
-                };
-
-                let Some(&resolved) = links.get(&markdown[byte_range(events, dest_string)]) else {
-                    return;
-                };
-
-                let Some(new_url) = resolved else {
-                    let Some(label_text) = child(events, label, Name::LabelText) else {
-                        return;
-                    };
-
-                    let range = byte_range(events, index);
-                    out.replace(range, &markdown[byte_range(events, label_text)]);
-                    return;
-                };
-
-                let range = byte_range(events, dest);
-                out.replace(range, new_url);
-                // TODO: correctly escape / add angled brackets
-                return;
-            }
-
-            if let Some(reference) = child(events, index, Name::Reference) {
-                let identifier = match child(events, reference, Name::ReferenceString) {
-                    Some(string) => &markdown[byte_range(events, string)],
-                    None => match child(events, label, Name::LabelText) {
-                        Some(label_text) => &markdown[byte_range(events, label_text)],
-                        None => return,
-                    },
-                };
-
-                let Some(&resolved) = links.get(identifier) else {
-                    return;
-                };
-
-                let Some(new_url) = resolved else {
-                    let Some(label_text) = child(events, label, Name::LabelText) else {
-                        return;
-                    };
-
-                    let range = byte_range(events, index);
-                    out.replace(range, &markdown[byte_range(events, label_text)]);
-                    return;
-                };
-
-                // refers to a definition
-                _ = new_url;
-                return;
-            }
-
-            // shortcut
-            let Some(label_text) = child(events, label, Name::LabelText) else {
-                return;
-            };
-
-            let Some(&resolved) = links.get(&markdown[byte_range(events, label_text)]) else {
-                return;
-            };
-
-            let Some(new_url) = resolved else {
-                let Some(label_text) = child(events, label, Name::LabelText) else {
-                    return;
-                };
-
-                let range = byte_range(events, index);
-                out.replace(range, &markdown[byte_range(events, label_text)]);
-                return;
-            };
-
-            // refers to a definition
-            _ = new_url;
-        }
-        Name::Definition => {
-            let Some(dest) = child(events, index, Name::DefinitionDestination) else {
-                return;
-            };
-
-            let Some(dest_string) = descendant(events, dest, Name::DefinitionDestinationString)
-            else {
-                return;
-            };
-
-            let Some(label) = descendant(events, index, Name::DefinitionLabelString) else {
-                return;
-            };
-
-            let dest_string_str = &markdown[byte_range(events, dest_string)];
-            let label_str = &markdown[byte_range(events, label)];
-
-            if dest_string_str == PLACEHOLDER_DESTINATION || unused_definitions.contains(label_str)
-            {
-                let mut range = byte_range(events, index);
-                range.end = end_of_line(markdown, range.end);
-                out.remove(range);
-                return;
-            }
-
-            let Some(&resolved) = links.get(dest_string_str) else {
-                return;
-            };
-
-            let Some(new_url) = resolved else {
-                // let range = byte_range(events, index);
-                // out.remove(range);
-                // TODO: remove newline
-                return;
-            };
-
-            let range = byte_range(events, dest);
-            out.replace(range, new_url);
-            // TODO: correctly escape / add angled brackets
-        }
-        _ => unreachable!(),
-    }
 }
 
 fn end_of_line(markdown: &str, index: usize) -> usize {
