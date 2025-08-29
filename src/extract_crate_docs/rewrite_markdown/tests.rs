@@ -7,21 +7,13 @@ use crate::{
     tests::events_to_string,
 };
 
-fn rewrite_markdown_default(markdown: &str) -> String {
-    rewrite_markdown(markdown, &RewriteMarkdownOptions::default())
-}
-
-fn shrink_headings(markdown: &str, shrink_headings: i8) -> String {
-    rewrite_markdown(markdown, &RewriteMarkdownOptions { shrink_headings, ..Default::default() })
-}
-
 #[test]
 fn debug() {
     let source = std::fs::read_to_string("/home/z/dev/cargo-insert-docs/target/docs.md").unwrap();
     let source = source.as_str();
 
     println!("{}", events_to_string(source));
-    println!("{}", rewrite_markdown_default(source));
+    println!("{}", rewrite_markdown(source, &RewriteMarkdownOptions::default()));
 }
 
 #[test]
@@ -54,7 +46,7 @@ fn test_clean_code_blocks() {
         def square(n):
             n * n
         ```"#]]
-    .assert_eq(&rewrite_markdown_default(
+    .assert_eq(&rewrite_markdown(
         r#"
 ```
 // this is rust code
@@ -83,6 +75,7 @@ assert_eq!(one + two, 3);
 def square(n):
     n * n
 ```"#,
+        &RewriteMarkdownOptions::default(),
     ));
 }
 
@@ -111,6 +104,13 @@ fn test_code_block_fence_is_rust() {
 
 #[test]
 fn test_shrink_headings() {
+    fn shrink_headings(markdown: &str, shrink_headings: i8) -> String {
+        rewrite_markdown(
+            markdown,
+            &RewriteMarkdownOptions { shrink_headings, ..Default::default() },
+        )
+    }
+
     assert_eq!(shrink_headings("## foo", -3), "# foo");
     assert_eq!(shrink_headings("## foo", -2), "# foo");
     assert_eq!(shrink_headings("## foo", -1), "# foo");
