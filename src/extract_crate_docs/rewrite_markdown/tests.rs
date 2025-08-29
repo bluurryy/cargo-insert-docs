@@ -5,28 +5,6 @@ use crate::extract_crate_docs::rewrite_markdown::{
 };
 
 #[test]
-fn debug() {
-    let markdown = std::fs::read_to_string("/home/z/dev/cargo-insert-docs/target/docs.md").unwrap();
-    let markdown = markdown.as_str();
-
-    println!(
-        "{}",
-        rewrite_markdown(
-            markdown,
-            &RewriteMarkdownOptions {
-                links: [(
-                    String::from("`Vec`"),
-                    Some(String::from("https://doc.rust-lang.org/alloc/vec/struct.Vec.html")),
-                )]
-                .into_iter()
-                .collect(),
-                ..Default::default()
-            },
-        )
-    );
-}
-
-#[test]
 fn test_link() {
     let markdown = "[vector](Vec)";
 
