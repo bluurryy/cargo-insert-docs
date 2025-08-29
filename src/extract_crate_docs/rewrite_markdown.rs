@@ -2,7 +2,7 @@
 mod tests;
 
 use core::{fmt::Write, ops::Range};
-use std::{borrow::Cow, collections::HashMap};
+use std::collections::HashMap;
 
 use crate::{
     markdown_rs::{
@@ -274,27 +274,6 @@ fn clean_code_chunk(out: &mut StringReplacer, markdown: &str, range: Range<usize
             }
             Some(_) => (),
         }
-    }
-}
-
-// remove hidden lines
-// <https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html#hiding-portions-of-the-example>
-fn clean_code_line(line: &str) -> Option<Cow<'_, str>> {
-    let line_trim_start = line.trim_start();
-
-    if let Some(rest) = line_trim_start.strip_prefix('#') {
-        match rest.bytes().next() {
-            Some(b' ') | None => None,
-            Some(b'#') => {
-                let mid = substr_range(line, line_trim_start).start;
-                let lhs = &line[..mid];
-                let rhs = &line[mid + 1..];
-                Some(format!("{lhs}{rhs}").into())
-            }
-            Some(_) => Some(Cow::Borrowed(line)),
-        }
-    } else {
-        Some(Cow::Borrowed(line))
     }
 }
 
