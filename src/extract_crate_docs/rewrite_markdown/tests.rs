@@ -43,12 +43,7 @@ fn test_link() {
         },
     );
 
-    // TODO: remove unused reference
-    assert_eq!(
-        result,
-        "[vector](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n\n\
-[Vec]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html\n"
-    );
+    assert_eq!(result, "[vector](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n\n");
 }
 
 #[test]
@@ -68,7 +63,6 @@ fn test_reference_collapsed() {
         },
     );
 
-    // TODO: remove unused reference
     assert_eq!(
         result,
         "[Vec][]\n\n\
@@ -88,8 +82,27 @@ fn test_reference_unresolved() {
         },
     );
 
-    // TODO: remove unused reference
     assert_eq!(result, "Vec\n\n");
+}
+
+#[test]
+fn test_unused_definition() {
+    let markdown = "[Vector](Vec)";
+
+    let result = rewrite_markdown(
+        markdown,
+        &RewriteMarkdownOptions {
+            links: [(
+                String::from("Vec"),
+                Some(String::from("https://doc.rust-lang.org/alloc/vec/struct.Vec.html")),
+            )]
+            .into_iter()
+            .collect(),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(result, "[Vector](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n\n");
 }
 
 #[test]

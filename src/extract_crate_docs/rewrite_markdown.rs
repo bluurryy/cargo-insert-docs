@@ -2,7 +2,7 @@
 mod tests;
 
 use core::{fmt::Write, ops::Range};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::{
     markdown::{byte_range, parse, parse_options},
@@ -60,18 +60,61 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     const INTERESTING: &[Name] =
         &[Name::HeadingAtx, Name::CodeFenced, Name::CodeIndented, Name::Definition, Name::Link];
 
+    let unused_definitions = unused_definitions(markdown, events, options);
+
     while let Some(new_index) = find_any_of(events, index, INTERESTING) {
         index = new_index;
-        process_one(&mut out, options, links, markdown, events, index);
+        process_one(&mut out, options, links, &unused_definitions, markdown, events, index);
     }
 
     out.finish()
+}
+
+fn unused_definitions<'a>(
+    markdown: &'a str,
+    events: &[Event],
+    options: &'a RewriteMarkdownOptions,
+) -> HashSet<&'a str> {
+    let mut used_definitions: HashSet<&str> = HashSet::new();
+
+    for index in (0..events.len()).rev() {
+        let event = &events[index];
+
+        if event.kind != Kind::Exit {
+            continue;
+        }
+
+        if event.name != Name::Link {
+            continue;
+        }
+
+        if descendant(events, index, Name::Resource).is_some() {
+            continue;
+        }
+
+        let identifier = match descendant(events, index, Name::ReferenceString) {
+            Some(some) => some,
+            None => match descendant(events, index, Name::LabelText) {
+                Some(some) => some,
+                None => continue,
+            },
+        };
+
+        let range = byte_range(events, identifier);
+        let str = &markdown[range];
+
+        used_definitions.insert(str);
+    }
+
+    let all_definitions: HashSet<&str> = options.links.iter().map(|(k, _)| k.as_str()).collect();
+    all_definitions.difference(&used_definitions).copied().collect()
 }
 
 fn process_one<'a>(
     out: &mut StringReplacer<'a>,
     options: &'a RewriteMarkdownOptions,
     links: &HashMap<&'a str, Option<&'a str>>,
+    unused_definitions: &HashSet<&'a str>,
     markdown: &'a str,
     events: &[Event],
     index: usize,
@@ -228,10 +271,15 @@ fn process_one<'a>(
                 return;
             };
 
-            let dest_string_range = byte_range(events, dest_string);
-            let dest_string_str = &markdown[dest_string_range];
+            let Some(label) = descendant(events, index, Name::DefinitionLabelString) else {
+                return;
+            };
 
-            if dest_string_str == PLACEHOLDER_DESTINATION {
+            let dest_string_str = &markdown[byte_range(events, dest_string)];
+            let label_str = &markdown[byte_range(events, label)];
+
+            if dest_string_str == PLACEHOLDER_DESTINATION || unused_definitions.contains(label_str)
+            {
                 let mut range = byte_range(events, index);
                 range.end = end_of_line(markdown, range.end);
                 out.remove(range);

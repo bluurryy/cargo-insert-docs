@@ -175,10 +175,6 @@ assert_eq!(s, "foo\n## bar # baz");
 ```
 
 
-[str]: https://doc.rust-lang.org/std/primitive.str.html
-[std::vec::Vec]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html
-[std::string::String]: https://doc.rust-lang.org/alloc/string/struct.String.html
-[fast_glob::glob_match]: https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html
 [`phf_macros::phf_map`]: https://docs.rs/phf_macros/0.12.1/phf_macros/macro.phf_map.html
 [`my_module`]: https://docs.rs/test-crate/0.0.0/test_crate/my_module/index.html
 [`my_macro`]: https://docs.rs/test-crate/0.0.0/test_crate/macro.my_macro.html
@@ -212,8 +208,6 @@ assert_eq!(s, "foo\n## bar # baz");
 [`MY_STATIC`]: https://docs.rs/test-crate/0.0.0/test_crate/static.MY_STATIC.html
 [`MY_CONSTANT`]: https://docs.rs/test-crate/0.0.0/test_crate/constant.MY_CONSTANT.html
 [`Debug`]: https://doc.rust-lang.org/core/fmt/macros/derive.Debug.html
-[Vec#examples]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html#examples
-[String]: https://doc.rust-lang.org/alloc/string/struct.String.html
 [`ThinRope`]: https://doc.rust-lang.org/alloc/string/struct.String.html
 <!-- docs rest end -->
 
