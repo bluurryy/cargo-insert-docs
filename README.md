@@ -113,12 +113,12 @@ And your `README.md` will look like that:
 Badges go here.
 
 <!-- crate documentation start -->
-Use the [Image](https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html) type to load images.
+Use the [Image] type to load images.
 
 ## Feature Flags
 <!-- feature documentation start -->
-- **`std`** *(enabled by default)* — Enables loading [`Image`](https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html)s
-  from [`std::io::Read`](https://doc.rust-lang.org/std/io/trait.Read.html).
+- **`std`** *(enabled by default)* — Enables loading [`Image`]s
+  from [`std::io::Read`].
 
 ### Image formats
 The following formats are supported.
@@ -131,6 +131,11 @@ The following formats are supported.
 ```rust
 let image = Image::load("cat.png");
 ```
+
+[Image]: https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html
+[`Image`]: https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html
+[`std::io::Read`]: https://doc.rust-lang.org/std/io/trait.Read.html
+
 <!-- crate documentation end -->
 
 License goes there.
@@ -139,7 +144,7 @@ License goes there.
 You can see the rendered version [here](tests/example-crate/README.md).
 
 Notice how:
-- doc-links like `Image` and `std::io::Read` get resolved to links to `docs.rs` and `doc.rust-lang.org`
+- link definitions for `Image` and `std::io::Read` are added that resolve to `docs.rs` or `doc.rust-lang.org`
 - the code block loses the hidden (`#` prefixed) lines
 - the code block gets marked as `rust`; if the code block already had a marking that is considered rust like `compile_fail`, `ignore`, `should_panic` and such, that would also be replaced by `rust`
 - headings get one `#` added (configurable)

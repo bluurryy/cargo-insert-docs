@@ -198,9 +198,8 @@ fn process_one<'a>(
                     return;
                 };
 
-                let range = byte_range(events, reference);
-                out.replace(range, format!("({new_url})"));
-                // TODO: correctly escape / add angled brackets
+                // refers to a definition
+                _ = new_url;
                 return;
             }
 
@@ -223,10 +222,8 @@ fn process_one<'a>(
                 return;
             };
 
-            let label_text_str = &markdown[byte_range(events, label_text)];
-            let range = byte_range(events, index);
-            out.replace(range, format!("[{label_text_str}]({new_url})"));
-            // TODO: correctly escape / add angled brackets
+            // refers to a definition
+            _ = new_url;
         }
         Name::Definition => {
             dbg!(&markdown[byte_range(events, index)]);
