@@ -140,8 +140,6 @@ impl StatusChecker {
                 }
             };
 
-            dbg!(&items);
-
             for item in items {
                 let new_status = match &item {
                     gix::status::Item::IndexWorktree(item) => match item {
