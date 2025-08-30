@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix errors when multiple sections are inside html tags
+- Fix `(error: unknown)` when checking git status of files when `cargo-insert-docs` is run in a subfolder
 
 ## [0.17.0] - 2025-08-29
 

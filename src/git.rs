@@ -7,7 +7,7 @@ use std::{
 use arcstr::ArcStr;
 use gix::bstr::BString;
 use indexmap::IndexMap;
-use relative_path::PathExt;
+use relative_path::{PathExt, RelativePath, RelativePathBuf};
 
 /// Statuses are returned in the same order as the `paths`.
 pub fn file_status(paths: impl IntoIterator<Item: AsRef<Path>>) -> Vec<Status> {
@@ -20,18 +20,20 @@ pub fn file_status(paths: impl IntoIterator<Item: AsRef<Path>>) -> Vec<Status> {
     checker.finish()
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct StatusChecker {
     repos: HashMap<PathBuf, RepoAndPaths>,
     statuses: IndexMap<PathBuf, Option<Status>>,
     results: Vec<ResultKind>,
 }
 
+#[derive(Debug)]
 struct RepoAndPaths {
     repo: gix::Repository,
-    paths: HashSet<BString>,
+    paths: HashSet<RelativePathBuf>,
 }
 
+#[derive(Debug)]
 enum ResultKind {
     Status(usize),
     Error(Error),
@@ -78,7 +80,7 @@ impl StatusChecker {
             Err(err) => return TryAdd::Err(Error::new(err)),
         };
 
-        repo.paths.insert(relative_path.into_string().into());
+        repo.paths.insert(relative_path);
         TryAdd::Ok
     }
 
@@ -113,19 +115,29 @@ impl StatusChecker {
         let Self { repos, results, mut statuses } = self;
 
         for RepoAndPaths { repo, paths } in repos.into_values() {
-            let items = match repo_status(&repo, paths.iter().cloned()) {
+            if paths.is_empty() {
+                continue;
+            }
+
+            let items = match repo_status(&repo, paths.iter().map(relative_to_workdir)) {
                 Ok(ok) => ok,
                 Err(err) => {
                     let err = Error::new(err);
 
-                    for rela_path in paths {
-                        let path = repo.workdir_path(rela_path).unwrap();
+                    let workdir = repo
+                        .workdir()
+                        .expect("we checked that `paths` is non-empty, which can only be if this repo has a workdir");
+
+                    for relative_path in paths {
+                        let path = relative_path.to_path(workdir);
                         statuses.insert(path, Some(Status::Error(err.clone())));
                     }
 
                     continue;
                 }
             };
+
+            dbg!(&items);
 
             for item in items {
                 let new_status = match &item {
@@ -178,6 +190,11 @@ fn repo_status(
         .map_err(Error::new)?
         .map(|result| result.map_err(Error::new))
         .collect()
+}
+
+fn relative_to_workdir(relative_path: impl AsRef<RelativePath>) -> BString {
+    let relative_path = relative_path.as_ref();
+    BString::from(format!(":(top,literal){relative_path}"))
 }
 
 enum TryAdd {
@@ -298,7 +315,7 @@ impl fmt::Display for Status {
 }
 
 #[test]
-fn example() {
+fn test_example() {
     let paths = [
         "src/main.rs",
         "src/git.rs",
@@ -313,4 +330,38 @@ fn example() {
     for (path, status) in paths.iter().zip(status) {
         println!("{path} ({status})");
     }
+}
+
+#[cfg(test)]
+fn check_test_crate(set_cur_dir: bool) {
+    let workspace_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let tests_dir = workspace_dir.join("tests").join("test-crate");
+
+    if set_cur_dir {
+        std::env::set_current_dir(&tests_dir).unwrap();
+    }
+
+    let paths = ["lib.rs", "MEREAD.md"].iter().map(|path| tests_dir.join(path)).collect::<Vec<_>>();
+
+    let status = file_status(&paths);
+
+    for (path, status) in paths.iter().zip(&status) {
+        let path = path.display();
+        println!("{path} ({status})");
+    }
+
+    // for status in status {
+    //     assert!(matches!(status, Status::Current | Status::Staged | Status::Dirty));
+    // }
+}
+
+#[test]
+fn test_outside_subdir() {
+    check_test_crate(false);
+}
+
+#[test]
+#[ignore = "sets current_dir, might mess with other tests"]
+fn test_in_subdir() {
+    check_test_crate(true);
 }
