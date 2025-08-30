@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Fixed
+
+- Fix errors when multiple sections are inside html tags
+
 ## [0.17.0] - 2025-08-29
 
 ### Changed

@@ -34,42 +34,41 @@ pub fn parse_options() -> ParseOptions {
 /// <!-- section_name end -->
 /// ```
 pub fn find_section(markdown: &str, section_name: &str) -> Option<Section> {
-    let start_marker = format!("<!-- {section_name} start -->");
-    let end_marker = format!("<!-- {section_name} end -->");
+    fn parts_eq(mut str: &str, parts: &[&str]) -> bool {
+        for &part in parts {
+            str = match str.strip_prefix(part) {
+                Some(rest) => rest,
+                None => return false,
+            }
+        }
 
-    let (events, _state) = parse(markdown, &parse_options());
-    let events = events.as_slice();
+        str.is_empty()
+    }
+
+    let is_end = |s| parts_eq(s, &["<!-- ", section_name, " end -->"]);
+    let is_start = |s| parts_eq(s, &["<!-- ", section_name, " start -->"]);
+
     let mut end = None::<Range<usize>>;
 
-    for index in (0..events.len()).rev() {
-        let event = &events[index];
-
-        if event.kind == Kind::Enter {
-            continue;
-        }
-
-        if !matches!(event.name, Name::HtmlFlow | Name::HtmlText) {
-            continue;
-        }
-
-        let html = byte_range(events, index);
-        let html_str = &markdown[html.clone()];
+    for comment in find_html_comments(markdown) {
+        let comment_str = &markdown[comment.clone()];
 
         if let Some(end) = end.clone() {
-            if html_str == start_marker {
+            if is_start(comment_str) {
                 return Some(Section {
-                    span: html.start..end.end,
-                    content_span: html.end..end.start,
+                    span: comment.start..end.end,
+                    content_span: comment.end..end.start,
                 });
             }
-        } else if html_str == end_marker {
-            end = Some(html);
+        } else if is_end(comment_str) {
+            end = Some(comment);
         }
     }
 
     None
 }
 
+#[derive(Debug)]
 pub struct Section {
     pub span: Range<usize>,
     pub content_span: Range<usize>,
@@ -149,11 +148,11 @@ fn find_html_comments(markdown: &str) -> impl Iterator<Item = Range<usize>> {
         const START: &str = "<!--";
         const END: &str = "-->";
 
-        let mut end = 0;
+        let mut start = html.len();
 
         std::iter::from_fn(move || {
-            let start = html[end..].find(START)? + end;
-            end = html[start..].find(END)? + start + END.len();
+            let end = html[..start].rfind(END)? + END.len();
+            start = html[..end].rfind(START)?;
             Some(start..end)
         })
     }

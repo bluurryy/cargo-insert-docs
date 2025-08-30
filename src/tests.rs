@@ -1,10 +1,15 @@
 use core::ops::Range;
 use std::fmt::{self, Write as _};
 
-use crate::markdown_rs::{
-    self,
-    event::{Event, Kind},
+use crate::{
+    markdown,
+    markdown_rs::event::{Event, Kind},
 };
+
+#[allow(dead_code)]
+pub fn print_events(markdown: &str) {
+    println!("{}", events_to_string(markdown))
+}
 
 #[allow(dead_code)]
 pub fn events_to_string(markdown: &str) -> String {
@@ -77,10 +82,7 @@ pub fn events_to_string(markdown: &str) -> String {
         count
     }
 
-    let parse_options = markdown_rs::ParseOptions::gfm();
-
-    let (events, _state) = markdown_rs::parser::parse(markdown, &parse_options)
-        .expect("should only fail for mdx which we don't enable");
+    let (events, _state) = markdown::parse(markdown, &markdown::parse_options());
 
     events_to_string(&events, markdown)
 }
