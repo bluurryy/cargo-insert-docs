@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Remove link definitions with unresolved doc links
+
 ### Fixed
 
 - Fix errors when multiple sections are inside html tags

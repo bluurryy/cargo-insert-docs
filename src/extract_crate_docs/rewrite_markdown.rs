@@ -239,9 +239,9 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                 };
 
                 let Some(new_url) = resolved else {
-                    // let range = byte_range(events, index);
-                    // out.remove(range);
-                    // TODO: remove newline
+                    let mut range = byte_range(events, index);
+                    range.end = end_of_line(markdown, range.end);
+                    out.remove(range);
                     continue;
                 };
 
