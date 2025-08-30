@@ -99,15 +99,10 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
             "to infer the current package, cargo of rust version 1.71 or higher is required"
         );
 
-        // FIXME: just refuse to run if the workspace default members are not available
-        // it has been available since 1.71
         if metadata.workspace_default_members.is_available() {
             (*metadata.workspace_default_members).iter().map(|p| &metadata[p]).collect()
         } else {
-            let cargo_toml = ManifestPath::new("Cargo.toml".as_ref())?.get().read_to_string()?;
-            let package_name = manifest_package_name(&cargo_toml)
-                .wrap_err("tried to read Cargo.toml to figure out package name")?;
-            vec![find_package_by_name(&metadata, &package_name)?]
+            bail!("`cargo-insert-docs` requires a cargo version >= 1.71");
         }
     } else {
         find_packages_by_name(&metadata, &workspace.package)?
@@ -428,16 +423,6 @@ fn run_package(cx: &PackageContext) {
     if cx.cfg.crate_into_readme {
         task(cx, "crate documentation", "readme", insert_docs_into_readme);
     }
-}
-
-fn manifest_package_name(cargo_toml: &str) -> Result<String> {
-    let doc = toml_edit::Document::parse(cargo_toml)?;
-
-    fn inner<'a>(doc: &'a toml_edit::Document<&'a str>) -> Option<&'a str> {
-        doc.get("package")?.as_table_like()?.get("name")?.as_str()
-    }
-
-    inner(&doc).map(|s| s.to_string()).ok_or_eyre("Cargo.toml has no `package.name` field")
 }
 
 fn find_packages_by_name(
