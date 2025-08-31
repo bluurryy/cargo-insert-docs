@@ -25,7 +25,7 @@ For the cli, these are not arguments but subcommands instead and calling the sub
 
 |Field|Type|Default|Description|
 |---|---|---|---|
-|feature-label|string|``"**\`{feature}\`**"``|Formatting of the feature label
+|feature-label|string|``"**`{feature}`**"``|Formatting of the feature label
 |feature-section-name|string|`"feature documentation"`|Feature documentation section name|
 |crate-section-name|string|`"crate documentation"`|Crate documentation section name|
 |shrink-headings|i8|1|Shrinks headings when inserting documentation into the readme by the given amount. This increases the heading level (the amount of `#`).|
