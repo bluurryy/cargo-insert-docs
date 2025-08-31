@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+## [0.18.1] - 2025-08-31
+
 ### Fixed
 
 - Fix removing hidden lines of code blocks that are quoted, in a list, etc.
@@ -241,7 +243,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-07-09
 
 <!-- next-url -->
-[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v0.18.0...HEAD
+[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v0.18.1...HEAD
+[0.18.1]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.18.1
 [0.18.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.18.0
 [0.17.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.17.0
 [0.16.1]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.16.1

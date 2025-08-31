@@ -1,6 +1,6 @@
 [package]
 name = "cargo-insert-docs"
-version = "0.18.0"
+version = "0.18.1"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Insert feature docs into your crate docs, and crate docs into your README."
