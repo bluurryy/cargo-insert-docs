@@ -165,6 +165,13 @@
 //!     ### bar # baz";
 //!     assert_eq!(s, "foo\n## bar # baz");
 //!
+//! Test if ignoring lines work in a quoted code block.
+//!
+//! > ```
+//! > // this stays
+//! > # // this is ignored
+//! > ```
+//!
 //! <!-- docs rest end -->
 
 // The docs should not link here because it's not inline.

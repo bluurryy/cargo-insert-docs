@@ -111,7 +111,14 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
 
                 for child in children(events, index) {
                     match events[child].name {
-                        Name::SpaceOrTab => out.remove(byte_range(events, child)),
+                        Name::SpaceOrTab => {
+                            let range = byte_range(events, child);
+
+                            // a `clean_code_chunk` may have already removed the whole line
+                            if range.end <= out.rest().len() {
+                                out.remove(byte_range(events, child))
+                            }
+                        }
                         Name::CodeFlowChunk => {
                             clean_code_chunk(&mut out, markdown, byte_range(events, child));
                         }
@@ -296,11 +303,22 @@ fn unused_definitions<'a>(
     all_definitions.difference(&used_definitions).copied().collect()
 }
 
+fn start_of_line(markdown: &str, index: usize) -> usize {
+    match markdown[..index].bytes().rposition(|b| b == b'\n') {
+        Some(i) => i + 1,
+        None => 0,
+    }
+}
+
 fn end_of_line(markdown: &str, index: usize) -> usize {
     match markdown[index..].bytes().position(|b| b == b'\n') {
         Some(i) => index + i + 1,
         None => markdown.len(),
     }
+}
+
+fn expand_to_line(markdown: &str, range: Range<usize>) -> Range<usize> {
+    start_of_line(markdown, range.start)..end_of_line(markdown, range.end)
 }
 
 fn clean_code_chunk(out: &mut StringReplacer, markdown: &str, range: Range<usize>) {
@@ -310,7 +328,7 @@ fn clean_code_chunk(out: &mut StringReplacer, markdown: &str, range: Range<usize
     if let Some(rest) = line_trim_start.strip_prefix('#') {
         match rest.bytes().next() {
             Some(b' ') | None => {
-                out.remove(range.start..end_of_line(markdown, range.end));
+                out.remove(expand_to_line(markdown, range));
             }
             Some(b'#') => {
                 // double hash `##`, remove one of the hashes

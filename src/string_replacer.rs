@@ -1,6 +1,22 @@
 use core::ops::Range;
 use std::borrow::Cow;
 
+macro_rules! assert_le {
+    ($left:expr, $right:expr) => {
+        match (&$left, &$right) {
+            (left, right) => {
+                if !(left <= right) {
+                    panic!(
+                        "assertion `{left_expr} <= {right_expr}` failed\n  left: {left:?}\n right: {right:?}",
+                        left_expr = stringify!($left),
+                        right_expr = stringify!($right),
+                    )
+                }
+            }
+        }
+    };
+}
+
 /// A type to efficiently replace string ranges.
 ///
 /// Ranges and indices must be removed in reverse order and must not overlap.
@@ -31,8 +47,8 @@ impl<'a> StringReplacer<'a> {
     }
 
     fn replace_inner(&mut self, range: Range<usize>, with: Cow<'a, str>) {
-        assert!(range.end >= range.start);
-        assert!(range.end <= self.string.len());
+        assert_le!(range.start, range.end);
+        assert_le!(range.end, self.string.len());
 
         let end_chunk = &self.string[range.end..];
 
@@ -45,6 +61,10 @@ impl<'a> StringReplacer<'a> {
         }
 
         self.string = &self.string[..range.start];
+    }
+
+    pub fn rest(&self) -> &str {
+        self.string
     }
 
     pub fn finish(&self) -> String {
@@ -118,7 +138,7 @@ fn test_grow() {
 }
 
 #[test]
-#[should_panic = "assertion failed: range.end >= range.start"]
+#[should_panic = "assertion `range.start <= range.end` failed"]
 #[expect(clippy::reversed_empty_ranges)]
 fn test_panic_reverse_range() {
     let str = "foobarbaz";
@@ -127,7 +147,7 @@ fn test_panic_reverse_range() {
 }
 
 #[test]
-#[should_panic = "assertion failed: range.end <= self.string.len()"]
+#[should_panic = "assertion `range.end <= self.string.len()` failed"]
 fn test_panic_out_of_bounds() {
     let str = "foobarbaz";
     let mut replacer = StringReplacer::new(str);
@@ -135,7 +155,7 @@ fn test_panic_out_of_bounds() {
 }
 
 #[test]
-#[should_panic = "assertion failed: range.end <= self.string.len()"]
+#[should_panic = "assertion `range.end <= self.string.len()` failed"]
 fn test_panic_overlap() {
     let str = "foobarbaz";
     let mut replacer = StringReplacer::new(str);

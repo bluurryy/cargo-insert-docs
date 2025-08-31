@@ -174,6 +174,12 @@ let s = "foo
 assert_eq!(s, "foo\n## bar # baz");
 ```
 
+Test if ignoring lines work in a quoted code block.
+
+> ```rust
+> // this stays
+> ```
+
 
 [`phf_macros::phf_map`]: https://docs.rs/phf_macros/0.12.1/phf_macros/macro.phf_map.html
 [`my_module`]: https://docs.rs/test-crate/0.0.0/test_crate/my_module/index.html

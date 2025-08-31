@@ -191,3 +191,15 @@ fn test_shrink_headings() {
 
     assert_eq!(shrink_headings("  ####   foo", -2), "  ##   foo");
 }
+
+#[test]
+fn test_quoted_code_block() {
+    let markdown = "\
+> ```\n\
+> // this stays\n\
+> # // this is ignored\n\
+> ```";
+
+    let out = rewrite_markdown(markdown, &RewriteMarkdownOptions::default());
+    assert_eq!(out, "> ```rust\n> // this stays\n> ```")
+}
