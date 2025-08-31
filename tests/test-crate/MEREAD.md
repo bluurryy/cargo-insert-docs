@@ -177,8 +177,17 @@ assert_eq!(s, "foo\n## bar # baz");
 Test if ignoring lines work in a quoted code block.
 
 > ```rust
-> // this stays
+> assert_eq!(1 + 1, 2);
 > ```
+
+Test if ignoring lines work in a listed code block.
+
+- ```rust
+  assert_eq!(1 + 1, 2);
+  ```
+- ```rust
+  assert_eq!(1 + 1, 2);
+  ```
 
 
 [`phf_macros::phf_map`]: https://docs.rs/phf_macros/0.12.1/phf_macros/macro.phf_map.html

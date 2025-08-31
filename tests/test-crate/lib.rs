@@ -168,9 +168,20 @@
 //! Test if ignoring lines work in a quoted code block.
 //!
 //! > ```
-//! > // this stays
+//! > assert_eq!(1 + 1, 2);
 //! > # // this is ignored
 //! > ```
+//!
+//! Test if ignoring lines work in a listed code block.
+//!
+//! - ```
+//!   assert_eq!(1 + 1, 2);
+//!   # // this is ignored
+//!   ```
+//! - ```
+//!   assert_eq!(1 + 1, 2);
+//!   # // this is ignored
+//!   ```
 //!
 //! <!-- docs rest end -->
 
