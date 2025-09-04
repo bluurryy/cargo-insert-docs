@@ -25,6 +25,54 @@ fn test_link() {
 }
 
 #[test]
+fn test_reference() {
+    let markdown = "[Vec]";
+
+    let result = rewrite_markdown(
+        markdown,
+        &RewriteMarkdownOptions {
+            links: [(
+                String::from("Vec"),
+                Some(String::from("https://doc.rust-lang.org/alloc/vec/struct.Vec.html")),
+            )]
+            .into_iter()
+            .collect(),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(
+        result,
+        "[Vec]\n\n\
+[Vec]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html\n"
+    );
+}
+
+#[test]
+fn test_reference_code() {
+    let markdown = "[`Vec`]";
+
+    let result = rewrite_markdown(
+        markdown,
+        &RewriteMarkdownOptions {
+            links: [(
+                String::from("`Vec`"),
+                Some(String::from("https://doc.rust-lang.org/alloc/vec/struct.Vec.html")),
+            )]
+            .into_iter()
+            .collect(),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(
+        result,
+        "[`Vec`]\n\n\
+[`Vec`]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html\n"
+    );
+}
+
+#[test]
 fn test_reference_collapsed() {
     let markdown = "[Vec][]";
 
@@ -81,6 +129,18 @@ fn test_unused_definition() {
     );
 
     assert_eq!(result, "[Vector](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n\n");
+}
+
+#[test]
+fn test_hidden_code_line() {
+    let markdown = "\
+```\n\
+// this stays\n\
+# // this is ignored\n\
+```";
+
+    let out = rewrite_markdown(markdown, &RewriteMarkdownOptions::default());
+    assert_eq!(out, "```rust\n// this stays\n```")
 }
 
 #[test]
