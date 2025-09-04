@@ -109,9 +109,11 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                 let range = byte_range(events, index);
                 out.insert(range.end, "\n```");
 
+                let mut last_event_was_code_flow_chunk = false;
+
                 for child in children(events, index) {
                     match events[child].name {
-                        Name::SpaceOrTab => {
+                        Name::SpaceOrTab if last_event_was_code_flow_chunk => {
                             let range = byte_range(events, child);
 
                             // a `clean_code_chunk` may have already removed the whole line
@@ -124,6 +126,8 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                         }
                         _ => (),
                     }
+
+                    last_event_was_code_flow_chunk = events[child].name == Name::CodeFlowChunk;
                 }
 
                 out.insert(range.start, "```rust\n");
