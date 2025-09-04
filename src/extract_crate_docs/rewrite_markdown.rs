@@ -252,21 +252,21 @@ struct Tree<'m, 'e> {
 }
 
 impl<'m, 'e> Tree<'m, 'e> {
-    fn depth_first(&self) -> impl Iterator<Item = TreeAt<'m, 'e, '_>> {
+    fn depth_first(&self) -> impl Iterator<Item = Node<'m, 'e, '_>> {
         (0..self.events.len())
             .rev()
             .filter(|&index| self.events[index].kind == Kind::Exit)
-            .map(|index| TreeAt { tree: self, index })
+            .map(|index| Node { tree: self, index })
     }
 }
 
 #[derive(Clone, Copy)]
-struct TreeAt<'m, 'e, 't> {
+struct Node<'m, 'e, 't> {
     tree: &'t Tree<'m, 'e>,
     index: usize,
 }
 
-impl<'m, 'e, 't> TreeAt<'m, 'e, 't> {
+impl<'m, 'e, 't> Node<'m, 'e, 't> {
     fn name(&self) -> Name {
         self.tree.events[self.index].name.clone()
     }
@@ -275,22 +275,68 @@ impl<'m, 'e, 't> TreeAt<'m, 'e, 't> {
         &self.tree.markdown[self.byte_range()]
     }
 
-    fn child(self, name: Name) -> Option<TreeAt<'m, 'e, 't>> {
-        child(self.tree.events, self.index, name).map(|index| TreeAt { tree: self.tree, index })
+    fn child(self, name: Name) -> Option<Self> {
+        self.children_with_name(name).next()
     }
 
-    fn children(self) -> impl Iterator<Item = TreeAt<'m, 'e, 't>> {
-        children(self.tree.events, self.index).map(|index| TreeAt { tree: self.tree, index })
+    fn children_with_name(self, name: Name) -> impl Iterator<Item = Self> {
+        self.children().filter(move |n| n.name() == name)
     }
 
-    fn descendant(self, name: Name) -> Option<TreeAt<'m, 'e, 't>> {
-        descendant(self.tree.events, self.index, name)
-            .map(|index| TreeAt { tree: self.tree, index })
+    fn children(self) -> impl Iterator<Item = Self> {
+        let mut depth = 0;
+
+        (0..self.index)
+            .rev()
+            .map_while(move |i| {
+                let kind = self.tree.events[i].kind.clone();
+
+                if depth == 0 && kind == Kind::Enter {
+                    return None;
+                }
+
+                match kind {
+                    Kind::Enter => depth -= 1,
+                    Kind::Exit => depth += 1,
+                }
+
+                Some((i, depth))
+            })
+            .filter_map(|(i, depth)| {
+                (depth == 1 && self.tree.events[i].kind == Kind::Exit).then_some(i)
+            })
+            .map(|index| Node { tree: self.tree, index })
     }
 
-    fn descendants_with_name(self, name: Name) -> impl Iterator<Item = TreeAt<'m, 'e, 't>> {
-        descendants_with_name(self.tree.events, self.index, name)
-            .map(|index| TreeAt { tree: self.tree, index })
+    fn descendant(self, name: Name) -> Option<Self> {
+        self.descendants_with_name(name).next()
+    }
+
+    fn descendants_with_name(self, name: Name) -> impl Iterator<Item = Self> {
+        self.descendants().filter(move |n| n.name() == name)
+    }
+
+    fn descendants(self) -> impl Iterator<Item = Self> {
+        let mut depth = 0;
+
+        (0..self.index)
+            .rev()
+            .take_while(move |&i| {
+                let kind = self.tree.events[i].kind.clone();
+
+                if depth == 0 && kind == Kind::Enter {
+                    return false;
+                }
+
+                match kind {
+                    Kind::Enter => depth -= 1,
+                    Kind::Exit => depth += 1,
+                }
+
+                true
+            })
+            .filter(|&i| self.tree.events[i].kind == Kind::Exit)
+            .map(|index| Node { tree: self.tree, index })
     }
 
     fn byte_range(self) -> Range<usize> {
@@ -371,70 +417,6 @@ fn substr_range(str: &str, substr: &str) -> Range<usize> {
     let start = substr.as_ptr() as usize - str.as_ptr() as usize;
     let end = start + substr.len();
     start..end
-}
-
-fn descendant(events: &[Event], index: usize, name: Name) -> Option<usize> {
-    descendants_with_name(events, index, name).next()
-}
-
-fn child(events: &[Event], index: usize, name: Name) -> Option<usize> {
-    children_with_name(events, index, name).next()
-}
-
-fn descendants_with_name(
-    events: &[Event],
-    index: usize,
-    name: Name,
-) -> impl Iterator<Item = usize> {
-    descendants(events, index).filter(move |&i| events[i].name == name)
-}
-
-fn children_with_name(events: &[Event], index: usize, name: Name) -> impl Iterator<Item = usize> {
-    children(events, index).filter(move |&i| events[i].name == name)
-}
-
-fn descendants(events: &[Event], index: usize) -> impl Iterator<Item = usize> {
-    let mut depth = 0;
-
-    (0..index)
-        .rev()
-        .take_while(move |&i| {
-            let kind = events[i].kind.clone();
-
-            if depth == 0 && kind == Kind::Enter {
-                return false;
-            }
-
-            match kind {
-                Kind::Enter => depth -= 1,
-                Kind::Exit => depth += 1,
-            }
-
-            true
-        })
-        .filter(|&i| events[i].kind == Kind::Exit)
-}
-
-fn children(events: &[Event], index: usize) -> impl Iterator<Item = usize> {
-    let mut depth = 0;
-
-    (0..index)
-        .rev()
-        .map_while(move |i| {
-            let kind = events[i].kind.clone();
-
-            if depth == 0 && kind == Kind::Enter {
-                return None;
-            }
-
-            match kind {
-                Kind::Enter => depth -= 1,
-                Kind::Exit => depth += 1,
-            }
-
-            Some((i, depth))
-        })
-        .filter_map(|(i, depth)| (depth == 1 && events[i].kind == Kind::Exit).then_some(i))
 }
 
 fn code_block_fence_is_rust(info: &str) -> bool {
