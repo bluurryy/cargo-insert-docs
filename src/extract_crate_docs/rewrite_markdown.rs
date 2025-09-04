@@ -56,124 +56,110 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
 
     let mut out = StringReplacer::new(markdown);
     let unused_definitions = unused_definitions(markdown, events, options);
+    let tree = Tree { markdown, events };
 
-    for index in (0..events.len()).rev() {
-        let event = &events[index];
-
-        if event.kind != Kind::Exit {
-            continue;
-        }
-
-        match event.name {
+    for node in tree.depth_first() {
+        match node.name() {
             Name::HeadingAtx => {
-                let Some(hashes) = child(events, index, Name::HeadingAtxSequence) else {
+                let Some(hashes) = node.child(Name::HeadingAtxSequence) else {
                     continue;
                 };
 
-                let hashes = byte_range(events, hashes);
+                let hashes = hashes.byte_range();
                 let level = hashes.len() as i8;
                 let new_level = level.saturating_add(options.shrink_headings).clamp(1, 6);
                 let new_hashes = &"######"[..new_level as usize];
                 out.replace(hashes, new_hashes);
             }
             Name::CodeFenced => {
-                if let Some(fence_info) = descendant(events, index, Name::CodeFencedFenceInfo) {
-                    let fence_info_range = byte_range(events, fence_info);
-
-                    if !code_block_fence_is_rust(&markdown[fence_info_range.clone()]) {
+                if let Some(fence_info) = node.descendant(Name::CodeFencedFenceInfo) {
+                    if !code_block_fence_is_rust(fence_info.str()) {
                         continue;
                     }
 
-                    for child in children(events, index) {
-                        if events[child].name == Name::CodeFlowChunk {
-                            clean_code_chunk(&mut out, markdown, byte_range(events, child));
+                    for child in node.children() {
+                        if child.name() == Name::CodeFlowChunk {
+                            clean_code_chunk(&mut out, markdown, child.byte_range());
                         }
                     }
 
-                    out.replace(fence_info_range, "rust");
+                    out.replace(fence_info.byte_range(), "rust");
                 } else if let Some(fence) =
-                    descendants_with_name(events, index, Name::CodeFencedFenceSequence).nth(1)
+                    node.descendants_with_name(Name::CodeFencedFenceSequence).nth(1)
                 {
-                    let insert_point = byte_range(events, fence).end;
-
-                    for child in children(events, index) {
-                        if events[child].name == Name::CodeFlowChunk {
-                            clean_code_chunk(&mut out, markdown, byte_range(events, child));
+                    for child in node.children() {
+                        if child.name() == Name::CodeFlowChunk {
+                            clean_code_chunk(&mut out, markdown, child.byte_range());
                         }
                     }
 
-                    out.insert(insert_point, "rust");
+                    out.insert(fence.byte_range().end, "rust");
                 }
             }
             Name::CodeIndented => {
-                let range = byte_range(events, index);
+                let range = node.byte_range();
                 out.insert(range.end, "\n```");
 
                 let mut last_event_was_code_flow_chunk = false;
 
-                for child in children(events, index) {
-                    match events[child].name {
+                for child in node.children() {
+                    match child.name() {
                         Name::SpaceOrTab if last_event_was_code_flow_chunk => {
-                            let range = byte_range(events, child);
+                            let range = child.byte_range();
 
                             // a `clean_code_chunk` may have already removed the whole line
                             if range.end <= out.rest().len() {
-                                out.remove(byte_range(events, child))
+                                out.remove(range)
                             }
                         }
                         Name::CodeFlowChunk => {
-                            clean_code_chunk(&mut out, markdown, byte_range(events, child));
+                            clean_code_chunk(&mut out, markdown, child.byte_range());
                         }
                         _ => (),
                     }
 
-                    last_event_was_code_flow_chunk = events[child].name == Name::CodeFlowChunk;
+                    last_event_was_code_flow_chunk = child.name() == Name::CodeFlowChunk;
                 }
 
                 out.insert(range.start, "```rust\n");
             }
             Name::Link => {
-                let Some(label) = child(events, index, Name::Label) else {
+                let Some(label) = node.child(Name::Label) else {
                     continue;
                 };
 
-                if let Some(resource) = child(events, index, Name::Resource) {
-                    let Some(dest) = child(events, resource, Name::ResourceDestination) else {
+                if let Some(resource) = node.child(Name::Resource) {
+                    let Some(dest) = resource.child(Name::ResourceDestination) else {
                         continue;
                     };
 
-                    let Some(dest_string) =
-                        descendant(events, dest, Name::ResourceDestinationString)
-                    else {
+                    let Some(dest_string) = dest.descendant(Name::ResourceDestinationString) else {
                         continue;
                     };
 
-                    let Some(&resolved) = links.get(&markdown[byte_range(events, dest_string)])
-                    else {
+                    let Some(&resolved) = links.get(dest_string.str()) else {
                         continue;
                     };
 
                     let Some(new_url) = resolved else {
-                        let Some(label_text) = child(events, label, Name::LabelText) else {
+                        let Some(label_text) = label.child(Name::LabelText) else {
                             continue;
                         };
 
-                        let range = byte_range(events, index);
-                        out.replace(range, &markdown[byte_range(events, label_text)]);
+                        out.replace(node.byte_range(), label_text.str());
                         continue;
                     };
 
-                    let range = byte_range(events, dest);
-                    out.replace(range, new_url);
+                    out.replace(dest.byte_range(), new_url);
                     // TODO: correctly escape / add angled brackets
                     continue;
                 }
 
-                if let Some(reference) = child(events, index, Name::Reference) {
-                    let identifier = match child(events, reference, Name::ReferenceString) {
-                        Some(string) => &markdown[byte_range(events, string)],
-                        None => match child(events, label, Name::LabelText) {
-                            Some(label_text) => &markdown[byte_range(events, label_text)],
+                if let Some(reference) = node.child(Name::Reference) {
+                    let identifier = match reference.child(Name::ReferenceString) {
+                        Some(string) => string.str(),
+                        None => match label.child(Name::LabelText) {
+                            Some(label_text) => label_text.str(),
                             None => continue,
                         },
                     };
@@ -183,12 +169,11 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                     };
 
                     let Some(new_url) = resolved else {
-                        let Some(label_text) = child(events, label, Name::LabelText) else {
+                        let Some(label_text) = label.child(Name::LabelText) else {
                             continue;
                         };
 
-                        let range = byte_range(events, index);
-                        out.replace(range, &markdown[byte_range(events, label_text)]);
+                        out.replace(node.byte_range(), label_text.str());
                         continue;
                     };
 
@@ -198,21 +183,20 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                 }
 
                 // shortcut
-                let Some(label_text) = child(events, label, Name::LabelText) else {
+                let Some(label_text) = label.child(Name::LabelText) else {
                     continue;
                 };
 
-                let Some(&resolved) = links.get(&markdown[byte_range(events, label_text)]) else {
+                let Some(&resolved) = links.get(label_text.str()) else {
                     continue;
                 };
 
                 let Some(new_url) = resolved else {
-                    let Some(label_text) = child(events, label, Name::LabelText) else {
+                    let Some(label_text) = label.child(Name::LabelText) else {
                         continue;
                     };
 
-                    let range = byte_range(events, index);
-                    out.replace(range, &markdown[byte_range(events, label_text)]);
+                    out.replace(node.byte_range(), label_text.str());
                     continue;
                 };
 
@@ -220,44 +204,39 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                 _ = new_url;
             }
             Name::Definition => {
-                let Some(dest) = child(events, index, Name::DefinitionDestination) else {
+                let Some(dest) = node.child(Name::DefinitionDestination) else {
                     continue;
                 };
 
-                let Some(dest_string) = descendant(events, dest, Name::DefinitionDestinationString)
-                else {
+                let Some(dest_string) = dest.descendant(Name::DefinitionDestinationString) else {
                     continue;
                 };
 
-                let Some(label) = descendant(events, index, Name::DefinitionLabelString) else {
+                let Some(label) = node.descendant(Name::DefinitionLabelString) else {
                     continue;
                 };
 
-                let dest_string_str = &markdown[byte_range(events, dest_string)];
-                let label_str = &markdown[byte_range(events, label)];
-
-                if dest_string_str == PLACEHOLDER_DESTINATION
-                    || unused_definitions.contains(label_str)
+                if dest_string.str() == PLACEHOLDER_DESTINATION
+                    || unused_definitions.contains(label.str())
                 {
-                    let mut range = byte_range(events, index);
+                    let mut range = node.byte_range();
                     range.end = end_of_line(markdown, range.end);
                     out.remove(range);
                     continue;
                 }
 
-                let Some(&resolved) = links.get(dest_string_str) else {
+                let Some(&resolved) = links.get(dest_string.str()) else {
                     continue;
                 };
 
                 let Some(new_url) = resolved else {
-                    let mut range = byte_range(events, index);
+                    let mut range = node.byte_range();
                     range.end = end_of_line(markdown, range.end);
                     out.remove(range);
                     continue;
                 };
 
-                let range = byte_range(events, dest);
-                out.replace(range, new_url);
+                out.replace(dest.byte_range(), new_url);
                 // TODO: correctly escape / add angled brackets
             }
             _ => (),
@@ -267,40 +246,84 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     out.finish()
 }
 
+struct Tree<'m, 'e> {
+    markdown: &'m str,
+    events: &'e [Event],
+}
+
+impl<'m, 'e> Tree<'m, 'e> {
+    fn depth_first(&self) -> impl Iterator<Item = TreeAt<'m, 'e, '_>> {
+        (0..self.events.len())
+            .rev()
+            .filter(|&index| self.events[index].kind == Kind::Exit)
+            .map(|index| TreeAt { tree: self, index })
+    }
+}
+
+#[derive(Clone, Copy)]
+struct TreeAt<'m, 'e, 't> {
+    tree: &'t Tree<'m, 'e>,
+    index: usize,
+}
+
+impl<'m, 'e, 't> TreeAt<'m, 'e, 't> {
+    fn name(&self) -> Name {
+        self.tree.events[self.index].name.clone()
+    }
+
+    fn str(&self) -> &'m str {
+        &self.tree.markdown[self.byte_range()]
+    }
+
+    fn child(self, name: Name) -> Option<TreeAt<'m, 'e, 't>> {
+        child(self.tree.events, self.index, name).map(|index| TreeAt { tree: self.tree, index })
+    }
+
+    fn children(self) -> impl Iterator<Item = TreeAt<'m, 'e, 't>> {
+        children(self.tree.events, self.index).map(|index| TreeAt { tree: self.tree, index })
+    }
+
+    fn descendant(self, name: Name) -> Option<TreeAt<'m, 'e, 't>> {
+        descendant(self.tree.events, self.index, name)
+            .map(|index| TreeAt { tree: self.tree, index })
+    }
+
+    fn descendants_with_name(self, name: Name) -> impl Iterator<Item = TreeAt<'m, 'e, 't>> {
+        descendants_with_name(self.tree.events, self.index, name)
+            .map(|index| TreeAt { tree: self.tree, index })
+    }
+
+    fn byte_range(self) -> Range<usize> {
+        byte_range(self.tree.events, self.index)
+    }
+}
+
 fn unused_definitions<'a>(
     markdown: &'a str,
     events: &[Event],
     options: &'a RewriteMarkdownOptions,
 ) -> HashSet<&'a str> {
     let mut used_definitions: HashSet<&str> = HashSet::new();
+    let tree = Tree { events, markdown };
 
-    for index in (0..events.len()).rev() {
-        let event = &events[index];
-
-        if event.kind != Kind::Exit {
+    for node in tree.depth_first() {
+        if node.name() != Name::Link {
             continue;
         }
 
-        if event.name != Name::Link {
+        if node.descendant(Name::Resource).is_some() {
             continue;
         }
 
-        if descendant(events, index, Name::Resource).is_some() {
-            continue;
-        }
-
-        let identifier = match descendant(events, index, Name::ReferenceString) {
+        let identifier = match node.descendant(Name::ReferenceString) {
             Some(some) => some,
-            None => match descendant(events, index, Name::LabelText) {
+            None => match node.descendant(Name::LabelText) {
                 Some(some) => some,
                 None => continue,
             },
         };
 
-        let range = byte_range(events, identifier);
-        let str = &markdown[range];
-
-        used_definitions.insert(str);
+        used_definitions.insert(identifier.str());
     }
 
     let all_definitions: HashSet<&str> = options.links.iter().map(|(k, _)| k.as_str()).collect();
