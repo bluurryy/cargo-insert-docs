@@ -25,6 +25,29 @@ fn test_link() {
 }
 
 #[test]
+fn test_link_autolink() {
+    let markdown = "[vector](Vec)";
+
+    let result = rewrite_markdown(
+        markdown,
+        &RewriteMarkdownOptions {
+            links: [(
+                String::from("Vec"),
+                Some(String::from("https://doc.rust-lang.org/all oc/vec/struct.Vec<T>.html")),
+            )]
+            .into_iter()
+            .collect(),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(
+        result,
+        "[vector](<https://doc.rust-lang.org/all%20oc/vec/struct.Vec%3CT%3E.html>)\n\n"
+    );
+}
+
+#[test]
 fn test_reference() {
     let markdown = "[Vec]";
 
@@ -69,6 +92,30 @@ fn test_reference_code() {
         result,
         "[`Vec`]\n\n\
 [`Vec`]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html\n"
+    );
+}
+
+#[test]
+fn test_reference_autolink() {
+    let markdown = "[Vec]";
+
+    let result = rewrite_markdown(
+        markdown,
+        &RewriteMarkdownOptions {
+            links: [(
+                String::from("Vec"),
+                Some(String::from("https://doc.rust-lang.org/all oc/vec/struct.Vec<T>.html")),
+            )]
+            .into_iter()
+            .collect(),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(
+        result,
+        "[Vec]\n\n\
+[Vec]: https://doc.rust-lang.org/all%20oc/vec/struct.Vec%3CT%3E.html\n"
     );
 }
 

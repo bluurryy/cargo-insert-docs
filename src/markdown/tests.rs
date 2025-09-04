@@ -3,7 +3,7 @@ use core::ops::Range;
 use expect_test::expect;
 
 use crate::{
-    markdown::{parse, parse_options},
+    markdown::{format_link_destination, parse, parse_options},
     markdown_rs::event::{Event, Kind},
     tests::TreeFormatterStack,
 };
@@ -248,4 +248,15 @@ pub fn events_to_string(markdown: &str) -> String {
     let (events, _state) = parse(markdown, &parse_options());
 
     events_to_string(&events, markdown)
+}
+
+#[test]
+fn test_format_link_destination() {
+    assert_eq!(format_link_destination("foobar"), "foobar");
+    assert_eq!(format_link_destination("foo<bar>baz"), "foo<bar>baz");
+
+    assert_eq!(format_link_destination(""), "<>");
+    assert_eq!(format_link_destination("<foo"), "<%3Cfoo>");
+    assert_eq!(format_link_destination("foo bar"), "<foo bar>");
+    assert_eq!(format_link_destination("foo()bar"), "<foo()bar>");
 }

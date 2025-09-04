@@ -23,6 +23,7 @@ gix = { version = "0.73.0", default-features = false, features = ["status"] }
 indexmap = { version = "2.11.0", default-features = false, features = ["std"] }
 macro_rules_attribute = "0.2.2"
 mimalloc = "0.1.48"
+percent-encoding = "2.3.2"
 proc-macro2 = { version = "1.0.101", default-features = false, features = [
     "span-locations",
 ] }

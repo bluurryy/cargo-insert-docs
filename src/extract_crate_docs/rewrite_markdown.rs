@@ -5,7 +5,7 @@ use core::{fmt::Write, ops::Range};
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    markdown::{Tree, parse, parse_options},
+    markdown::{Tree, format_link_destination, parse, parse_options},
     markdown_rs::event::{Event, Name},
     string_replacer::StringReplacer,
 };
@@ -36,7 +36,8 @@ fn add_definitions(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     }
 
     for (identifier, destination) in &options.links {
-        let destination = destination.as_deref().unwrap_or(PLACEHOLDER_DESTINATION);
+        let destination =
+            format_link_destination(destination.as_deref().unwrap_or(PLACEHOLDER_DESTINATION));
         markdown.write_fmt(format_args!("[{identifier}]: {destination}\n")).unwrap();
     }
 
@@ -150,8 +151,7 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                         continue;
                     };
 
-                    out.replace(dest.byte_range(), new_url);
-                    // TODO: correctly escape / add angled brackets
+                    out.replace(dest.byte_range(), format_link_destination(new_url));
                     continue;
                 }
 
@@ -236,8 +236,7 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                     continue;
                 };
 
-                out.replace(dest.byte_range(), new_url);
-                // TODO: correctly escape / add angled brackets
+                out.replace(dest.byte_range(), format_link_destination(new_url));
             }
             _ => (),
         }

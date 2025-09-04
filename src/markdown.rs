@@ -1,9 +1,10 @@
 #[cfg(test)]
 mod tests;
 
-use std::ops::Range;
+use std::{borrow::Cow, ops::Range};
 
 use color_eyre::eyre::{self, bail};
+use percent_encoding::percent_encode_byte;
 
 use crate::{
     markdown_rs::{
@@ -331,4 +332,30 @@ impl<'m, 'e, 't> Node<'m, 'e, 't> {
         let start = self.tree.events[enter_index].point.to_unist();
         Position { start, end }
     }
+}
+
+pub fn format_link_destination(destination: &str) -> Cow<'_, str> {
+    let needs_angle_brackets = destination.is_empty()
+        || destination.starts_with('<')
+        || destination
+            .chars()
+            .any(|c| c.is_ascii_whitespace() || c.is_ascii_control() || c == '(' || c == ')');
+
+    if !needs_angle_brackets {
+        return Cow::Borrowed(destination);
+    }
+
+    let mut out = String::new();
+    out.push('<');
+
+    for char in destination.chars() {
+        if matches!(char, '\n' | '<' | '>') {
+            out.push_str(percent_encode_byte(char as u8));
+        } else {
+            out.push(char);
+        }
+    }
+
+    out.push('>');
+    Cow::Owned(out)
 }
