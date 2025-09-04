@@ -43,7 +43,7 @@ fn test_link_autolink() {
 
     assert_eq!(
         result,
-        "[vector](<https://doc.rust-lang.org/all%20oc/vec/struct.Vec%3CT%3E.html>)\n\n"
+        "[vector](<https://doc.rust-lang.org/all oc/vec/struct.Vec%3CT%3E.html>)\n\n"
     );
 }
 
@@ -115,7 +115,7 @@ fn test_reference_autolink() {
     assert_eq!(
         result,
         "[Vec]\n\n\
-[Vec]: https://doc.rust-lang.org/all%20oc/vec/struct.Vec%3CT%3E.html\n"
+[Vec]: <https://doc.rust-lang.org/all oc/vec/struct.Vec%3CT%3E.html>\n"
     );
 }
 
