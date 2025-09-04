@@ -1,3 +1,4 @@
+pub mod lang_string;
 #[cfg(test)]
 mod tests;
 

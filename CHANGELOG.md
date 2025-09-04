@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Use same code block language parsing as rustdoc.
+
 ## [0.18.1] - 2025-08-31
 
 ### Fixed

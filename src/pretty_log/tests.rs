@@ -28,11 +28,11 @@ fn strip_ansi(str: &str) -> String {
     String::from_utf8(stream.into_inner()).unwrap()
 }
 
-fn prepare_for_compare(str: &str) -> String {
+pub fn prepare_for_compare(str: &str) -> String {
     unindent(&prepend_newline(&strip_ansi(str)))
 }
 
-fn with_log(pretty_filter: &str, rustlog_filter: &str, f: impl FnOnce(PrettyLog)) -> String {
+pub fn with_log(pretty_filter: &str, rustlog_filter: &str, f: impl FnOnce(PrettyLog)) -> String {
     if let Ok((panic_hook, eyre_hook)) = color_eyre::config::HookBuilder::default()
         .capture_span_trace_by_default(true)
         .try_into_hooks()
@@ -71,7 +71,7 @@ fn with_log(pretty_filter: &str, rustlog_filter: &str, f: impl FnOnce(PrettyLog)
     String::from_utf8(*sink).unwrap()
 }
 
-fn simple_log(f: impl FnOnce(PrettyLog)) -> String {
+pub fn simple_log(f: impl FnOnce(PrettyLog)) -> String {
     with_log("info", "", f)
 }
 

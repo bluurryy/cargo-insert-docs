@@ -1,7 +1,10 @@
 use expect_test::expect;
 
-use crate::extract_crate_docs::rewrite_markdown::{
-    RewriteMarkdownOptions, code_block_fence_is_rust, rewrite_markdown,
+use crate::{
+    extract_crate_docs::rewrite_markdown::{
+        RewriteMarkdownOptions, code_block_fence_is_rust, rewrite_markdown,
+    },
+    pretty_log,
 };
 
 #[test]
@@ -274,6 +277,34 @@ fn test_code_block_fence_is_rust() {
     assert!(code_block_fence_is_rust("ignore-x86_64,ignore-windows"));
 
     assert!(!code_block_fence_is_rust("c"));
+}
+
+#[test]
+#[ignore = "needs to be run separately because of hooks"]
+fn test_code_block_fence_error_unexpected_end() {
+    let out = pretty_log::tests::simple_log(|_| {
+        code_block_fence_is_rust("custom,{class=whoops");
+    });
+
+    expect![[r#"
+        warning: failed to parse code block language
+          error: invalid codeblock attribute: unexpected end
+    "#]]
+    .assert_eq(&pretty_log::tests::prepare_for_compare(&out));
+}
+
+#[test]
+#[ignore = "needs to be run separately because of hooks"]
+fn test_code_block_fence_error_expected_symbol() {
+    let out = pretty_log::tests::simple_log(|_| {
+        code_block_fence_is_rust("custom,{foo}");
+    });
+
+    expect![[r#"
+        warning: failed to parse code block language
+          error: invalid codeblock attribute: expected `=`, found `}`
+    "#]]
+    .assert_eq(&pretty_log::tests::prepare_for_compare(&out));
 }
 
 #[test]

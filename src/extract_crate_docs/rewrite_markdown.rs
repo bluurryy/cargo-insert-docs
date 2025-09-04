@@ -5,7 +5,7 @@ use core::{fmt::Write, ops::Range};
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    markdown::{Tree, format_link_destination, parse, parse_options},
+    markdown::{self, Tree, format_link_destination, parse, parse_options},
     markdown_rs::event::{Event, Name},
     string_replacer::StringReplacer,
 };
@@ -320,26 +320,17 @@ fn substr_range(str: &str, substr: &str) -> Range<usize> {
     start..end
 }
 
-fn code_block_fence_is_rust(info: &str) -> bool {
-    const STARTS: &[&str] = &[
-        "rust",
-        "ignore",
-        "should_panic",
-        "no_run",
-        "compile_fail",
-        "edition",
-        "standalone_crate",
-    ];
+fn code_block_fence_is_rust(lang: &str) -> bool {
+    match markdown::lang_string::is_rust(lang) {
+        Ok(is_rust) => is_rust,
+        Err(errors) => {
+            let _span = errors
+                .into_iter()
+                .map(|error| tracing::warn_span!("", error).entered())
+                .collect::<Vec<_>>();
 
-    if info.is_empty() {
-        return true;
-    }
-
-    for start in STARTS {
-        if info.starts_with(start) {
-            return true;
+            tracing::warn!("failed to parse code block language");
+            false
         }
     }
-
-    false
 }
