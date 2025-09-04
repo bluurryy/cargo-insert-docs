@@ -1,8 +1,8 @@
 //! Resolves item parents. (from `.index`)
 //!
-//! We need to choose what parent to choose:
-//! - the shortest path for items and items available through a `#[doc(inline)] use ...`
-//! - don't choose non-`#[doc(inline)]` `use`s unless its the only path
+//! We need to choose a parent from multiple candidates:
+//! - prefer the shortest path for items, potentially through an `#[doc(inline)]`'ed `use`
+//! - don't choose non-`#[doc(inline)]`ed `use`s unless they're the only path
 
 use std::collections::{HashMap, hash_map::Entry};
 
