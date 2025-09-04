@@ -5,8 +5,8 @@ use core::{fmt::Write, ops::Range};
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    markdown::{byte_range, parse, parse_options},
-    markdown_rs::event::{Event, Kind, Name},
+    markdown::{Tree, parse, parse_options},
+    markdown_rs::event::{Event, Name},
     string_replacer::StringReplacer,
 };
 
@@ -244,104 +244,6 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     }
 
     out.finish()
-}
-
-struct Tree<'m, 'e> {
-    markdown: &'m str,
-    events: &'e [Event],
-}
-
-impl<'m, 'e> Tree<'m, 'e> {
-    fn depth_first(&self) -> impl Iterator<Item = Node<'m, 'e, '_>> {
-        (0..self.events.len())
-            .rev()
-            .filter(|&index| self.events[index].kind == Kind::Exit)
-            .map(|index| Node { tree: self, index })
-    }
-}
-
-#[derive(Clone, Copy)]
-struct Node<'m, 'e, 't> {
-    tree: &'t Tree<'m, 'e>,
-    index: usize,
-}
-
-impl<'m, 'e, 't> Node<'m, 'e, 't> {
-    fn name(&self) -> Name {
-        self.tree.events[self.index].name.clone()
-    }
-
-    fn str(&self) -> &'m str {
-        &self.tree.markdown[self.byte_range()]
-    }
-
-    fn child(self, name: Name) -> Option<Self> {
-        self.children_with_name(name).next()
-    }
-
-    fn children_with_name(self, name: Name) -> impl Iterator<Item = Self> {
-        self.children().filter(move |n| n.name() == name)
-    }
-
-    fn children(self) -> impl Iterator<Item = Self> {
-        let mut depth = 0;
-
-        (0..self.index)
-            .rev()
-            .map_while(move |i| {
-                let kind = self.tree.events[i].kind.clone();
-
-                if depth == 0 && kind == Kind::Enter {
-                    return None;
-                }
-
-                match kind {
-                    Kind::Enter => depth -= 1,
-                    Kind::Exit => depth += 1,
-                }
-
-                Some((i, depth))
-            })
-            .filter_map(|(i, depth)| {
-                (depth == 1 && self.tree.events[i].kind == Kind::Exit).then_some(i)
-            })
-            .map(|index| Node { tree: self.tree, index })
-    }
-
-    fn descendant(self, name: Name) -> Option<Self> {
-        self.descendants_with_name(name).next()
-    }
-
-    fn descendants_with_name(self, name: Name) -> impl Iterator<Item = Self> {
-        self.descendants().filter(move |n| n.name() == name)
-    }
-
-    fn descendants(self) -> impl Iterator<Item = Self> {
-        let mut depth = 0;
-
-        (0..self.index)
-            .rev()
-            .take_while(move |&i| {
-                let kind = self.tree.events[i].kind.clone();
-
-                if depth == 0 && kind == Kind::Enter {
-                    return false;
-                }
-
-                match kind {
-                    Kind::Enter => depth -= 1,
-                    Kind::Exit => depth += 1,
-                }
-
-                true
-            })
-            .filter(|&i| self.tree.events[i].kind == Kind::Exit)
-            .map(|index| Node { tree: self.tree, index })
-    }
-
-    fn byte_range(self) -> Range<usize> {
-        byte_range(self.tree.events, self.index)
-    }
 }
 
 fn unused_definitions<'a>(

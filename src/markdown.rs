@@ -8,7 +8,7 @@ use color_eyre::eyre::{self, bail};
 use crate::{
     markdown_rs::{
         self, ParseOptions,
-        event::{Kind, Name},
+        event::{Event, Kind, Name},
         parser::ParseState,
         unist::Position,
     },
@@ -177,7 +177,10 @@ fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
             return None;
         }
 
-        Some(byte_range(&events, index))
+        let tree = Tree { markdown, events: &events };
+        let node = tree.at(index);
+
+        Some(node.byte_range())
     })
 }
 
@@ -187,15 +190,11 @@ pub fn extract_definitions(markdown: &str) -> [String; 2] {
     let events = events.as_slice();
     let mut definitions: Vec<&str> = vec![];
 
-    for index in (0..events.len()).rev() {
-        let event = &events[index];
+    let tree = Tree { markdown, events };
 
-        if event.kind == Kind::Enter {
-            continue;
-        }
-
-        if event.name == Name::Definition {
-            let mut range = byte_range(events, index);
+    for node in tree.depth_first() {
+        if node.name() == Name::Definition {
+            let mut range = node.byte_range();
             range.end = end_of_line(markdown, range.end);
             let value = &markdown[range.clone()];
             definitions.push(value);
@@ -209,29 +208,127 @@ pub fn extract_definitions(markdown: &str) -> [String; 2] {
     [without_definitions, definitions]
 }
 
-pub fn byte_range(events: &[markdown_rs::event::Event], exit_index: usize) -> Range<usize> {
-    let pos = position(events, exit_index);
-    pos.start.offset..pos.end.offset
-}
-
-fn position(events: &[markdown_rs::event::Event], exit_index: usize) -> Position {
-    let event = &events[exit_index];
-    let end = event.point.to_unist();
-    let name = event.name.clone();
-    let enter_index = (0..exit_index)
-        .rev()
-        .find(|&index| {
-            let event = &events[index];
-            event.kind == Kind::Enter && event.name == name
-        })
-        .expect("unpaired enter/exit event");
-    let start = events[enter_index].point.to_unist();
-    Position { start, end }
-}
-
 pub fn end_of_line(markdown: &str, index: usize) -> usize {
     match markdown[index..].bytes().position(|b| b == b'\n') {
         Some(i) => index + i + 1,
         None => markdown.len(),
+    }
+}
+
+pub struct Tree<'m, 'e> {
+    pub markdown: &'m str,
+    pub events: &'e [Event],
+}
+
+impl<'m, 'e> Tree<'m, 'e> {
+    pub fn at(&self, index: usize) -> Node<'m, 'e, '_> {
+        Node { tree: self, index }
+    }
+
+    pub fn depth_first(&self) -> impl Iterator<Item = Node<'m, 'e, '_>> {
+        (0..self.events.len())
+            .rev()
+            .filter(|&index| self.events[index].kind == Kind::Exit)
+            .map(|index| Node { tree: self, index })
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct Node<'m, 'e, 't> {
+    tree: &'t Tree<'m, 'e>,
+    index: usize,
+}
+
+impl<'m, 'e, 't> Node<'m, 'e, 't> {
+    pub fn name(&self) -> Name {
+        self.tree.events[self.index].name.clone()
+    }
+
+    pub fn str(&self) -> &'m str {
+        &self.tree.markdown[self.byte_range()]
+    }
+
+    pub fn child(self, name: Name) -> Option<Self> {
+        self.children_with_name(name).next()
+    }
+
+    pub fn children_with_name(self, name: Name) -> impl Iterator<Item = Self> {
+        self.children().filter(move |n| n.name() == name)
+    }
+
+    pub fn children(self) -> impl Iterator<Item = Self> {
+        let mut depth = 0;
+
+        (0..self.index)
+            .rev()
+            .map_while(move |i| {
+                let kind = self.tree.events[i].kind.clone();
+
+                if depth == 0 && kind == Kind::Enter {
+                    return None;
+                }
+
+                match kind {
+                    Kind::Enter => depth -= 1,
+                    Kind::Exit => depth += 1,
+                }
+
+                Some((i, depth))
+            })
+            .filter_map(|(i, depth)| {
+                (depth == 1 && self.tree.events[i].kind == Kind::Exit).then_some(i)
+            })
+            .map(|index| Node { tree: self.tree, index })
+    }
+
+    pub fn descendant(self, name: Name) -> Option<Self> {
+        self.descendants_with_name(name).next()
+    }
+
+    pub fn descendants_with_name(self, name: Name) -> impl Iterator<Item = Self> {
+        self.descendants().filter(move |n| n.name() == name)
+    }
+
+    pub fn descendants(self) -> impl Iterator<Item = Self> {
+        let mut depth = 0;
+
+        (0..self.index)
+            .rev()
+            .take_while(move |&i| {
+                let kind = self.tree.events[i].kind.clone();
+
+                if depth == 0 && kind == Kind::Enter {
+                    return false;
+                }
+
+                match kind {
+                    Kind::Enter => depth -= 1,
+                    Kind::Exit => depth += 1,
+                }
+
+                true
+            })
+            .filter(|&i| self.tree.events[i].kind == Kind::Exit)
+            .map(|index| Node { tree: self.tree, index })
+    }
+
+    pub fn byte_range(self) -> Range<usize> {
+        let pos = self.position();
+        pos.start.offset..pos.end.offset
+    }
+
+    pub fn position(&self) -> Position {
+        let event = &self.tree.events[self.index];
+        let end = event.point.to_unist();
+        let name = event.name.clone();
+        let enter_index = (0..self.index)
+            .rev()
+            .find(|&index| {
+                let event = &self.tree.events[index];
+                event.kind == Kind::Enter && event.name == name
+            })
+            .expect("unpaired enter/exit event");
+        let start = self.tree.events[enter_index].point.to_unist();
+        Position { start, end }
     }
 }
