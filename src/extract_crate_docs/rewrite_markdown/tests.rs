@@ -21,7 +21,55 @@ fn test_link() {
         },
     );
 
-    assert_eq!(result, "[vector](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n\n");
+    assert_eq!(result, "[vector](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n");
+}
+
+#[test]
+fn test_reference() {
+    let markdown = "[Vec]";
+
+    let result = rewrite_markdown(
+        markdown,
+        &RewriteMarkdownOptions {
+            links: [(
+                String::from("Vec"),
+                Some(String::from("https://doc.rust-lang.org/alloc/vec/struct.Vec.html")),
+            )]
+            .into_iter()
+            .collect(),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(
+        result,
+        "[Vec]\n\n\
+[Vec]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html\n"
+    );
+}
+
+#[test]
+fn test_reference_code() {
+    let markdown = "[`Vec`]";
+
+    let result = rewrite_markdown(
+        markdown,
+        &RewriteMarkdownOptions {
+            links: [(
+                String::from("`Vec`"),
+                Some(String::from("https://doc.rust-lang.org/alloc/vec/struct.Vec.html")),
+            )]
+            .into_iter()
+            .collect(),
+            ..Default::default()
+        },
+    );
+
+    assert_eq!(
+        result,
+        "[`Vec`]\n\n\
+[`Vec`]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html\n"
+    );
 }
 
 #[test]
@@ -60,7 +108,7 @@ fn test_reference_unresolved() {
         },
     );
 
-    assert_eq!(result, "Vec\n\n");
+    assert_eq!(result, "Vec\n");
 }
 
 #[test]
@@ -80,13 +128,24 @@ fn test_unused_definition() {
         },
     );
 
-    assert_eq!(result, "[Vector](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n\n");
+    assert_eq!(result, "[Vector](https://doc.rust-lang.org/alloc/vec/struct.Vec.html)\n");
+}
+
+#[test]
+fn test_hidden_code_line() {
+    let markdown = "\
+```\n\
+// this stays\n\
+# // this is ignored\n\
+```";
+
+    let out = rewrite_markdown(markdown, &RewriteMarkdownOptions::default());
+    assert_eq!(out, "```rust\n// this stays\n```\n")
 }
 
 #[test]
 fn test_clean_code_blocks() {
     expect![[r#"
-
         ```rust
         // this is rust code
         let one = 1;
@@ -112,7 +171,8 @@ fn test_clean_code_blocks() {
         # this most certainly isn't though
         def square(n):
             n * n
-        ```"#]]
+        ```
+    "#]]
     .assert_eq(&rewrite_markdown(
         r#"
 ```
@@ -172,10 +232,16 @@ fn test_code_block_fence_is_rust() {
 #[test]
 fn test_shrink_headings() {
     fn shrink_headings(markdown: &str, shrink_headings: i8) -> String {
-        rewrite_markdown(
+        let mut out = rewrite_markdown(
             markdown,
             &RewriteMarkdownOptions { shrink_headings, ..Default::default() },
-        )
+        );
+
+        let Some('\n') = out.pop() else {
+            unreachable!();
+        };
+
+        out
     }
 
     assert_eq!(shrink_headings("## foo", -3), "# foo");
@@ -189,7 +255,7 @@ fn test_shrink_headings() {
     assert_eq!(shrink_headings("## foo", 5), "###### foo");
     assert_eq!(shrink_headings("## foo", 6), "###### foo");
 
-    assert_eq!(shrink_headings("  ####   foo", -2), "  ##   foo");
+    assert_eq!(shrink_headings("  ####   foo", -2), "## foo");
 }
 
 #[test]
@@ -201,5 +267,5 @@ fn test_quoted_code_block() {
 > ```";
 
     let out = rewrite_markdown(markdown, &RewriteMarkdownOptions::default());
-    assert_eq!(out, "> ```rust\n> // this stays\n> ```")
+    assert_eq!(out, "> ```rust\n> // this stays\n> ```\n")
 }
