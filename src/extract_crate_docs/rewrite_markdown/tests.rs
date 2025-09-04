@@ -263,3 +263,30 @@ fn test_quoted_code_block() {
     let out = rewrite_markdown(markdown, &RewriteMarkdownOptions::default());
     assert_eq!(out, "> ```rust\n> // this stays\n> ```")
 }
+
+#[test]
+#[ignore = "TODO"]
+fn test_quoted_code_block_indented() {
+    let markdown = "\
+>     // this stays\n\
+";
+
+    crate::tests::print_events(markdown);
+
+    let out = rewrite_markdown(markdown, &RewriteMarkdownOptions::default());
+    assert_eq!(out, "> ```rust\n> // this stays\n> ```");
+}
+
+#[test]
+#[ignore = "TODO"]
+fn test_quoted_code_block_indented_hidden_line() {
+    let markdown = "\
+>     // this stays\n\
+>     # // this is ignored\n\
+";
+
+    crate::tests::print_events(markdown);
+
+    let out = rewrite_markdown(markdown, &RewriteMarkdownOptions::default());
+    assert_eq!(out, "> ```rust\n> // this stays\n> ```");
+}
