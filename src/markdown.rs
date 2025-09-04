@@ -319,19 +319,31 @@ impl<'m, 'e, 't> Node<'m, 'e, 't> {
         pos.start.offset..pos.end.offset
     }
 
-    pub fn position(&self) -> Position {
+    pub fn position(self) -> Position {
         let event = &self.tree.events[self.index];
         let end = event.point.to_unist();
-        let name = event.name.clone();
-        let enter_index = (0..self.index)
-            .rev()
-            .find(|&index| {
-                let event = &self.tree.events[index];
-                event.kind == Kind::Enter && event.name == name
-            })
-            .expect("unpaired enter/exit event");
+        let enter_index = self.enter_index();
         let start = self.tree.events[enter_index].point.to_unist();
         Position { start, end }
+    }
+
+    fn enter_index(self) -> usize {
+        let mut depth = 0;
+
+        for i in (0..self.index).rev() {
+            let kind = self.tree.events[i].kind.clone();
+
+            if depth == 0 && kind == Kind::Enter {
+                return i;
+            }
+
+            match kind {
+                Kind::Enter => depth -= 1,
+                Kind::Exit => depth += 1,
+            }
+        }
+
+        unreachable!("unpaired enter/exit event")
     }
 }
 
