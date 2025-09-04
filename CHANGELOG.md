@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Use same code block language parsing as rustdoc.
+- Parse code block language like rustdoc
 
 ## [0.18.1] - 2025-08-31
 
