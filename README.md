@@ -16,6 +16,7 @@
 - [Configuration](#configuration)
 - [CI Integration](#ci-integration)
 - [FAQ](#faq)
+- [Known Issues](#known-issues)
 - [Acknowledgements](#acknowledgements)
 - [Similar projects](#similar-projects)
 
@@ -210,6 +211,20 @@ You can automate this using GitHub Actions with job steps like these:
   Using `cargo-insert-docs` you can also use code sections with `should_panic` and `compile_fail` annotations and [hidden lines](https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html#hiding-portions-of-the-example) with it still rendering nice in the readme.
 
   Furthermore the readme might include things like a header, badges, license that you wouldn't want to include in the crate documentation.
+
+## Known Issues
+
+- **Can't resolve links to certain items in foreign crates:**
+
+  Due to limitations of the rustdoc json format, `cargo-insert-docs` currently can't resolve the following items in foreign crates:
+  - methods
+  - enum variants
+  - associated types
+  - associated constants
+- **Can't resolve rescursive imports and some cases of glob imports:**
+
+  The rustdoc json output currently doesn't give us information what imports resolve to.
+  Resolving imports can be very complicated with cycles, shadowing, renaming and visibility, (see [rustdoc-types#51](https://github.com/rust-lang/rustdoc-types/issues/51) and [rust#111338](https://github.com/rust-lang/rust/issues/111338)). I have no plans of re-implementing name resolution myself and hope it becomes part of the json format at some point.
 
 ## Acknowledgements
 
