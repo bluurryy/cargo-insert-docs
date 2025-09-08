@@ -168,10 +168,11 @@ fn find_html_comments(markdown: &str) -> impl Iterator<Item = Range<usize>> {
 fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
     let (events, _state) = parse(markdown, &parse_options());
 
+    // We don't use `Tree::depth_first` because of borrow issues.
     (0..events.len()).rev().filter_map(move |index| {
         let event = &events[index];
 
-        if event.kind == Kind::Enter {
+        if event.kind != Kind::Exit {
             return None;
         }
 
@@ -180,7 +181,7 @@ fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
         }
 
         let tree = Tree { markdown, events: &events };
-        let node = tree.at(index);
+        let node = tree.at(index).expect("event kind should be exit");
 
         Some(node.byte_range())
     })
@@ -217,21 +218,23 @@ pub fn end_of_line(markdown: &str, index: usize) -> usize {
     }
 }
 
+/// Tree interface to a slice of parser events.
 pub struct Tree<'m, 'e> {
     pub markdown: &'m str,
     pub events: &'e [Event],
 }
 
 impl<'m, 'e> Tree<'m, 'e> {
-    pub fn at(&self, index: usize) -> Node<'m, 'e, '_> {
-        Node { tree: self, index }
+    /// Create a node from the given event index.
+    ///
+    /// A node must point at an `Exit` event.
+    /// Returns `None` if the event is an `Enter` event.
+    pub fn at(&self, index: usize) -> Option<Node<'m, 'e, '_>> {
+        if self.events[index].kind == Kind::Enter { None } else { Some(Node { tree: self, index }) }
     }
 
     pub fn depth_first(&self) -> impl Iterator<Item = Node<'m, 'e, '_>> {
-        (0..self.events.len())
-            .rev()
-            .filter(|&index| self.events[index].kind == Kind::Exit)
-            .map(|index| Node { tree: self, index })
+        (0..self.events.len()).rev().filter_map(|i| self.at(i))
     }
 }
 
@@ -277,10 +280,8 @@ impl<'m, 'e, 't> Node<'m, 'e, 't> {
 
                 Some((i, depth))
             })
-            .filter_map(|(i, depth)| {
-                (depth == 1 && self.tree.events[i].kind == Kind::Exit).then_some(i)
-            })
-            .map(|index| Node { tree: self.tree, index })
+            .filter_map(|(i, depth)| (depth == 1).then_some(i))
+            .filter_map(|index| self.tree.at(index))
     }
 
     pub fn descendant(self, name: Name) -> Option<Self> {
@@ -310,8 +311,7 @@ impl<'m, 'e, 't> Node<'m, 'e, 't> {
 
                 true
             })
-            .filter(|&i| self.tree.events[i].kind == Kind::Exit)
-            .map(|index| Node { tree: self.tree, index })
+            .filter_map(|i| self.tree.at(i))
     }
 
     pub fn byte_range(self) -> Range<usize> {
