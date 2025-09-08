@@ -225,11 +225,11 @@ You can automate this using GitHub Actions with job steps like these:
 - **Can't resolve rescursive imports and some cases of glob imports**
 
   The rustdoc json output currently doesn't give us information what imports resolve to.
-  Resolving imports can be very complicated with cycles, shadowing, renaming and visibility, (see [rustdoc-types#51](https://github.com/rust-lang/rustdoc-types/issues/51) and [rust#111338](https://github.com/rust-lang/rust/issues/111338)). I have no plans of re-implementing proper rust name resolution myself and hope it becomes part of the json format at some point.
+  Resolving imports can be very complicated with cycles, shadowing, renaming and visibility, see [rustdoc-types#51](https://github.com/rust-lang/rustdoc-types/issues/51) and [rust#111338](https://github.com/rust-lang/rust/issues/111338). I have no plans of re-implementing proper rust name resolution myself and hope it becomes part of the json format at some point.
 
 ## Acknowledgements
 
-The comment format for adding feature documentation comes from [`document-features`](https://docs.rs/document-features/latest/document_features/). `document-features` is a great tool that allows you to insert feature documentation using a macro like this: 
+The comment format for adding feature documentation comes from [`document-features`](https://docs.rs/document-features/latest/document_features/). `document-features` is a allows you to insert feature documentation using a macro like this: 
 ```rs
 #![doc = document_features::document_features!()]
 ```
