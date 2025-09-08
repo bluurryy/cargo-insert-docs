@@ -171,7 +171,7 @@ fn check(sh: &Shell) -> Result {
     cmd!(sh, "cargo run -- --check -p test-document-features crate-into-readme").run()?;
     cmd!(sh, "cargo run -- --check -p example-crate").run()?;
     cmd!(sh, "cargo run -- --check -p test-bin crate-into-readme").run()?;
-    cmd!(sh, "cargo run -- --check --workspace --exclude test-crate --exclude cargo-insert-docs --exclude test-bin-lib --exclude xtask crate-into-readme").run()?;
+    cmd!(sh, "cargo run -- --check --workspace --exclude test-crate --exclude cargo-insert-docs --exclude test-bin-lib --exclude xtask --exclude test-crate-dep crate-into-readme").run()?;
     OK
 }
 
