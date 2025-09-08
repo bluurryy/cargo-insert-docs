@@ -229,11 +229,7 @@ You can automate this using GitHub Actions with job steps like these:
 
 ## Acknowledgements
 
-The comment format for adding feature documentation comes from [`document-features`](https://docs.rs/document-features/latest/document_features/). `document-features` is a allows you to insert feature documentation using a macro like this: 
-```rs
-#![doc = document_features::document_features!()]
-```
-
+The comment format for adding feature documentation comes from [`document-features`](https://docs.rs/document-features/latest/document_features/).
 The crate documentation into readme part was inspired by `cargo-rdme`.
 
 ## Similar projects
