@@ -2250,7 +2250,12 @@ dependencies = [
  "fast-glob",
  "indoc 2.0.5",
  "phf_macros",
+ "test-crate-dep",
 ]
+
+[[package]]
+name = "test-crate-dep"
+version = "0.0.0"
 
 [[package]]
 name = "test-document-features"

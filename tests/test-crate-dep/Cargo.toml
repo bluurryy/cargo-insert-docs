@@ -1,0 +1,6 @@
+[package]
+name = "test-crate-dep"
+edition = "2024"
+
+[lib]
+path = "lib.rs"

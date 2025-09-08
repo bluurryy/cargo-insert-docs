@@ -47,32 +47,32 @@
 //! - A link to structs from recursively glob-reexporting modules: `StructInGlobA`, `StructInGlobB`, `StructInGlobC` (TODO)
 //!
 //! ### Item variants
-//! - A link to a module: [`my_module`]
-//! - A link to an extern crate: [`alloc`]
-//! - A link to a use: [`MyStructUse`]
-//! - A link to a union: [`MyUnion`]
-//! - A link to a struct: [`MyStruct`]
-//! - A link to a struct field: [`MyStruct::my_field`]
-//! - A link to an enum: [`MyEnum`]
-//! - A link to a variant: [`MyEnum::MyVariant`]
-//! - A link to a function: [`my_function`]
-//! - A link to a trait: [`MyTrait`]
-//! - A link to a trait alias: [`IntoString`]
+//! - A link to a module: [`my_module`] (foreign: [`std::mem`])
+//! - A link to an extern crate: [`alloc`] (foreign: [`test_crate_dep::foreign_mod`])
+//! - A link to a use: [`MyStructUse`] (foreign: [`test_crate_dep::foreign_extern_crate`])
+//! - A link to a union: [`MyUnion`] (foreign: [`std::mem::MaybeUninit`])
+//! - A link to a struct: [`MyStruct`] (foreign: [`std::mem::Discriminant`])
+//! - A link to a struct field: [`MyStruct::my_field`] (foreign: [`std::ops::Range::start`])
+//! - A link to an enum: [`MyEnum`] (foreign: [`std::cmp::Ordering`])
+//! - A link to a variant: [`MyEnum::MyVariant`] (foreign: [`std::cmp::Ordering::Less`])
+//! - A link to a function: [`my_function`] (foreign: [`std::mem::drop`])
+//! - A link to a trait: [`MyTrait`] (foreign: [`std::iter::Iterator`])
+//! - A link to a trait alias: [`IntoString`] (foreign: [`test_crate_dep::ForeignTraitAlias`])
 //! - A link to an impl block is not possible
-//! - A link to a type alias: [`MyStructAlias`]
-//! - A link to a constant: [`MY_CONSTANT`]
-//! - A link to a static: [`MY_STATIC`]
-//! - A link to an extern type: [`MyExternType`]
-//! - A link to a macro: [`my_macro`]
+//! - A link to a type alias: [`MyStructAlias`] (foreign: [`test_crate_dep::ForeignTraitAlias`])
+//! - A link to a constant: [`MY_CONSTANT`] (foreign: [`std::f32::consts::E`])
+//! - A link to a static: [`MY_STATIC`] (foreign: [`test_crate_dep::FOREIGN_STATIC`])
+//! - A link to an extern type: [`MyExternType`] (foreign: [`test_crate_dep::ForeignExternType`])
+//! - A link to a macro: [`my_macro`] (foreign: [`std::format_args`])
 //! - A link to a proc macro: [`phf_macros::phf_map`]
 //! - A link to a primitive: [`i32`]
-//! - A link to an associated constant: [`MyTrait::MY_ASSOCIATED_CONSTANT`]
-//! - A link to an associated type: [`MyTrait::MyAssociatedType`]
+//! - A link to an associated constant: [`MyTrait::MY_ASSOCIATED_CONSTANT`] (foreign: [`test_crate_dep::ForeignTrait::FOREIGN_ASSOCIATED_CONSTANT`], [`f32::NAN`])
+//! - A link to an associated type: [`MyTrait::MyAssociatedType`] (foreign: [`test_crate_dep::ForeignTrait::ForeignAssociatedType`])
 //! - A link to a proc macro attribute is not possible?
 //! - A link to a proc macro derive: [`Debug`]
 //! - A link to a keyword is not possible
 //! - A link to a builtin attribute: [`derive`]
-//! - A link to a method: [`MyStruct::my_method`]
+//! - A link to a method: [`MyStruct::my_method`] (foreign: [`std::alloc::Layout::size`])
 //!
 //! [`ThinRope`]: String
 //!

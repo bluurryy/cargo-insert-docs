@@ -1,0 +1,1 @@
+This crate exists solely as a dependency of `test-crate`, to provide items to refer to.

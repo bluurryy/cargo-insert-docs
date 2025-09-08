@@ -59,32 +59,32 @@ But we can have a naive implementation and try to not crash.
 - A link to structs from recursively glob-reexporting modules: `StructInGlobA`, `StructInGlobB`, `StructInGlobC` (TODO)
 
 ##### Item variants
-- A link to a module: [`my_module`]
-- A link to an extern crate: [`alloc`]
-- A link to a use: [`MyStructUse`]
-- A link to a union: [`MyUnion`]
-- A link to a struct: [`MyStruct`]
-- A link to a struct field: [`MyStruct::my_field`]
-- A link to an enum: [`MyEnum`]
-- A link to a variant: [`MyEnum::MyVariant`]
-- A link to a function: [`my_function`]
-- A link to a trait: [`MyTrait`]
-- A link to a trait alias: [`IntoString`]
+- A link to a module: [`my_module`] (foreign: [`std::mem`])
+- A link to an extern crate: [`alloc`] (foreign: [`test_crate_dep::foreign_mod`])
+- A link to a use: [`MyStructUse`] (foreign: [`test_crate_dep::foreign_extern_crate`])
+- A link to a union: [`MyUnion`] (foreign: [`std::mem::MaybeUninit`])
+- A link to a struct: [`MyStruct`] (foreign: [`std::mem::Discriminant`])
+- A link to a struct field: [`MyStruct::my_field`] (foreign: `std::ops::Range::start`)
+- A link to an enum: [`MyEnum`] (foreign: [`std::cmp::Ordering`])
+- A link to a variant: [`MyEnum::MyVariant`] (foreign: `std::cmp::Ordering::Less`)
+- A link to a function: [`my_function`] (foreign: [`std::mem::drop`])
+- A link to a trait: [`MyTrait`] (foreign: [`std::iter::Iterator`])
+- A link to a trait alias: [`IntoString`] (foreign: [`test_crate_dep::ForeignTraitAlias`])
 - A link to an impl block is not possible
-- A link to a type alias: [`MyStructAlias`]
-- A link to a constant: [`MY_CONSTANT`]
-- A link to a static: [`MY_STATIC`]
-- A link to an extern type: [`MyExternType`]
-- A link to a macro: [`my_macro`]
+- A link to a type alias: [`MyStructAlias`] (foreign: [`test_crate_dep::ForeignTraitAlias`])
+- A link to a constant: [`MY_CONSTANT`] (foreign: [`std::f32::consts::E`])
+- A link to a static: [`MY_STATIC`] (foreign: [`test_crate_dep::FOREIGN_STATIC`])
+- A link to an extern type: [`MyExternType`] (foreign: [`test_crate_dep::ForeignExternType`])
+- A link to a macro: [`my_macro`] (foreign: [`std::format_args`])
 - A link to a proc macro: [`phf_macros::phf_map`]
 - A link to a primitive: [`i32`]
-- A link to an associated constant: [`MyTrait::MY_ASSOCIATED_CONSTANT`]
-- A link to an associated type: [`MyTrait::MyAssociatedType`]
+- A link to an associated constant: [`MyTrait::MY_ASSOCIATED_CONSTANT`] (foreign: `test_crate_dep::ForeignTrait::FOREIGN_ASSOCIATED_CONSTANT`, `f32::NAN`)
+- A link to an associated type: [`MyTrait::MyAssociatedType`] (foreign: `test_crate_dep::ForeignTrait::ForeignAssociatedType`)
 - A link to a proc macro attribute is not possible?
 - A link to a proc macro derive: [`Debug`]
 - A link to a keyword is not possible
 - A link to a builtin attribute: [`derive`]
-- A link to a method: [`MyStruct::my_method`]
+- A link to a method: [`MyStruct::my_method`] (foreign: `std::alloc::Layout::size`)
 
 
 ### Features
@@ -189,6 +189,19 @@ Test if ignoring lines work in a listed code block.
   ```
 
 
+[`test_crate_dep::foreign_mod`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/foreign_mod/index.html
+[`test_crate_dep::foreign_extern_crate`]: https://doc.rust-lang.org/alloc/index.html
+[`test_crate_dep::ForeignTraitAlias`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/traitalias.ForeignTraitAlias.html
+[`test_crate_dep::ForeignExternType`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/foreigntype.ForeignExternType.html
+[`test_crate_dep::FOREIGN_STATIC`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/static.FOREIGN_STATIC.html
+[`std::mem`]: https://doc.rust-lang.org/core/mem/index.html
+[`std::mem::drop`]: https://doc.rust-lang.org/core/mem/fn.drop.html
+[`std::mem::MaybeUninit`]: https://doc.rust-lang.org/core/mem/maybe_uninit/union.MaybeUninit.html
+[`std::mem::Discriminant`]: https://doc.rust-lang.org/core/mem/struct.Discriminant.html
+[`std::iter::Iterator`]: https://doc.rust-lang.org/core/iter/traits/iterator/trait.Iterator.html
+[`std::format_args`]: https://doc.rust-lang.org/core/macro.format_args.html
+[`std::f32::consts::E`]: https://doc.rust-lang.org/core/f32/consts/constant.E.html
+[`std::cmp::Ordering`]: https://doc.rust-lang.org/core/cmp/enum.Ordering.html
 [`phf_macros::phf_map`]: https://docs.rs/phf_macros/0.12.1/phf_macros/macro.phf_map.html
 [`my_module`]: https://docs.rs/test-crate/0.0.0/test_crate/my_module/index.html
 [`my_macro`]: https://docs.rs/test-crate/0.0.0/test_crate/macro.my_macro.html
