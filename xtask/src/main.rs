@@ -1,7 +1,7 @@
 /// https://github.com/matklad/cargo-xtask
 use std::path::Path;
 
-use anstream::println;
+use anstream::{adapter::strip_str, eprintln, println};
 use clap::{CommandFactory, Parser, Subcommand};
 use color_eyre::eyre::{OptionExt, bail};
 use xshell::{Shell, cmd};
@@ -17,10 +17,11 @@ enum Command {
     /// Does all tests and checks
     Ci,
     Test,
+    Check,
     CheckRecurse,
     CheckConfig,
     CheckBinLib,
-    Check,
+    CheckTestCrateStderr,
 }
 
 type Error = color_eyre::eyre::Report;
@@ -49,6 +50,7 @@ fn main() -> Result {
         Command::CheckRecurse => check_recurse(&sh),
         Command::CheckConfig => check_config(&sh),
         Command::CheckBinLib => check_bin_lib(&sh),
+        Command::CheckTestCrateStderr => check_test_crate_stderr(&sh),
     }
 }
 
@@ -58,6 +60,7 @@ fn ci(sh: &Shell) -> Result {
     check_recurse(sh)?;
     check_config(sh)?;
     check_bin_lib(sh)?;
+    check_test_crate_stderr(&sh)?;
     OK
 }
 
@@ -175,8 +178,37 @@ fn check(sh: &Shell) -> Result {
     OK
 }
 
+fn check_test_crate_stderr(sh: &Shell) -> Result {
+    let path = "tests/test-crate/stderr.txt";
+
+    let new_stderr =
+        strip_str(&cmd!(sh, "cargo run -q -- --check -p test-crate --quiet-cargo").read_stderr()?)
+            .to_string();
+    let old_stderr = std::fs::read_to_string(path).unwrap_or_default();
+
+    if new_stderr != old_stderr {
+        if is_update_expect() {
+            let style = anstyle::Style::new()
+                .fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Yellow)))
+                .bold();
+            eprintln!("{style}STDERR CHANGED{style:#}");
+
+            std::fs::write(path, new_stderr)?;
+        } else {
+            print_error("STDERR MISMATCH");
+            bail!("stderr mismatch")
+        }
+    }
+
+    OK
+}
+
 fn print_error(message: &str) {
     let style =
         anstyle::Style::new().fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Red))).bold();
     eprintln!("{style}{message}{style:#}");
+}
+
+fn is_update_expect() -> bool {
+    std::env::var("UPDATE_EXPECT").as_deref() == Ok("1")
 }

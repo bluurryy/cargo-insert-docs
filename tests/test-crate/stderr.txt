@@ -1,0 +1,37 @@
+       warning: failed to resolve doc link
+         cause: rustdoc produced dangling id (known bug of rustdoc)
+          link: `f32::NAN`
+          task: checking crate documentation in readme
+       package: test-crate
+
+       warning: failed to resolve doc link
+         cause: rustdoc produced dangling id (known bug of rustdoc)
+          link: `std::alloc::Layout::size`
+          task: checking crate documentation in readme
+       package: test-crate
+
+       warning: failed to resolve doc link
+         cause: rustdoc produced dangling id (known bug of rustdoc)
+          link: `std::cmp::Ordering::Less`
+          task: checking crate documentation in readme
+       package: test-crate
+
+       warning: failed to resolve doc link
+         cause: rustdoc produced dangling id (known bug of rustdoc)
+          link: `std::ops::Range::start`
+          task: checking crate documentation in readme
+       package: test-crate
+
+       warning: failed to resolve doc link
+         cause: rustdoc produced dangling id (known bug of rustdoc)
+          link: `test_crate_dep::ForeignTrait::FOREIGN_ASSOCIATED_CONSTANT`
+          task: checking crate documentation in readme
+       package: test-crate
+
+       warning: failed to resolve doc link
+         cause: rustdoc produced dangling id (known bug of rustdoc)
+          link: `test_crate_dep::ForeignTrait::ForeignAssociatedType`
+          task: checking crate documentation in readme
+       package: test-crate
+
+6 warnings
