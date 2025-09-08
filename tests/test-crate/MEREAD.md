@@ -20,8 +20,6 @@ The html docs already have a table of contents on the left side panel.
 ## Links
 
 <!-- docs rest start -->
-##### Reference variants
-
 ##### Links
 - A shortcut reference: [`Vec`]
 - A collapsed reference: [`Vec`][]
@@ -85,6 +83,7 @@ But we can have a naive implementation and try to not crash.
 - A link to a proc macro attribute is not possible?
 - A link to a proc macro derive: [`Debug`]
 - A link to a keyword is not possible
+- A link to a builtin attribute: [`derive`]
 - A link to a method: [`MyStruct::my_method`]
 
 
@@ -200,6 +199,7 @@ Test if ignoring lines work in a listed code block.
 [`indoc::indoc!`]: https://docs.rs/indoc/2.0.6/indoc/macro.indoc.html
 [`i32`]: https://doc.rust-lang.org/std/primitive.i32.html
 [`fast_glob::glob_match`]: https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html
+[`derive`]: https://doc.rust-lang.org/core/macros/builtin/attr.derive.html
 [`alloc`]: https://doc.rust-lang.org/alloc/index.html
 [`Vec`]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html
 [`Reexport`]: https://docs.rs/test-crate/0.0.0/test_crate/reexport/struct.Reexport.html

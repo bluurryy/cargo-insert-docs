@@ -8,8 +8,6 @@
 //! <!-- docs intro end -->
 //!
 //! <!-- docs rest start -->
-//! ### Reference variants
-//!
 //! ### Links
 //! - A shortcut reference: [`Vec`]
 //! - A collapsed reference: [`Vec`][]
@@ -73,6 +71,7 @@
 //! - A link to a proc macro attribute is not possible?
 //! - A link to a proc macro derive: [`Debug`]
 //! - A link to a keyword is not possible
+//! - A link to a builtin attribute: [`derive`]
 //! - A link to a method: [`MyStruct::my_method`]
 //!
 //! [`ThinRope`]: String
