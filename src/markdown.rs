@@ -76,6 +76,16 @@ pub struct Section {
     pub content_span: Range<usize>,
 }
 
+/// Finds subsections like these:
+/// ```md
+/// <!-- section_name foo start -->
+/// This is the content of the "foo" subsection.
+/// <!-- section_name foo end -->
+///
+/// <!-- section_name bar start -->
+/// This is the content of the "bar" subsection.
+/// <!-- section_name bar end -->
+/// ```
 pub fn find_subsections<'a>(
     markdown: &'a str,
     section_name: &str,
