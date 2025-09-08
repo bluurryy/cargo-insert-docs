@@ -162,5 +162,6 @@ fn item_kind(item: &ItemSummary) -> Option<Kind> {
         ItemKind::AssocType => Kind::AssocType,
         ItemKind::Primitive => Kind::Primitive,
         ItemKind::Keyword => return None,
+        ItemKind::Attribute => Kind::Attribute,
     })
 }

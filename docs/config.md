@@ -59,7 +59,7 @@ For the cli, these are not arguments but subcommands instead and calling the sub
 #### Compilation Options
 |Field|Type|Default|Description|
 |---|---|---|---|
-|toolchain|string|`"nightly-2025-08-02"`|Which rustup toolchain to use when invoking rustdoc.
+|toolchain|string|`"nightly-2025-09-08"`|Which rustup toolchain to use when invoking rustdoc.
 |target|string||Target triple to document
 |target-dir|string||Directory for all generated artifacts
 
