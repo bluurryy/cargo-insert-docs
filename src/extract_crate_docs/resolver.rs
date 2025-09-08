@@ -127,6 +127,7 @@ impl<'a> PathItem<'a> {
             Kind::AssocType => format!("#associatedtype.{name}"),
             Kind::ProcAttribute => format!("attr.{name}.html"),
             Kind::ProcDerive => format!("derive.{name}.html"),
+            Kind::Attribute => format!("attr.{name}.html"),
             Kind::Method => format!("#method.{name}"),
         }
     }
@@ -154,6 +155,7 @@ enum Kind {
     AssocType,
     ProcAttribute,
     ProcDerive,
+    Attribute,
 
     /// This type doesn't come from rustdoc json directly.
     ///
