@@ -11,11 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Parse code block language like rustdoc
+- Consistent order for warnings about `failed to resolve doc link` by sorting the doc links beforehand
 
 ### Changed
 
 - **Breaking:** Upgrade to rustdoc json version 56 (nightly-2025-09-08)
-
 
 ## [0.18.1] - 2025-08-31
 

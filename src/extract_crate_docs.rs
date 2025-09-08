@@ -101,12 +101,12 @@ fn extract_docs(
     let resolver_options = ResolverOptions { link_to_latest };
     let resolver = Resolver::new(krate, metadata, &resolver_options)?;
 
-    let mut links = root
-        .links
-        .iter()
-        .map(|(url, &item_id)| {
-            let url = url.clone();
+    let mut links = root.links.iter().map(|(k, &v)| (k.clone(), v)).collect::<Vec<_>>();
+    links.sort_by(|(a, _), (b, _)| a.cmp(b));
 
+    let links = links
+        .into_iter()
+        .map(|(url, item_id)| {
             let mut new_url = match resolver.item_url(item_id) {
                 Ok(ok) => ok,
                 Err(err) => {
@@ -122,8 +122,6 @@ fn extract_docs(
             (url, Some(new_url))
         })
         .collect::<Vec<_>>();
-
-    links.sort_by(|(a, _), (b, _)| a.cmp(b));
 
     Ok(rewrite_markdown(docs, &RewriteMarkdownOptions { shrink_headings, links }))
 }
