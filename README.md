@@ -204,7 +204,7 @@ You can automate this using GitHub Actions with job steps like these:
 
 ## FAQ
 
-- **Why not just use `#![doc = include_str!("../README.md")]`?**
+- **Why not `#![doc = include_str!("../README.md")]`?**
  
   If you're using doc-links `cargo-insert-docs` has the advantage that it resolves them for you. Linking to the docs manually by writing `[Image](https://docs.rs/...)` is tedious and rustdoc won't we able to tell you about outdated or otherwise unresolved links.
 
@@ -214,17 +214,18 @@ You can automate this using GitHub Actions with job steps like these:
 
 ## Known Issues
 
-- **Can't resolve links to certain items in foreign crates:**
+- **Can't resolve links to certain items in foreign crates**
 
   Due to limitations of the rustdoc json format, `cargo-insert-docs` currently can't resolve the following items in foreign crates:
   - methods
   - enum variants
   - associated types
   - associated constants
-- **Can't resolve rescursive imports and some cases of glob imports:**
+
+- **Can't resolve rescursive imports and some cases of glob imports**
 
   The rustdoc json output currently doesn't give us information what imports resolve to.
-  Resolving imports can be very complicated with cycles, shadowing, renaming and visibility, (see [rustdoc-types#51](https://github.com/rust-lang/rustdoc-types/issues/51) and [rust#111338](https://github.com/rust-lang/rust/issues/111338)). I have no plans of re-implementing name resolution myself and hope it becomes part of the json format at some point.
+  Resolving imports can be very complicated with cycles, shadowing, renaming and visibility, (see [rustdoc-types#51](https://github.com/rust-lang/rustdoc-types/issues/51) and [rust#111338](https://github.com/rust-lang/rust/issues/111338)). I have no plans of re-implementing proper rust name resolution myself and hope it becomes part of the json format at some point.
 
 ## Acknowledgements
 
