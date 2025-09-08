@@ -219,6 +219,8 @@ pub fn end_of_line(markdown: &str, index: usize) -> usize {
 }
 
 /// Tree interface to a slice of parser events.
+///
+/// All node iteration is done in reverse order to work nice with a [`StringReplacer`].
 pub struct Tree<'m, 'e> {
     pub markdown: &'m str,
     pub events: &'e [Event],
