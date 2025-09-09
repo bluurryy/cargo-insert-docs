@@ -233,15 +233,15 @@ The comment format for adding feature documentation comes from [`document-featur
 The crate documentation into readme part was inspired by `cargo-rdme`.
 
 ## Similar projects
-- [`document-features`](https://crates.io/crates/document-features)
+- [**`document-features`**](https://crates.io/crates/document-features) — 
   Provides a proc macro to insert feature documentation into the crate documentation. 
-- [`cargo-rdme`](https://crates.io/crates/cargo-rdme)
+- [**`cargo-rdme`**](https://crates.io/crates/cargo-rdme) — 
   Subcommand to insert crate documentation into readme sections.
-- [`cargo-sync-rdme`]https://crates.io/crates/cargo-sync-rdme
+- [**`cargo-sync-rdme`**](https://crates.io/crates/cargo-sync-rdme) — 
   Subcommand to insert crate documentation, title and badges into readme sections.
-- [`cargo-doc2readme`](https://crates.io/crates/cargo-doc2readme)
+- [**`cargo-doc2readme`**](https://crates.io/crates/cargo-doc2readme) — 
   Subcommand that creates a readme file from a template with various fields including crate documentation.
-- [`cargo-readme`](https://crates.io/crates/cargo-readme)
+- [**`cargo-readme`**](https://crates.io/crates/cargo-readme) — 
   Subcommand that creates a readme file from a template with various fields including crate documentation.
 
 ## License
