@@ -1,4 +1,4 @@
-//! Use the [Image] type to load images.
+//! Use the [`Image`] type to load images.
 //!
 //! # Feature Flags
 //! <!-- feature documentation start -->

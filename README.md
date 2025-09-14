@@ -54,7 +54,7 @@ png = []
 
 Then add a feature documentation section to your `lib.rs` file:
 ```rs
-//! Use the [Image] type to load images.
+//! Use the [`Image`] type to load images.
 //!
 //! # Feature Flags
 //! <!-- feature documentation start -->
@@ -86,7 +86,7 @@ cargo insert-docs
 
 Then your `lib.rs` will end up looking like this:
 ```rs
-//! Use the [Image] type to load images.
+//! Use the [`Image`] type to load images.
 //!
 //! # Feature Flags
 //! <!-- feature documentation start -->
@@ -114,7 +114,7 @@ And your `README.md` will look like that:
 Badges go here.
 
 <!-- crate documentation start -->
-Use the [Image] type to load images.
+Use the [`Image`] type to load images.
 
 ## Feature Flags
 <!-- feature documentation start -->
@@ -133,7 +133,6 @@ The following formats are supported.
 let image = Image::load("cat.png");
 ```
 
-[Image]: https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html
 [`Image`]: https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html
 [`std::io::Read`]: https://doc.rust-lang.org/std/io/trait.Read.html
 
