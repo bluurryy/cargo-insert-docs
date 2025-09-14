@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improve documentation
 
+### Fixed
+
+- Fix doc link to trait methods
+
 ## [0.19.0] - 2025-09-08
 
 ### Added

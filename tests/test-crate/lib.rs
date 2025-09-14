@@ -73,6 +73,7 @@
 //! - A link to a keyword is not possible
 //! - A link to a builtin attribute: [`derive`]
 //! - A link to a method: [`MyStruct::my_method`] (foreign: [`std::alloc::Layout::size`])
+//! - A link to a trait method: [`MyTrait::my_method`] (foreign: [`std::iter::Iterator::next`])
 //!
 //! [`ThinRope`]: String
 //!
@@ -306,6 +307,7 @@ pub fn my_function() {}
 pub trait MyTrait {
     const MY_ASSOCIATED_CONSTANT: i32 = 0;
     type MyAssociatedType;
+    fn my_method(&self) {}
 }
 pub trait MyTraitAlias = Into<String>;
 pub type MyStructAlias = MyStruct;

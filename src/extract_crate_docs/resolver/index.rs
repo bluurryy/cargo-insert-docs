@@ -65,6 +65,12 @@ impl<'a> Tree<'a> {
                             child_kind = Kind::Method;
                         }
 
+                        if matches!(parent_item.kind, SimpleItemKind::Trait)
+                            && matches!(child_kind, Kind::Function)
+                        {
+                            child_kind = Kind::TyMethod;
+                        }
+
                         break Some(parent_id);
                     }
                 } else {

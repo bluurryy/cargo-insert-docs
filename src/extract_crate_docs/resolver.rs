@@ -129,6 +129,7 @@ impl<'a> PathItem<'a> {
             Kind::ProcDerive => format!("derive.{name}.html"),
             Kind::Attribute => format!("attr.{name}.html"),
             Kind::Method => format!("#method.{name}"),
+            Kind::TyMethod => format!("#tymethod.{name}"),
         }
     }
 }
@@ -162,4 +163,10 @@ enum Kind {
     /// We infer [`Function`](Kind::Function)s to be [`Method`](Kind::Method)s when
     /// they're inside an [`rustdoc_types::ItemEnum::Impl`] or [`rustdoc_types::ItemKind::Impl`].
     Method,
+
+    /// This type doesn't come from rustdoc json directly.
+    ///
+    /// We infer [`Function`](Kind::Function)s to be [`TyMethod`](Kind::TyMethod)s when
+    /// they're inside an [`rustdoc_types::ItemEnum::Trait`] or [`rustdoc_types::ItemKind::Trait`].
+    TyMethod,
 }
