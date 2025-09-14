@@ -18,6 +18,12 @@
 
        warning: failed to resolve doc link
          cause: rustdoc produced dangling id (known bug of rustdoc)
+          link: `std::iter::Iterator::next`
+          task: checking crate documentation in readme
+       package: test-crate
+
+       warning: failed to resolve doc link
+         cause: rustdoc produced dangling id (known bug of rustdoc)
           link: `std::ops::Range::start`
           task: checking crate documentation in readme
        package: test-crate
@@ -34,4 +40,4 @@
           task: checking crate documentation in readme
        package: test-crate
 
-6 warnings
+7 warnings
