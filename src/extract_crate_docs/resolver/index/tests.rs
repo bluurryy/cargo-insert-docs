@@ -64,7 +64,8 @@ fn test_tree() {
         ├── MyStructAlias TypeAlias
         ├── MyTrait Trait
         │   ├── MY_ASSOCIATED_CONSTANT AssocConst
-        │   └── MyAssociatedType AssocType
+        │   ├── MyAssociatedType AssocType
+        │   └── my_method TyMethod
         ├── MyTraitAlias TraitAlias
         ├── MyUnion Union
         ├── ReexportInline Struct
