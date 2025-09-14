@@ -83,6 +83,6 @@ These fields can only be set in the cli.
 |print-supported-toolchain|bool|false|Print the supported toolchain and quits|
 |print-config|bool|false|Prints configuration values and their sources and quits|
 |color|`"auto"`, `"always"`, `"never"`|`"auto"`|Printed messages coloring|
-|verbose|bool|false|Print more verbose messages|
+|verbose|u8|0|Set the verbosity level (`-v` for level 1 or `-vv` for level 2)|
 |quiet|bool|false|Do not print anything|
 |quiet-cargo|bool|false|Do not print cargo log messages
