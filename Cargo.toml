@@ -12,19 +12,19 @@ readme = "README.md"
 exclude = [".github"]
 
 [dependencies]
-anstream = "0.6.20"
-anstyle = "1.0.11"
+anstream = "0.6.21"
+anstyle = "1.0.13"
 arcstr = { version = "1.2.0", default-features = false }
-cargo_metadata = "0.22.0"
-clap = { version = "4.5.47", features = ["derive", "wrap_help"] }
-clap-cargo = "0.17.1"
+cargo_metadata = "0.23.0"
+clap = { version = "4.5.51", features = ["derive", "wrap_help"] }
+clap-cargo = "0.18.3"
 color-eyre = { version = "0.6.5", features = ["capture-spantrace"] }
-gix = { version = "0.73.0", default-features = false, features = ["status"] }
-indexmap = { version = "2.11.0", default-features = false, features = ["std"] }
+gix = { version = "0.74.1", default-features = false, features = ["status"] }
+indexmap = { version = "2.12.0", default-features = false, features = ["std"] }
 macro_rules_attribute = "0.2.2"
 mimalloc = "0.1.48"
 percent-encoding = "2.3.2"
-proc-macro2 = { version = "1.0.101", default-features = false, features = [
+proc-macro2 = { version = "1.0.103", default-features = false, features = [
     "span-locations",
 ] }
 rangemap = "1.6.0"
@@ -33,21 +33,21 @@ relative-path = { version = "2.0.1", default-features = false, features = [
     "alloc",
 ] }
 rustdoc-types = "0.56.0"
-serde = { version = "1.0.219", features = ["derive"] }
-serde_json = "1.0.143"
-syn = { version = "2.0.106", default-features = false, features = [
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+syn = { version = "2.0.110", default-features = false, features = [
     "clone-impls",
     "extra-traits",
     "full",
     "parsing",
     "printing",
 ] }
-toml = "0.9.5"
-toml_edit = "0.23.4"
+toml = "0.9.8"
+toml_edit = "0.23.7"
 tracing = "0.1.41"
 tracing-error = "0.2.1"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
-unicode-id = "0.3.5"
+unicode-id = "0.3.6"
 
 [dev-dependencies]
 expect-test = "1.5.1"

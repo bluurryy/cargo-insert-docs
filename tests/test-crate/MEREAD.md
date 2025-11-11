@@ -210,7 +210,7 @@ Test if ignoring lines work in a listed code block.
 [`my_glob_imported_fn`]: https://docs.rs/test-crate/0.0.0/test_crate/to_be_glob_imported/fn.my_glob_imported_fn.html
 [`my_glob_imported_fn_from_private_mod`]: https://docs.rs/test-crate/0.0.0/test_crate/fn.my_glob_imported_fn_from_private_mod.html
 [`my_function`]: https://docs.rs/test-crate/0.0.0/test_crate/fn.my_function.html
-[`indoc::indoc!`]: https://docs.rs/indoc/2.0.6/indoc/macro.indoc.html
+[`indoc::indoc!`]: https://docs.rs/indoc/2.0.7/indoc/macro.indoc.html
 [`i32`]: https://doc.rust-lang.org/std/primitive.i32.html
 [`fast_glob::glob_match`]: https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html
 [`derive`]: https://doc.rust-lang.org/core/macros/builtin/attr.derive.html
