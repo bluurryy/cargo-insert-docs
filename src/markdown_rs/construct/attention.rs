@@ -181,8 +181,8 @@ pub fn resolve(tokenizer: &mut Tokenizer) -> Option<Subresult> {
                     // but the sum of the opening and closing size *is*
                     // multiple of three, then **don’t** match.
                     if (sequence_open.close || sequence_close.open)
-                        && sequence_close.size % 3 != 0
-                        && (sequence_open.size + sequence_close.size) % 3 == 0
+                        && !sequence_close.size.is_multiple_of(3)
+                        && (sequence_open.size + sequence_close.size).is_multiple_of(3)
                     {
                         continue;
                     }
