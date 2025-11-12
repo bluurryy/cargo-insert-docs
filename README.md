@@ -151,7 +151,7 @@ Notice how:
 
 To update the sections just run the command again.
 
-By default, `cargo-insert-docs` tries to insert both feature documentation and crate documentation. To perform only one of these actions use the `feature-into-crate` or `crate-into-readme` command.
+By default, `cargo-insert-docs` tries to insert both feature documentation and crate documentation. To perform only one of these actions use the `feature-into-crate` or `crate-into-readme` subcommand.
 
 Instead of inserting the entire crate documentation into the readme you can also insert subsections into the readme. Here is an example:
 - lib.rs:
