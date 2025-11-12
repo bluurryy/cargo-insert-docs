@@ -2,8 +2,10 @@ default:
     @just --list
 
 pre-release:
-    just update-cli-md
+    cargo fmt --check
+    cargo clippy --all-features -- -D warnings
     cargo xtask ci
+    just update-cli-md
     cargo +nightly test -p test-crate
 
 update-cli-md:
