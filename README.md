@@ -5,14 +5,19 @@
 [![Build Status](https://github.com/bluurryy/cargo-insert-docs/workflows/Release/badge.svg)](https://github.com/bluurryy/cargo-insert-docs/actions/workflows/release.yml)
 [![Build Status](https://github.com/bluurryy/cargo-insert-docs/workflows/CI/badge.svg)](https://github.com/bluurryy/cargo-insert-docs/actions/workflows/ci.yml)
 
-`cargo-insert-docs` does two jobs:
-1. Insert feature documentation from `Cargo.toml` into your `lib.rs`.
-2. Insert crate documentation from `lib.rs` into your `README.md`.
+This tool can:
+- insert feature documentation from `Cargo.toml` into `lib.rs` and
+- insert crate documentation from `lib.rs` into `README.md`.
 
 ## Table of Contents
 
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Insert feature documentation from `Cargo.toml` into `lib.rs`](#insert-feature-documentation-from-cargotoml-into-librs)
+  - [Insert crate documentation from `lib.rs` into `README.md`](#insert-crate-documentation-from-librs-into-readmemd)
+  - [Run the command](#run-the-command)
+  - [Result](#result)
+  - [Crate documentation subsections](#crate-documentation-subsections)
 - [Configuration](#configuration)
 - [CI Integration](#ci-integration)
 - [FAQ](#faq)
@@ -34,7 +39,9 @@ To extract the crate documentation, `cargo-insert-docs` invokes `cargo +nightly-
 
 ## Usage
 
-Add feature documentation to your `Cargo.toml` using `##` for documentation of individual features and `#!` to add documentation between features:
+### Insert feature documentation from `Cargo.toml` into `lib.rs`
+
+Document features using `##`, and add documentation between features using `#!`:
 ```toml
 [features]
 default = ["std", "jpg"]
@@ -52,7 +59,7 @@ jpg = []
 png = []
 ```
 
-Then add a feature documentation section to your `lib.rs` file:
+Then add a feature documentation section to `lib.rs`:
 ```rs
 //! Use the [`Image`] type to load images.
 //!
@@ -67,7 +74,9 @@ Then add a feature documentation section to your `lib.rs` file:
 //! ```
 ```
 
-And add a crate documentation section to your `README.md`:
+### Insert crate documentation from `lib.rs` into `README.md`
+
+Add a crate documentation section to your `README.md`:
 ```md
 # my-crate-name
 
@@ -79,12 +88,15 @@ Badges go here.
 License goes there.
 ```
 
-Now run `cargo-insert-docs`:
+### Run the command
+
 ```sh
 cargo insert-docs
 ```
 
-Then your `lib.rs` will end up looking like this:
+### Result
+
+This will insert the feature documentation into `lib.rs`:
 ```rs
 //! Use the [`Image`] type to load images.
 //!
@@ -107,7 +119,7 @@ Then your `lib.rs` will end up looking like this:
 //! ```
 ```
 
-And your `README.md` will look like that:
+And crate documentation into `README.md`:
 ````md
 # my-crate-name
 
@@ -153,6 +165,8 @@ To update the sections just run the command again.
 
 By default, `cargo-insert-docs` tries to insert both feature documentation and crate documentation. To perform only one of these actions use the `feature-into-crate` or `crate-into-readme` subcommand.
 
+### Crate documentation subsections
+
 Instead of inserting the entire crate documentation into the readme you can also insert subsections into the readme. Here is an example:
 - lib.rs:
   ```rs
@@ -179,7 +193,7 @@ Instead of inserting the entire crate documentation into the readme you can also
 This is useful if you want a table of contents in the readme but don't want it in the crate docs because the
 crate documentation already has a side panel for that.
 
-If you'd like to see what it looks like when used by a real crate then have a look at `bump-scope`'s [docs.rs](https://docs.rs/bump-scope/latest/bump_scope/) and [README.md](https://github.com/bluurryy/bump-scope/blob/main/README.md).
+If you'd like to see what this looks like when used by a real crate then have a look at `bump-scope`'s [docs.rs](https://docs.rs/bump-scope/latest/bump_scope/) and [README.md](https://github.com/bluurryy/bump-scope/blob/main/README.md).
 
 ## Configuration
 
