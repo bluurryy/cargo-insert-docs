@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+_This release does not make any breaking changes. The version is bumped to `1.0.0` to reflect the status of this project._ 
+
 ### Added
 
 - Update to cargo `1.91.0` cli colors
