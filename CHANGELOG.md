@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Update to cargo `1.91.0` cli colors
+- Update default nightly toolchain to `nightly-2025-11-11`
 
 ## [0.19.1] - 2025-09-14
 
