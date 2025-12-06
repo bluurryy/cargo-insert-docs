@@ -1,12 +1,11 @@
 [package]
 edition = "2024"
 name = "xtask"
-version = "0.1.0"
 
 [dependencies]
-anstream = "0.6.21"
-anstyle = "1.0.13"
-clap = { version = "4.5.53", features = ["derive"] }
-color-eyre = { version = "0.6.5", features = ["capture-spantrace"] }
-fancy-regex = { version = "0.16.2", default-features = false, features = ["std"] }
-xshell = "0.2.7"
+anstream = { workspace = true }
+anstyle = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+color-eyre = { workspace = true, features = ["capture-spantrace"] }
+fancy-regex = { workspace = true, default-features = false, features = ["std"] }
+xshell = { workspace = true }

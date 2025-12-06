@@ -12,6 +12,63 @@ repository = "https://github.com/bluurryy/cargo-insert-docs"
 version = "1.0.0"
 
 [dependencies]
+anstream = { workspace = true }
+anstyle = { workspace = true }
+arcstr = { workspace = true, default-features = false }
+cargo_metadata = { workspace = true }
+clap = { workspace = true, features = ["derive", "wrap_help"] }
+clap-cargo = { workspace = true }
+color-eyre = { workspace = true, features = ["capture-spantrace"] }
+gix = { workspace = true, default-features = false, features = ["status"] }
+indexmap = { workspace = true, default-features = false, features = ["std"] }
+macro_rules_attribute = { workspace = true }
+mimalloc = { workspace = true }
+percent-encoding = { workspace = true }
+proc-macro2 = { workspace = true, default-features = false, features = ["span-locations"] }
+rangemap = { workspace = true }
+relative-path = { workspace = true, default-features = false, features = ["std", "alloc"] }
+rustdoc-types = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+syn = { workspace = true, default-features = false, features = [
+    "clone-impls",
+    "extra-traits",
+    "full",
+    "parsing",
+    "printing",
+] }
+toml = { workspace = true }
+toml_edit = { workspace = true }
+tracing = { workspace = true }
+tracing-error = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+unicode-id = { workspace = true }
+
+[dev-dependencies]
+expect-test = { workspace = true }
+indoc = { workspace = true }
+unindent = { workspace = true }
+
+[package.metadata.release]
+allow-branch = ["main"]
+pre-release-commit-message = "release: version {{version}}"
+pre-release-hook = ["just", "pre-release"]
+pre-release-replacements = [
+    { file = "CHANGELOG.md", search = '## \[Unreleased\]', replace = "## [{{version}}] - {{date}}", exactly = 1 },
+    { file = "CHANGELOG.md", search = '\[Unreleased\]: .*', replace = "[{{version}}]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v{{version}}", exactly = 1 },
+    { file = "CHANGELOG.md", search = '#Unreleased', replace = "#{{version}}", min = 0 },
+    { file = "CHANGELOG.md", search = '<!-- next-header -->', replace = "<!-- next-header -->\n## [Unreleased]\n", exactly = 1 },
+    { file = "CHANGELOG.md", search = '<!-- next-url -->', replace = "<!-- next-url -->\n[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/{{tag_name}}...HEAD", exactly = 1 },
+]
+
+[workspace]
+exclude = ["tests/test-config"]
+members = ["tests/*", "xtask"]
+
+[workspace.metadata.release]
+consolidate-commits = false
+
+[workspace.dependencies]
 anstream = "0.6.21"
 anstyle = "1.0.13"
 arcstr = { version = "1.2.0", default-features = false }
@@ -19,8 +76,12 @@ cargo_metadata = "0.23.1"
 clap = { version = "4.5.53", features = ["derive", "wrap_help"] }
 clap-cargo = "0.18.3"
 color-eyre = { version = "0.6.5", features = ["capture-spantrace"] }
+document-features = "0.2.12"
+expect-test = "1.5.1"
+fancy-regex = { version = "0.16.2", default-features = false, features = ["std"] }
 gix = { version = "0.75.0", default-features = false, features = ["status"] }
 indexmap = { version = "2.12.1", default-features = false, features = ["std"] }
+indoc = "2"
 macro_rules_attribute = "0.2.2"
 mimalloc = "0.1.48"
 percent-encoding = "2.3.2"
@@ -43,27 +104,5 @@ tracing = "0.1.43"
 tracing-error = "0.2.1"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
 unicode-id = "0.3.6"
-
-[dev-dependencies]
-expect-test = "1.5.1"
-indoc = "2"
 unindent = "0.2.4"
-
-[package.metadata.release]
-allow-branch = ["main"]
-pre-release-commit-message = "release: version {{version}}"
-pre-release-hook = ["just", "pre-release"]
-pre-release-replacements = [
-    { file = "CHANGELOG.md", search = '## \[Unreleased\]', replace = "## [{{version}}] - {{date}}", exactly = 1 },
-    { file = "CHANGELOG.md", search = '\[Unreleased\]: .*', replace = "[{{version}}]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v{{version}}", exactly = 1 },
-    { file = "CHANGELOG.md", search = '#Unreleased', replace = "#{{version}}", min = 0 },
-    { file = "CHANGELOG.md", search = '<!-- next-header -->', replace = "<!-- next-header -->\n## [Unreleased]\n", exactly = 1 },
-    { file = "CHANGELOG.md", search = '<!-- next-url -->', replace = "<!-- next-url -->\n[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/{{tag_name}}...HEAD", exactly = 1 },
-]
-
-[workspace]
-exclude = ["tests/test-config"]
-members = ["tests/*", "xtask"]
-
-[workspace.metadata.release]
-consolidate-commits = false
+xshell = "0.2.7"

@@ -15,4 +15,4 @@ std = []
 nightly-whatever = []
 
 [dependencies]
-document-features = "0.2.12"
+document-features = { workspace = true }
