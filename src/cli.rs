@@ -285,6 +285,10 @@ struct Args {
     ///
     /// The default value is a toolchain that is known to be compatible with
     /// this version of `cargo-insert-docs`.
+    ///
+    /// WARNING: `cargo-insert-docs` does not consider updating the default nightly toolchain
+    /// or the supported rustdoc json version a breaking change. So if you set a custom toolchain
+    /// you should use a pinned version of `cargo-insert-docs`.
     #[arg(global = true, help_heading = heading::COMPILATION_OPTIONS, long, verbatim_doc_comment)]
     toolchain: Option<String>,
 
