@@ -60,7 +60,7 @@ fn ci(sh: &Shell) -> Result {
     check_recurse(sh)?;
     check_config(sh)?;
     check_bin_lib(sh)?;
-    check_test_crate_stderr(&sh)?;
+    check_test_crate_stderr(sh)?;
     OK
 }
 
