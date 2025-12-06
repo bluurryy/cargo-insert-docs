@@ -5,7 +5,7 @@ name = "xtask"
 [dependencies]
 anstream = { workspace = true }
 anstyle = { workspace = true }
-clap = { workspace = true, features = ["derive"] }
-color-eyre = { workspace = true, features = ["capture-spantrace"] }
-fancy-regex = { workspace = true, default-features = false, features = ["std"] }
+clap = { workspace = true }
+color-eyre = { workspace = true }
+fancy-regex = { workspace = true }
 xshell = { workspace = true }

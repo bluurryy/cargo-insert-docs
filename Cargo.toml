@@ -14,29 +14,23 @@ version = "1.0.0"
 [dependencies]
 anstream = { workspace = true }
 anstyle = { workspace = true }
-arcstr = { workspace = true, default-features = false }
+arcstr = { workspace = true }
 cargo_metadata = { workspace = true }
-clap = { workspace = true, features = ["derive", "wrap_help"] }
+clap = { workspace = true }
 clap-cargo = { workspace = true }
-color-eyre = { workspace = true, features = ["capture-spantrace"] }
-gix = { workspace = true, default-features = false, features = ["status"] }
-indexmap = { workspace = true, default-features = false, features = ["std"] }
+color-eyre = { workspace = true }
+gix = { workspace = true, features = ["status"] }
+indexmap = { workspace = true }
 macro_rules_attribute = { workspace = true }
 mimalloc = { workspace = true }
 percent-encoding = { workspace = true }
-proc-macro2 = { workspace = true, default-features = false, features = ["span-locations"] }
+proc-macro2 = { workspace = true, features = ["span-locations"] }
 rangemap = { workspace = true }
-relative-path = { workspace = true, default-features = false, features = ["std", "alloc"] }
+relative-path = { workspace = true }
 rustdoc-types = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-syn = { workspace = true, default-features = false, features = [
-    "clone-impls",
-    "extra-traits",
-    "full",
-    "parsing",
-    "printing",
-] }
+syn = { workspace = true, features = ["clone-impls", "extra-traits", "full", "parsing", "printing"] }
 toml = { workspace = true }
 toml_edit = { workspace = true }
 tracing = { workspace = true }
@@ -69,28 +63,37 @@ members = ["tests/*", "xtask"]
 consolidate-commits = false
 
 [workspace.dependencies]
-anstream = "0.6.21"
-anstyle = "1.0.13"
+anstream = { version = "0.6.21", default-features = false, features = ["auto", "wincon"] }
+anstyle = { version = "1.0.13", default-features = false }
 arcstr = { version = "1.2.0", default-features = false }
-cargo_metadata = "0.23.1"
-clap = { version = "4.5.53", features = ["derive", "wrap_help"] }
-clap-cargo = "0.18.3"
-color-eyre = { version = "0.6.5", features = ["capture-spantrace"] }
-document-features = "0.2.12"
-expect-test = "1.5.1"
+cargo_metadata = { version = "0.23.1", default-features = false }
+clap = { version = "4.5.53", default-features = false, features = [
+    "color",
+    "error-context",
+    "help",
+    "std",
+    "suggestions",
+    "usage",
+    "derive",
+    "wrap_help",
+] }
+clap-cargo = { version = "0.18.3", default-features = false, features = ["clap"] }
+color-eyre = { version = "0.6.5", default-features = false, features = ["capture-spantrace", "track-caller"] }
+document-features = "0.2.12" # explicitly errors if `default-features = false`
+expect-test = { version = "1.5.1", default-features = false }
 fancy-regex = { version = "0.16.2", default-features = false, features = ["std"] }
-gix = { version = "0.75.0", default-features = false, features = ["status"] }
+gix = { version = "0.75.0", default-features = false }
 indexmap = { version = "2.12.1", default-features = false, features = ["std"] }
-indoc = "2"
-macro_rules_attribute = "0.2.2"
-mimalloc = "0.1.48"
-percent-encoding = "2.3.2"
-proc-macro2 = { version = "1.0.103", default-features = false, features = ["span-locations"] }
-rangemap = "1.7.0"
+indoc = { version = "2.0.7", default-features = false }
+macro_rules_attribute = { version = "0.2.2", default-features = false }
+mimalloc = { version = "0.1.48", default-features = false }
+percent-encoding = { version = "2.3.2", default-features = false, features = ["std"] }
+proc-macro2 = { version = "1.0.103", default-features = false }
+rangemap = { version = "1.7.0", default-features = false, features = ["const_fn"] }
 relative-path = { version = "2.0.1", default-features = false, features = ["std", "alloc"] }
-rustdoc-types = "0.56.0"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.145"
+rustdoc-types = { version = "0.56.0", default-features = false }
+serde = { version = "1.0.228", default-features = false, features = ["std"] }
+serde_json = { version = "1.0.145", default-features = false, features = ["std"] }
 syn = { version = "2.0.111", default-features = false, features = [
     "clone-impls",
     "extra-traits",
@@ -98,11 +101,11 @@ syn = { version = "2.0.111", default-features = false, features = [
     "parsing",
     "printing",
 ] }
-toml = "0.9.8"
-toml_edit = "0.23.8"
-tracing = "0.1.43"
-tracing-error = "0.2.1"
-tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
-unicode-id = "0.3.6"
-unindent = "0.2.4"
-xshell = "0.2.7"
+toml = { version = "0.9.8", default-features = false, features = ["display", "parse", "serde", "std"] }
+toml_edit = { version = "0.23.8", default-features = false, features = ["parse"] }
+tracing = { version = "0.1.43", default-features = false, features = ["std"] }
+tracing-error = { version = "0.2.1", default-features = false }
+tracing-subscriber = { version = "0.3.22", default-features = false, features = ["ansi", "fmt", "smallvec", "std"] }
+unicode-id = { version = "0.3.6", default-features = false }
+unindent = { version = "0.2.4", default-features = false }
+xshell = { version = "0.2.7", default-features = false }
