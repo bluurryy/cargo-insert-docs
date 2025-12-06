@@ -15,19 +15,19 @@ exclude = [".github"]
 anstream = "0.6.21"
 anstyle = "1.0.13"
 arcstr = { version = "1.2.0", default-features = false }
-cargo_metadata = "0.23.0"
-clap = { version = "4.5.51", features = ["derive", "wrap_help"] }
+cargo_metadata = "0.23.1"
+clap = { version = "4.5.53", features = ["derive", "wrap_help"] }
 clap-cargo = "0.18.3"
 color-eyre = { version = "0.6.5", features = ["capture-spantrace"] }
 gix = { version = "0.74.1", default-features = false, features = ["status"] }
-indexmap = { version = "2.12.0", default-features = false, features = ["std"] }
+indexmap = { version = "2.12.1", default-features = false, features = ["std"] }
 macro_rules_attribute = "0.2.2"
 mimalloc = "0.1.48"
 percent-encoding = "2.3.2"
 proc-macro2 = { version = "1.0.103", default-features = false, features = [
     "span-locations",
 ] }
-rangemap = "1.6.0"
+rangemap = "1.7.0"
 relative-path = { version = "2.0.1", default-features = false, features = [
     "std",
     "alloc",
@@ -35,7 +35,7 @@ relative-path = { version = "2.0.1", default-features = false, features = [
 rustdoc-types = "0.56.0"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
-syn = { version = "2.0.110", default-features = false, features = [
+syn = { version = "2.0.111", default-features = false, features = [
     "clone-impls",
     "extra-traits",
     "full",
@@ -43,10 +43,10 @@ syn = { version = "2.0.110", default-features = false, features = [
     "printing",
 ] }
 toml = "0.9.8"
-toml_edit = "0.23.7"
-tracing = "0.1.41"
+toml_edit = "0.23.8"
+tracing = "0.1.43"
 tracing-error = "0.2.1"
-tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
 unicode-id = "0.3.6"
 
 [dev-dependencies]
