@@ -1,6 +1,6 @@
 [package]
-name = "example-crate"
 edition = "2024"
+name = "example-crate"
 
 [features]
 default = ["std", "jpg"]

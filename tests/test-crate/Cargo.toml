@@ -1,6 +1,6 @@
 [package]
-name = "test-crate"
 edition = "2024"
+name = "test-crate"
 readme = "MEREAD.md"
 
 [lib]
@@ -37,6 +37,6 @@ phf_macros = "0.12.1"
 test-crate-dep = { version = "0.0.0", path = "../test-crate-dep" }
 
 [package.metadata.insert-docs]
-feature-section-name = "features"
 crate-section-name = "docs"
+feature-section-name = "features"
 shrink-headings = 2

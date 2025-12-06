@@ -1,3 +1,3 @@
 [package]
-name = "test-bin"
 edition = "2024"
+name = "test-bin"

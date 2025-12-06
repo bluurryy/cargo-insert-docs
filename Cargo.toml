@@ -1,15 +1,15 @@
 [package]
-name = "cargo-insert-docs"
-version = "1.0.0"
-edition = "2024"
-license = "MIT OR Apache-2.0"
-description = "Inserts feature docs into crate docs, and crate docs into README."
 categories = ["development-tools::cargo-plugins", "command-line-utilities"]
-keywords = ["documentation", "cargo", "crate", "readme"]
+description = "Inserts feature docs into crate docs, and crate docs into README."
 documentation = "https://docs.rs/cargo-insert-docs"
-repository = "https://github.com/bluurryy/cargo-insert-docs"
-readme = "README.md"
+edition = "2024"
 exclude = [".github"]
+keywords = ["documentation", "cargo", "crate", "readme"]
+license = "MIT OR Apache-2.0"
+name = "cargo-insert-docs"
+readme = "README.md"
+repository = "https://github.com/bluurryy/cargo-insert-docs"
+version = "1.0.0"
 
 [dependencies]
 anstream = "0.6.21"
@@ -24,14 +24,9 @@ indexmap = { version = "2.12.1", default-features = false, features = ["std"] }
 macro_rules_attribute = "0.2.2"
 mimalloc = "0.1.48"
 percent-encoding = "2.3.2"
-proc-macro2 = { version = "1.0.103", default-features = false, features = [
-    "span-locations",
-] }
+proc-macro2 = { version = "1.0.103", default-features = false, features = ["span-locations"] }
 rangemap = "1.7.0"
-relative-path = { version = "2.0.1", default-features = false, features = [
-    "std",
-    "alloc",
-] }
+relative-path = { version = "2.0.1", default-features = false, features = ["std", "alloc"] }
 rustdoc-types = "0.56.0"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
@@ -56,8 +51,8 @@ unindent = "0.2.4"
 
 [package.metadata.release]
 allow-branch = ["main"]
-pre-release-hook = ["just", "pre-release"]
 pre-release-commit-message = "release: version {{version}}"
+pre-release-hook = ["just", "pre-release"]
 pre-release-replacements = [
     { file = "CHANGELOG.md", search = '## \[Unreleased\]', replace = "## [{{version}}] - {{date}}", exactly = 1 },
     { file = "CHANGELOG.md", search = '\[Unreleased\]: .*', replace = "[{{version}}]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v{{version}}", exactly = 1 },
@@ -67,8 +62,8 @@ pre-release-replacements = [
 ]
 
 [workspace]
-members = ["tests/*", "xtask"]
 exclude = ["tests/test-config"]
+members = ["tests/*", "xtask"]
 
 [workspace.metadata.release]
 consolidate-commits = false

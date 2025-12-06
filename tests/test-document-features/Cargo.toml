@@ -1,6 +1,6 @@
 [package]
-name = "test-document-features"
 edition = "2024"
+name = "test-document-features"
 
 [features]
 default = ["std"]
