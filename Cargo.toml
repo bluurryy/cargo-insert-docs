@@ -30,7 +30,7 @@ relative-path = { workspace = true }
 rustdoc-types = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-syn = { workspace = true, features = ["clone-impls", "extra-traits", "full", "parsing", "printing"] }
+syn = { workspace = true, features = ["parsing", "printing", "full"] }
 toml = { workspace = true }
 toml_edit = { workspace = true }
 tracing = { workspace = true }
@@ -94,13 +94,7 @@ relative-path = { version = "2.0.1", default-features = false, features = ["std"
 rustdoc-types = { version = "0.56.0", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
 serde_json = { version = "1.0.145", default-features = false, features = ["std"] }
-syn = { version = "2.0.111", default-features = false, features = [
-    "clone-impls",
-    "extra-traits",
-    "full",
-    "parsing",
-    "printing",
-] }
+syn = { version = "2.0.111", default-features = false }
 toml = { version = "0.9.8", default-features = false, features = ["display", "parse", "serde", "std"] }
 toml_edit = { version = "0.23.8", default-features = false, features = ["parse"] }
 tracing = { version = "0.1.43", default-features = false, features = ["std"] }
