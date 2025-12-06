@@ -91,7 +91,7 @@ percent-encoding = { version = "2.3.2", default-features = false, features = ["s
 proc-macro2 = { version = "1.0.103", default-features = false }
 rangemap = { version = "1.7.0", default-features = false, features = ["const_fn"] }
 relative-path = { version = "2.0.1", default-features = false, features = ["std", "alloc"] }
-rustdoc-types = { version = "0.56.0", default-features = false }
+rustdoc-types = { version = "0.57.0", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
 serde_json = { version = "1.0.145", default-features = false, features = ["std"] }
 syn = { version = "2.0.111", default-features = false }
