@@ -1,12 +1,17 @@
 use std::{
     borrow::Cow,
     env, fs,
+    io::{self, BufRead, BufReader, Read, Write},
     path::{Path, PathBuf},
-    process::{Command, Output, Stdio},
+    process::{Command, ExitStatus, Stdio},
     sync::OnceLock,
+    thread::{self, JoinHandle},
 };
 
+use anstream::adapter::strip_str;
 use color_eyre::eyre::{Context, OptionExt, bail};
+
+pub use anstream::{eprintln, println};
 
 pub type Error = color_eyre::eyre::Report;
 pub type Result<T = (), E = Error> = std::result::Result<T, E>;
@@ -57,27 +62,35 @@ impl<'a> IntoArg<'a> for Arg<'a> {
     }
 }
 
-enum OutKind {
-    Ignore,
-    Capture,
-    Inherit,
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct Out {
+    inherit: bool,
+    capture: bool,
 }
 
-impl OutKind {
+impl Out {
+    const ONLY_INHERIT: Self = Self { capture: false, inherit: true };
+    const ONLY_CAPTURE: Self = Self { capture: true, inherit: false };
+    const BOTH: Self = Self { capture: true, inherit: true };
+
     fn io(self) -> Stdio {
-        match self {
-            OutKind::Ignore => Stdio::null(),
-            OutKind::Capture => Stdio::piped(),
-            OutKind::Inherit => Stdio::inherit(),
+        if self.capture {
+            return Stdio::piped();
         }
+
+        if self.inherit {
+            return Stdio::inherit();
+        }
+
+        Stdio::null()
     }
 }
 
 pub struct Cmd {
     args: Vec<String>,
     unchecked: bool,
-    stdout: OutKind,
-    stderr: OutKind,
+    stdout: Out,
+    stderr: Out,
     #[expect(clippy::type_complexity)]
     hooks: Vec<Box<dyn FnOnce(&mut Command)>>,
 }
@@ -87,8 +100,8 @@ impl Cmd {
         Self {
             args,
             unchecked: false,
-            stdout: OutKind::Inherit,
-            stderr: OutKind::Inherit,
+            stdout: Out::ONLY_INHERIT,
+            stderr: Out::ONLY_INHERIT,
             hooks: Vec::new(),
         }
     }
@@ -100,29 +113,40 @@ impl Cmd {
 
     #[expect(dead_code)]
     pub fn ignore_stdout(mut self) -> Self {
-        self.stdout = OutKind::Ignore;
+        self.stdout.inherit = false;
         self
     }
 
     pub fn ignore_stderr(mut self) -> Self {
-        self.stderr = OutKind::Ignore;
+        self.stderr.inherit = false;
         self
     }
 
     pub fn capture_stdout(mut self) -> Self {
-        self.stdout = OutKind::Capture;
+        if self.stdout != Out::BOTH {
+            self.stdout = Out::ONLY_CAPTURE;
+        }
+
         self
     }
 
     pub fn capture_stderr(mut self) -> Self {
-        self.stderr = OutKind::Capture;
+        if self.stderr != Out::BOTH {
+            self.stderr = Out::ONLY_CAPTURE;
+        }
+
         self
     }
 
-    pub fn capture(mut self) -> Self {
-        self.stdout = OutKind::Capture;
-        self.stderr = OutKind::Capture;
+    pub fn inherit_and_capture(mut self) -> Self {
+        self.stdout = Out::BOTH;
+        self.stderr = Out::BOTH;
         self
+    }
+
+    #[expect(dead_code)]
+    pub fn capture(self) -> Self {
+        self.capture_stdout().capture_stderr()
     }
 
     #[expect(dead_code)]
@@ -132,11 +156,11 @@ impl Cmd {
     }
 
     pub fn stdout(self) -> Result<String> {
-        Ok(String::from_utf8(self.capture_stdout().output()?.stdout)?)
+        Ok(self.capture_stdout().output()?.stdout)
     }
 
     pub fn stderr(self) -> Result<String> {
-        Ok(String::from_utf8(self.capture_stderr().output()?.stderr)?)
+        Ok(self.capture_stderr().output()?.stderr)
     }
 
     pub fn output(self) -> Result<Output> {
@@ -152,29 +176,79 @@ impl Cmd {
             hook(&mut cmd);
         }
 
-        let output = cmd.output()?;
+        if stdout == Out::BOTH || stderr == Out::BOTH {
+            let mut child = cmd.spawn()?;
 
-        if !unchecked && !output.status.success() {
-            let command = args
-                .iter()
-                .map(|arg| {
-                    if arg.contains(char::is_whitespace) {
-                        Cow::Owned(format!("{arg:?}"))
-                    } else {
-                        Cow::Borrowed(arg.as_str())
+            fn forward(
+                kind: Out,
+                stream: impl Read + Send + 'static,
+                mut sink: impl Write + Send + 'static,
+            ) -> JoinHandle<String> {
+                thread::spawn(move || {
+                    let reader = BufReader::new(stream);
+                    let mut captured = String::new();
+
+                    for line in reader.lines().map_while(Result::ok) {
+                        if kind.inherit {
+                            writeln!(&mut sink, "{line}").unwrap();
+                        }
+
+                        if kind.capture {
+                            captured.push_str(&line);
+                            captured.push('\n');
+                        }
                     }
+
+                    captured
                 })
-                .collect::<Vec<_>>()
-                .join(" ");
+            }
 
-            bail!(
-                "command did not succeed!\n\
-                command: {command}"
-            )
+            let stdout_thread = forward(stdout, child.stdout.take().unwrap(), io::stdout());
+            let stderr_thread = forward(stderr, child.stderr.take().unwrap(), io::stderr());
+
+            let status = child.wait()?;
+
+            let stdout = stdout_thread.join().unwrap();
+            let stderr = stderr_thread.join().unwrap();
+
+            Ok(Output { status, stdout, stderr })
+        } else {
+            let output = cmd.output()?;
+
+            if !unchecked && !output.status.success() {
+                let command = args
+                    .iter()
+                    .map(|arg| {
+                        if arg.contains(char::is_whitespace) {
+                            Cow::Owned(format!("{arg:?}"))
+                        } else {
+                            Cow::Borrowed(arg.as_str())
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join(" ");
+
+                bail!(
+                    "command did not succeed!\n\
+                            command: {command}"
+                )
+            }
+
+            Ok(Output {
+                status: output.status,
+                stdout: String::from_utf8(output.stdout)?,
+                stderr: String::from_utf8(output.stderr)?,
+            })
         }
-
-        Ok(output)
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct Output {
+    #[expect(dead_code)]
+    pub status: ExitStatus,
+    pub stdout: String,
+    pub stderr: String,
 }
 
 pub(crate) fn cmd_new(args: &[Arg]) -> Cmd {
@@ -215,3 +289,13 @@ macro_rules! re {
 
 pub(crate) use cmd;
 pub(crate) use re;
+
+pub trait AnsiStripExt {
+    fn strip_ansi(self) -> String;
+}
+
+impl AnsiStripExt for String {
+    fn strip_ansi(self) -> String {
+        strip_str(&self).to_string()
+    }
+}

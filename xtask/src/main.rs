@@ -4,11 +4,12 @@ mod util;
 
 use std::env;
 
-use anstream::{adapter::strip_str, eprintln, println};
 use clap::{CommandFactory, Parser, Subcommand};
 use color_eyre::eyre::bail;
 
-use util::{OK, Result, cmd, re, read, write};
+use util::{OK, Result, cmd, eprintln, println, re, read, write};
+
+use crate::util::AnsiStripExt;
 
 #[derive(Parser)]
 struct Args {
@@ -61,17 +62,11 @@ fn ci() -> Result {
 }
 
 fn test() -> Result {
-    // TODO: tee stdout/stderr
-    let out = cmd!("cargo test --color always -- --color always").unchecked().capture().output()?;
-
-    println!("\nstdout: {}\n", String::from_utf8_lossy(&out.stdout));
-    println!("\nstderr: {}\n", String::from_utf8_lossy(&out.stderr));
-
-    if !out.status.success() {
-        bail!("cargo test failed: {:?}", out.status);
-    }
-
-    let out = anstream::adapter::strip_str(&String::from_utf8_lossy(&out.stdout)).to_string();
+    let out = cmd!("cargo test --color always -- --color always")
+        .unchecked()
+        .inherit_and_capture()
+        .stdout()?
+        .strip_ansi();
 
     let tests_that_need_to_be_run_separately: Vec<_> =
         re!(r"(?m)^test (?<name>.*)? \.\.\. (?<result>.*)$")
@@ -190,8 +185,7 @@ fn check_test_crate_stderr() -> Result {
     let path = "tests/test-crate/stderr.txt";
 
     let new_stderr =
-        strip_str(&cmd!("cargo run -q -- --check -p test-crate --quiet-cargo").stderr()?)
-            .to_string();
+        cmd!("cargo run -q -- --check -p test-crate --quiet-cargo").stderr()?.strip_ansi();
 
     let old_stderr = read(path).unwrap_or_default();
 
