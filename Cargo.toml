@@ -80,6 +80,7 @@ clap = { version = "4.5.53", default-features = false, features = [
 clap-cargo = { version = "0.18.3", default-features = false, features = ["clap"] }
 color-eyre = { version = "0.6.5", default-features = false, features = ["capture-spantrace", "track-caller"] }
 document-features = "0.2.12" # explicitly errors if `default-features = false`
+duct = { version = "1.1.1", default-features = false }
 expect-test = { version = "1.5.1", default-features = false }
 fancy-regex = { version = "0.16.2", default-features = false, features = ["std"] }
 gix = { version = "0.75.0", default-features = false }
@@ -102,4 +103,3 @@ tracing-error = { version = "0.2.1", default-features = false }
 tracing-subscriber = { version = "0.3.22", default-features = false, features = ["ansi", "fmt", "smallvec", "std"] }
 unicode-id = { version = "0.3.6", default-features = false }
 unindent = { version = "0.2.4", default-features = false }
-xshell = { version = "0.2.7", default-features = false }

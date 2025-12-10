@@ -1,10 +1,14 @@
-/// https://github.com/matklad/cargo-xtask
-use std::path::Path;
+//! https://github.com/matklad/cargo-xtask
+
+mod util;
+
+use std::env;
 
 use anstream::{adapter::strip_str, eprintln, println};
 use clap::{CommandFactory, Parser, Subcommand};
-use color_eyre::eyre::{OptionExt, bail};
-use xshell::{Shell, cmd};
+use color_eyre::eyre::bail;
+
+use util::{OK, Result, cmd, re, read, write};
 
 #[derive(Parser)]
 struct Args {
@@ -24,10 +28,6 @@ enum Command {
     CheckTestCrateStderr,
 }
 
-type Error = color_eyre::eyre::Report;
-type Result<T = (), E = Error> = std::result::Result<T, E>;
-const OK: Result = Result::Ok(());
-
 fn main() -> Result {
     color_eyre::install()?;
     let args = Args::parse();
@@ -37,46 +37,37 @@ fn main() -> Result {
         return OK;
     };
 
-    let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let workspace_dir = manifest_dir.parent().ok_or_eyre("manifest dir has no parent")?;
-
-    let sh = Shell::new()?;
-    sh.change_dir(workspace_dir);
+    util::init()?;
 
     match command {
-        Command::Ci => ci(&sh),
-        Command::Test => test(&sh),
-        Command::Check => check(&sh),
-        Command::CheckRecurse => check_recurse(&sh),
-        Command::CheckConfig => check_config(&sh),
-        Command::CheckBinLib => check_bin_lib(&sh),
-        Command::CheckTestCrateStderr => check_test_crate_stderr(&sh),
+        Command::Ci => ci(),
+        Command::Test => test(),
+        Command::Check => check(),
+        Command::CheckRecurse => check_recurse(),
+        Command::CheckConfig => check_config(),
+        Command::CheckBinLib => check_bin_lib(),
+        Command::CheckTestCrateStderr => check_test_crate_stderr(),
     }
 }
 
-fn ci(sh: &Shell) -> Result {
-    test(sh)?;
-    check(sh)?;
-    check_recurse(sh)?;
-    check_config(sh)?;
-    check_bin_lib(sh)?;
-    check_test_crate_stderr(sh)?;
+fn ci() -> Result {
+    test()?;
+    check()?;
+    check_recurse()?;
+    check_config()?;
+    check_bin_lib()?;
+    check_test_crate_stderr()?;
     OK
 }
 
-macro_rules! re {
-    ($lit:literal) => {{
-        fn get() -> &'static fancy_regex::Regex {
-            static REGEX: std::sync::OnceLock<fancy_regex::Regex> = std::sync::OnceLock::new();
-            REGEX.get_or_init(|| fancy_regex::Regex::new($lit).unwrap())
-        }
-        get()
-    }};
-}
+fn test() -> Result {
+    // TODO: tee stdout/stderr
+    let out = cmd!("cargo", "test", "--color", "always", "--", "--color", "always")
+        .unchecked()
+        .stdout_capture()
+        .stderr_capture()
+        .run()?;
 
-fn test(sh: &Shell) -> Result {
-    // TODO: tee stderr/stdout
-    let out = cmd!(sh, "cargo test --color always -- --color always").ignore_status().output()?;
     println!("\nstdout: {}\n", String::from_utf8_lossy(&out.stdout));
     println!("\nstderr: {}\n", String::from_utf8_lossy(&out.stderr));
 
@@ -104,10 +95,29 @@ fn test(sh: &Shell) -> Result {
 
     let style =
         anstyle::Style::new().fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Cyan))).bold();
+
     println!("{style}NOW RUNNING PREVIOUSLY IGNORED TESTS{style:#}");
 
     for test in tests_that_need_to_be_run_separately {
-        let out = cmd!(sh, "cargo test --package cargo-insert-docs --bin cargo-insert-docs --all-features -- {test} --color always --exact --show-output --ignored").ignore_stderr().read()?;
+        let out = cmd!(
+            "cargo",
+            "test",
+            "--package",
+            "cargo-insert-docs",
+            "--bin",
+            "cargo-insert-docs",
+            "--all-features",
+            "--",
+            test,
+            "--color",
+            "always",
+            "--exact",
+            "--show-output",
+            "--ignored"
+        )
+        .stderr_null()
+        .read()?;
+
         let re = re!(r"(?m)(?<all>^test (?<name>.*)? \.\.\. (?<result>.*)$)");
         for c in re.captures_iter(&out) {
             let all = c?.name("all").unwrap().as_str();
@@ -118,11 +128,13 @@ fn test(sh: &Shell) -> Result {
     OK
 }
 
-fn check_recurse(sh: &Shell) -> Result {
-    fn test(sh: &Shell, feature: &str) -> Result {
-        let out = cmd!(sh, "cargo run -- -p test-crate -F {feature} --allow-dirty")
-            .ignore_status()
-            .read_stderr()?;
+fn check_recurse() -> Result {
+    fn test(feature: &str) -> Result {
+        let out = cmd!("cargo", "run", "--", "-p", "test-crate", "-F", feature, "--allow-dirty")
+            .unchecked()
+            .stdout_stderr_swap()
+            .read()?;
+
         println!("{out}");
 
         if !out.contains("recursed too deep while resolving item paths") {
@@ -133,21 +145,28 @@ fn check_recurse(sh: &Shell) -> Result {
         OK
     }
 
-    test(sh, "recurse")?;
-    test(sh, "recurse-glob")?;
+    test("recurse")?;
+    test("recurse-glob")?;
     OK
 }
 
-fn check_config(sh: &Shell) -> Result {
-    let out = cmd!(sh, "cargo run -- --manifest-path tests/test-config/Cargo.toml --print-config")
-        .read()?;
+fn check_config() -> Result {
+    let out = cmd!(
+        "cargo",
+        "run",
+        "--",
+        "--manifest-path",
+        "tests/test-config/Cargo.toml",
+        "--print-config"
+    )
+    .read()?;
 
-    if std::env::var("UPDATE_EXPECT").as_deref() == Ok("1") {
-        sh.write_file("tests/test-config/print-config.toml", &out)?;
+    if env::var("UPDATE_EXPECT").as_deref() == Ok("1") {
+        write("tests/test-config/print-config.toml", &out)?;
         return OK;
     }
 
-    let expected = sh.read_file("tests/test-config/print-config.toml").unwrap_or_default();
+    let expected = read("tests/test-config/print-config.toml").unwrap_or_default();
 
     if out != expected {
         print_error("EXPECT TEST FAILED");
@@ -157,9 +176,11 @@ fn check_config(sh: &Shell) -> Result {
     OK
 }
 
-fn check_bin_lib(sh: &Shell) -> Result {
-    let out =
-        cmd!(sh, "cargo run -- -p test-bin-lib --allow-dirty").ignore_status().read_stderr()?;
+fn check_bin_lib() -> Result {
+    let out = cmd!("cargo", "run", "--", "-p", "test-bin-lib", "--allow-dirty")
+        .unchecked()
+        .stdout_stderr_swap()
+        .read()?;
 
     if !out.contains("choose one or the other") {
         print_error("EXPECTED A DIFFERENT ERROR");
@@ -169,22 +190,45 @@ fn check_bin_lib(sh: &Shell) -> Result {
     OK
 }
 
-fn check(sh: &Shell) -> Result {
-    cmd!(sh, "cargo run -- --check -p test-crate").run()?;
-    cmd!(sh, "cargo run -- --check -p test-document-features crate-into-readme").run()?;
-    cmd!(sh, "cargo run -- --check -p example-crate").run()?;
-    cmd!(sh, "cargo run -- --check -p test-bin crate-into-readme").run()?;
-    cmd!(sh, "cargo run -- --check --workspace --exclude test-crate --exclude cargo-insert-docs --exclude test-bin-lib --exclude xtask --exclude test-crate-dep crate-into-readme").run()?;
+fn check() -> Result {
+    cmd!("cargo", "run", "--", "--check", "-p", "test-crate").run()?;
+    cmd!("cargo", "run", "--", "--check", "-p", "test-document-features", "crate-into-readme")
+        .run()?;
+    cmd!("cargo", "run", "--", "--check", "-p", "example-crate").run()?;
+    cmd!("cargo", "run", "--", "--check", "-p", "test-bin", "crate-into-readme").run()?;
+    cmd!(
+        "cargo",
+        "run",
+        "--",
+        "--check",
+        "--workspace",
+        "--exclude",
+        "test-crate",
+        "--exclude",
+        "cargo-insert-docs",
+        "--exclude",
+        "test-bin-lib",
+        "--exclude",
+        "xtask",
+        "--exclude",
+        "test-crate-dep",
+        "crate-into-readme"
+    )
+    .run()?;
     OK
 }
 
-fn check_test_crate_stderr(sh: &Shell) -> Result {
+fn check_test_crate_stderr() -> Result {
     let path = "tests/test-crate/stderr.txt";
 
-    let new_stderr =
-        strip_str(&cmd!(sh, "cargo run -q -- --check -p test-crate --quiet-cargo").read_stderr()?)
-            .to_string();
-    let old_stderr = std::fs::read_to_string(path).unwrap_or_default();
+    let new_stderr = strip_str(
+        &cmd!("cargo", "run", "-q", "--", "--check", "-p", "test-crate", "--quiet-cargo")
+            .stdout_stderr_swap()
+            .read()?,
+    )
+    .to_string();
+
+    let old_stderr = read(path).unwrap_or_default();
 
     if new_stderr != old_stderr {
         if is_update_expect() {
@@ -193,7 +237,7 @@ fn check_test_crate_stderr(sh: &Shell) -> Result {
                 .bold();
             eprintln!("{style}STDERR CHANGED{style:#}");
 
-            std::fs::write(path, new_stderr)?;
+            write(path, &new_stderr)?;
         } else {
             print_error("STDERR MISMATCH");
             bail!("stderr mismatch")
@@ -210,5 +254,5 @@ fn print_error(message: &str) {
 }
 
 fn is_update_expect() -> bool {
-    std::env::var("UPDATE_EXPECT").as_deref() == Ok("1")
+    env::var("UPDATE_EXPECT").as_deref() == Ok("1")
 }
