@@ -70,3 +70,4 @@ toolchain = "toolchain from package"
 target = "wasm32-unknown-unknown"
 target_dir = "target dir from package"
 readme_path = "readme path from package"
+
