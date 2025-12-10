@@ -62,11 +62,7 @@ fn ci() -> Result {
 
 fn test() -> Result {
     // TODO: tee stdout/stderr
-    let out = cmd!("cargo", "test", "--color", "always", "--", "--color", "always")
-        .unchecked()
-        .stdout_capture()
-        .stderr_capture()
-        .run()?;
+    let out = cmd!("cargo test --color always -- --color always").unchecked().capture().output()?;
 
     println!("\nstdout: {}\n", String::from_utf8_lossy(&out.stdout));
     println!("\nstderr: {}\n", String::from_utf8_lossy(&out.stderr));
@@ -100,23 +96,17 @@ fn test() -> Result {
 
     for test in tests_that_need_to_be_run_separately {
         let out = cmd!(
-            "cargo",
-            "test",
-            "--package",
-            "cargo-insert-docs",
-            "--bin",
-            "cargo-insert-docs",
-            "--all-features",
-            "--",
+            "cargo test",
+            "--package cargo-insert-docs",
+            "--bin cargo-insert-docs --all-features --",
             test,
-            "--color",
-            "always",
+            "--color always",
             "--exact",
             "--show-output",
             "--ignored"
         )
-        .stderr_null()
-        .read()?;
+        .ignore_stderr()
+        .stdout()?;
 
         let re = re!(r"(?m)(?<all>^test (?<name>.*)? \.\.\. (?<result>.*)$)");
         for c in re.captures_iter(&out) {
@@ -130,10 +120,8 @@ fn test() -> Result {
 
 fn check_recurse() -> Result {
     fn test(feature: &str) -> Result {
-        let out = cmd!("cargo", "run", "--", "-p", "test-crate", "-F", feature, "--allow-dirty")
-            .unchecked()
-            .stdout_stderr_swap()
-            .read()?;
+        let out =
+            cmd!("cargo run -- -p test-crate -F", feature, "--allow-dirty").unchecked().stderr()?;
 
         println!("{out}");
 
@@ -151,15 +139,8 @@ fn check_recurse() -> Result {
 }
 
 fn check_config() -> Result {
-    let out = cmd!(
-        "cargo",
-        "run",
-        "--",
-        "--manifest-path",
-        "tests/test-config/Cargo.toml",
-        "--print-config"
-    )
-    .read()?;
+    let out = cmd!("cargo run -- --manifest-path tests/test-config/Cargo.toml --print-config")
+        .stdout()?;
 
     if env::var("UPDATE_EXPECT").as_deref() == Ok("1") {
         write("tests/test-config/print-config.toml", &out)?;
@@ -177,10 +158,7 @@ fn check_config() -> Result {
 }
 
 fn check_bin_lib() -> Result {
-    let out = cmd!("cargo", "run", "--", "-p", "test-bin-lib", "--allow-dirty")
-        .unchecked()
-        .stdout_stderr_swap()
-        .read()?;
+    let out = cmd!("cargo run -- -p test-bin-lib --allow-dirty").unchecked().stderr()?;
 
     if !out.contains("choose one or the other") {
         print_error("EXPECTED A DIFFERENT ERROR");
@@ -191,42 +169,29 @@ fn check_bin_lib() -> Result {
 }
 
 fn check() -> Result {
-    cmd!("cargo", "run", "--", "--check", "-p", "test-crate").run()?;
-    cmd!("cargo", "run", "--", "--check", "-p", "test-document-features", "crate-into-readme")
-        .run()?;
-    cmd!("cargo", "run", "--", "--check", "-p", "example-crate").run()?;
-    cmd!("cargo", "run", "--", "--check", "-p", "test-bin", "crate-into-readme").run()?;
+    cmd!("cargo run -- --check -p test-crate").output()?;
+    cmd!("cargo run -- --check -p test-document-features crate-into-readme").output()?;
+    cmd!("cargo run -- --check -p example-crate").output()?;
+    cmd!("cargo run -- --check -p test-bin crate-into-readme").output()?;
     cmd!(
-        "cargo",
-        "run",
-        "--",
-        "--check",
-        "--workspace",
-        "--exclude",
-        "test-crate",
-        "--exclude",
-        "cargo-insert-docs",
-        "--exclude",
-        "test-bin-lib",
-        "--exclude",
-        "xtask",
-        "--exclude",
-        "test-crate-dep",
+        "cargo run -- --check --workspace",
+        "--exclude test-crate",
+        "--exclude cargo-insert-docs",
+        "--exclude test-bin-lib",
+        "--exclude xtask",
+        "--exclude test-crate-dep",
         "crate-into-readme"
     )
-    .run()?;
+    .output()?;
     OK
 }
 
 fn check_test_crate_stderr() -> Result {
     let path = "tests/test-crate/stderr.txt";
 
-    let new_stderr = strip_str(
-        &cmd!("cargo", "run", "-q", "--", "--check", "-p", "test-crate", "--quiet-cargo")
-            .stdout_stderr_swap()
-            .read()?,
-    )
-    .to_string();
+    let new_stderr =
+        strip_str(&cmd!("cargo run -q -- --check -p test-crate --quiet-cargo").stderr()?)
+            .to_string();
 
     let old_stderr = read(path).unwrap_or_default();
 
