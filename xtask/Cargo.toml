@@ -7,5 +7,5 @@ anstream = { workspace = true }
 anstyle = { workspace = true }
 clap = { workspace = true }
 color-eyre = { workspace = true }
+duct = { workspace = true }
 fancy-regex = { workspace = true }
-xshell = { workspace = true }
