@@ -81,23 +81,23 @@ clap-cargo = { version = "0.18.3", default-features = false, features = ["clap"]
 color-eyre = { version = "0.6.5", default-features = false, features = ["capture-spantrace", "track-caller"] }
 document-features = "0.2.12" # explicitly errors if `default-features = false`
 expect-test = { version = "1.5.1", default-features = false }
-fancy-regex = { version = "0.16.2", default-features = false, features = ["std"] }
-gix = { version = "0.75.0", default-features = false }
+fancy-regex = { version = "0.17.0", default-features = false, features = ["std"] }
+gix = { version = "0.76.0", default-features = false }
 indexmap = { version = "2.12.1", default-features = false, features = ["std"] }
 indoc = { version = "2.0.7", default-features = false }
 macro_rules_attribute = { version = "0.2.2", default-features = false }
 mimalloc = { version = "0.1.48", default-features = false }
 percent-encoding = { version = "2.3.2", default-features = false, features = ["std"] }
 proc-macro2 = { version = "1.0.103", default-features = false }
-rangemap = { version = "1.7.0", default-features = false, features = ["const_fn"] }
+rangemap = { version = "1.7.1", default-features = false, features = ["const_fn"] }
 relative-path = { version = "2.0.1", default-features = false, features = ["std", "alloc"] }
 rustdoc-types = { version = "0.57.0", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
-serde_json = { version = "1.0.145", default-features = false, features = ["std"] }
+serde_json = { version = "1.0.147", default-features = false, features = ["std"] }
 syn = { version = "2.0.111", default-features = false }
-toml = { version = "0.9.8", default-features = false, features = ["display", "parse", "serde", "std"] }
-toml_edit = { version = "0.23.8", default-features = false, features = ["parse"] }
-tracing = { version = "0.1.43", default-features = false, features = ["std"] }
+toml = { version = "0.9.10+spec-1.1.0", default-features = false, features = ["display", "parse", "serde", "std"] }
+toml_edit = { version = "0.24.0+spec-1.1.0", default-features = false, features = ["parse"] }
+tracing = { version = "0.1.44", default-features = false, features = ["std"] }
 tracing-error = { version = "0.2.1", default-features = false }
 tracing-subscriber = { version = "0.3.22", default-features = false, features = ["ansi", "fmt", "smallvec", "std"] }
 unicode-id = { version = "0.3.6", default-features = false }
