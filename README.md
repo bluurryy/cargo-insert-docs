@@ -190,8 +190,7 @@ Instead of inserting the entire crate documentation into the readme you can also
   <!-- crate documentation rest start -->
   <!-- crate documentation rest end -->
   ```
-This is useful if you want a table of contents in the readme but don't want it in the crate docs because the
-crate documentation already has a side panel for that.
+This is useful if you want a table of contents in the readme but don't want it in the crate docs because the crate docs already have a side panel for that.
 
 If you'd like to see what this looks like when used by a real crate then have a look at `bump-scope`'s [docs.rs](https://docs.rs/bump-scope/latest/bump_scope/) and [README.md](https://github.com/bluurryy/bump-scope/blob/main/README.md).
 
@@ -211,7 +210,7 @@ You can automate this using GitHub Actions with job steps like these:
 - uses: actions/checkout@v4
 - uses: taiki-e/install-action@v2
   with:
-    tool: cargo-insert-docs
+    tool: cargo-insert-docs@1.1.0
 - run: cargo insert-docs --check --all-features
 ```
 
@@ -223,7 +222,7 @@ You can automate this using GitHub Actions with job steps like these:
 
   Using `cargo-insert-docs` you can also use code sections with `should_panic` and `compile_fail` annotations and [hidden lines](https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html#hiding-portions-of-the-example) with it still rendering nice in the readme.
 
-  Furthermore the readme might include things like a header, badges, license that you wouldn't want to include in the crate documentation.
+  Furthermore the readme may include things like a header, badges, license that you might not want to include in the crate documentation.
 
 ## Known Issues
 
@@ -242,8 +241,8 @@ You can automate this using GitHub Actions with job steps like these:
 
 ## Acknowledgements
 
-The comment format for adding feature documentation comes from [`document-features`](https://docs.rs/document-features/latest/document_features/).
-The crate documentation into readme part was inspired by `cargo-rdme`.
+The comment format for adding feature documentation comes from [`document-features`](https://crates.io/crates/document-features).
+The crate documentation into readme part was inspired by [`cargo-rdme`](https://crates.io/crates/cargo-rdme).
 
 ## Similar projects
 - [**`document-features`**](https://crates.io/crates/document-features) — 
