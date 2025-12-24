@@ -16,7 +16,6 @@ use alloc::{str::FromStr, string::String};
 /// # }
 /// ```
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum LineEnding {
     /// Both a carriage return (`\r`) and a line feed (`\n`).
     ///
@@ -26,7 +25,6 @@ pub enum LineEnding {
     /// a␍␊
     /// b
     /// ```
-    #[cfg_attr(feature = "serde", serde(rename = "\r\n"))]
     CarriageReturnLineFeed,
     /// Sole carriage return (`\r`).
     ///
@@ -36,7 +34,6 @@ pub enum LineEnding {
     /// a␍
     /// b
     /// ```
-    #[cfg_attr(feature = "serde", serde(rename = "\r"))]
     CarriageReturn,
     /// Sole line feed (`\n`).
     ///
@@ -47,7 +44,6 @@ pub enum LineEnding {
     /// b
     /// ```
     #[default]
-    #[cfg_attr(feature = "serde", serde(rename = "\n"))]
     LineFeed,
 }
 

@@ -5,11 +5,6 @@ use crate::markdown_rs::util::constant::TAB_SIZE;
 
 /// Semantic label of a span.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize),
-    serde(rename_all = "camelCase")
-)]
 pub enum Name {
     /// Attention sequence.
     ///
@@ -3467,11 +3462,6 @@ pub const VOID_EVENTS: [Name; 76] = [
 
 /// Embedded content type.
 #[derive(Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize),
-    serde(rename_all = "camelCase")
-)]
 pub enum Content {
     /// Represents [flow content][crate::markdown_rs::construct::flow].
     Flow,
@@ -3486,11 +3476,6 @@ pub enum Content {
 
 /// Link to another event.
 #[derive(Clone, Debug)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize),
-    serde(rename_all = "camelCase")
-)]
 pub struct Link {
     /// Previous event.
     pub previous: Option<usize>,
@@ -3505,11 +3490,6 @@ pub struct Link {
 /// The interface for the location in the document comes from unist
 /// [`Point`](https://github.com/syntax-tree/unist#point).
 #[derive(Clone, Debug)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize),
-    serde(rename_all = "camelCase")
-)]
 pub struct Point {
     /// 1-indexed line number.
     pub line: usize,
@@ -3561,11 +3541,6 @@ impl Point {
 
 /// Event kinds.
 #[derive(Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize),
-    serde(rename_all = "camelCase")
-)]
 pub enum Kind {
     /// The start of something.
     Enter,
@@ -3575,11 +3550,6 @@ pub enum Kind {
 
 /// Something semantic happening somewhere.
 #[derive(Clone, Debug)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize),
-    serde(rename_all = "camelCase")
-)]
 pub struct Event {
     /// Kind of event.
     pub kind: Kind,
