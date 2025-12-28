@@ -178,7 +178,7 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
         let target = match &cfg.target_selection {
             Some(target_selection) => match target_selection {
                 config::TargetSelection::Lib => {
-                    package.targets.iter().find(|t| t.doc && t.is_lib())
+                    package.targets.iter().find(|t| t.doc && is_lib_like(t))
                 }
                 config::TargetSelection::Bin(bin) => match bin {
                     Some(bin_name) => {
@@ -188,7 +188,7 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
                 },
             },
             None => {
-                let lib = package.targets.iter().find(|t| t.doc && t.is_lib());
+                let lib = package.targets.iter().find(|t| t.doc && is_lib_like(t));
                 let bin = || package.targets.iter().find(|t| t.doc && t.is_bin());
                 lib.or_else(bin)
             }
@@ -657,4 +657,13 @@ fn write(path: &Path, content: &[u8]) -> Result<()> {
         .unwrap_or_else(|| path.display().to_string());
 
     fs::write(path, content).with_context(|| format!("failed to write to {file_name}"))
+}
+
+fn is_lib_like(target: &Target) -> bool {
+    target.is_lib()
+        || target.is_dylib()
+        || target.is_cdylib()
+        || target.is_rlib()
+        || target.is_staticlib()
+        || target.is_proc_macro()
 }
