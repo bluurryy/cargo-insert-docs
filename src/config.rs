@@ -8,6 +8,7 @@ use std::{
 };
 
 use anstream::ColorChoice;
+use cargo_metadata::Target;
 use color_eyre::eyre::{Result, WrapErr as _};
 use macro_rules_attribute::derive;
 use serde::{
@@ -394,4 +395,14 @@ fn warn_about_unused_fields(fields: HashMap<String, IgnoredAny>, available_field
     if !unknown_fields.is_empty() {
         tracing::warn!("metadata.insert-docs contains unknown fields: {unknown_fields}");
     }
+}
+
+/// Cargo treats `--lib` as any lib (including proc-macro)
+pub(crate) fn is_lib_like(target: &Target) -> bool {
+    target.is_lib()
+        || target.is_dylib()
+        || target.is_cdylib()
+        || target.is_rlib()
+        || target.is_staticlib()
+        || target.is_proc_macro()
 }

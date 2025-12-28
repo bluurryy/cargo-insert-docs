@@ -8,6 +8,7 @@ use color_eyre::eyre::{Context, Result, bail};
 use rustdoc_types::Crate;
 use serde::Deserialize;
 use tracing::error_span;
+use crate::config::is_lib_like;
 
 pub struct Options<'a> {
     // metadata
@@ -67,7 +68,7 @@ pub fn generate(options: Options) -> Result<(Output, PathBuf)> {
 
     command.arg("rustdoc");
 
-    if package_target.is_lib() {
+    if is_lib_like(package_target) {
         command.arg("--lib");
     } else if package_target.is_bin() {
         command.arg("--bin").arg(&package_target.name);
