@@ -88,12 +88,12 @@ indoc = { version = "2.0.7", default-features = false }
 macro_rules_attribute = { version = "0.2.2", default-features = false }
 mimalloc = { version = "0.1.48", default-features = false }
 percent-encoding = { version = "2.3.2", default-features = false, features = ["std"] }
-proc-macro2 = { version = "1.0.103", default-features = false }
+proc-macro2 = { version = "1.0.104", default-features = false }
 rangemap = { version = "1.7.1", default-features = false, features = ["const_fn"] }
 relative-path = { version = "2.0.1", default-features = false, features = ["std", "alloc"] }
 rustdoc-types = { version = "0.57.0", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
-serde_json = { version = "1.0.147", default-features = false, features = ["std"] }
+serde_json = { version = "1.0.148", default-features = false, features = ["std"] }
 syn = { version = "2.0.111", default-features = false }
 toml = { version = "0.9.10", default-features = false, features = ["display", "parse", "serde", "std"] }
 toml_edit = { version = "0.24.0", default-features = false, features = ["parse"] }
