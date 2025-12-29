@@ -41,7 +41,9 @@ use pretty_log::{PrettyLog, WithResultSeverity as _};
 
 use crate::{
     cli::Cli,
-    config::{PackageConfig, PackageConfigPatch, WorkspaceConfig, WorkspaceConfigPatch, is_lib_like},
+    config::{
+        PackageConfig, PackageConfigPatch, WorkspaceConfig, WorkspaceConfigPatch, is_lib_like,
+    },
     pretty_log::AnyWrite,
     string_replacer::StringReplacer,
 };

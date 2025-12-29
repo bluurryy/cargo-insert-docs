@@ -3,12 +3,12 @@ use std::{
     process::{Command, Output, Stdio},
 };
 
+use crate::config::is_lib_like;
 use cargo_metadata::{Metadata, Package, Target};
 use color_eyre::eyre::{Context, Result, bail};
 use rustdoc_types::Crate;
 use serde::Deserialize;
 use tracing::error_span;
-use crate::config::is_lib_like;
 
 pub struct Options<'a> {
     // metadata
