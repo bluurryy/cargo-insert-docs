@@ -3,6 +3,7 @@ use std::{
     process::{Command, Output, Stdio},
 };
 
+use crate::config::is_lib_like;
 use cargo_metadata::{Metadata, Package, Target};
 use color_eyre::eyre::{Context, Result, bail};
 use rustdoc_types::Crate;
@@ -67,7 +68,7 @@ pub fn generate(options: Options) -> Result<(Output, PathBuf)> {
 
     command.arg("rustdoc");
 
-    if package_target.is_lib() {
+    if is_lib_like(package_target) {
         command.arg("--lib");
     } else if package_target.is_bin() {
         command.arg("--bin").arg(&package_target.name);

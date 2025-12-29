@@ -41,7 +41,9 @@ use pretty_log::{PrettyLog, WithResultSeverity as _};
 
 use crate::{
     cli::Cli,
-    config::{PackageConfig, PackageConfigPatch, WorkspaceConfig, WorkspaceConfigPatch},
+    config::{
+        PackageConfig, PackageConfigPatch, WorkspaceConfig, WorkspaceConfigPatch, is_lib_like,
+    },
     pretty_log::AnyWrite,
     string_replacer::StringReplacer,
 };
@@ -178,7 +180,7 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
         let target = match &cfg.target_selection {
             Some(target_selection) => match target_selection {
                 config::TargetSelection::Lib => {
-                    package.targets.iter().find(|t| t.doc && t.is_lib())
+                    package.targets.iter().find(|t| t.doc && is_lib_like(t))
                 }
                 config::TargetSelection::Bin(bin) => match bin {
                     Some(bin_name) => {
@@ -188,7 +190,7 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
                 },
             },
             None => {
-                let lib = package.targets.iter().find(|t| t.doc && t.is_lib());
+                let lib = package.targets.iter().find(|t| t.doc && is_lib_like(t));
                 let bin = || package.targets.iter().find(|t| t.doc && t.is_bin());
                 lib.or_else(bin)
             }
