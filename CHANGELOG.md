@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add support for parsing toml version 1.1.0 files
 
+### Fixed
+
+- Allow other lib-like targets like `dylib`, `cdylib`, `rlib`, `staticlib` and `proc-macro` by @DenisGorbachev in #19
+
 ## [1.1.0] - 2025-12-06
 
 ### Added
