@@ -95,8 +95,8 @@ rustdoc-types = { version = "0.57.0", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
 serde_json = { version = "1.0.147", default-features = false, features = ["std"] }
 syn = { version = "2.0.111", default-features = false }
-toml = { version = "0.9.10+spec-1.1.0", default-features = false, features = ["display", "parse", "serde", "std"] }
-toml_edit = { version = "0.24.0+spec-1.1.0", default-features = false, features = ["parse"] }
+toml = { version = "0.9.10", default-features = false, features = ["display", "parse", "serde", "std"] }
+toml_edit = { version = "0.24.0", default-features = false, features = ["parse"] }
 tracing = { version = "0.1.44", default-features = false, features = ["std"] }
 tracing-error = { version = "0.2.1", default-features = false }
 tracing-subscriber = { version = "0.3.22", default-features = false, features = ["ansi", "fmt", "smallvec", "std"] }
