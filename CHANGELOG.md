@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+## [1.2.0] - 2025-12-29
+
 ### Added
 
 - Add support for parsing toml version 1.1.0 files
@@ -287,7 +289,8 @@ _This release does not make any breaking changes. The version is bumped to `1.0.
 ## [0.1.0] - 2025-07-09
 
 <!-- next-url -->
-[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.2.0
 [1.1.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.1.0
 [1.0.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.0.0
 [0.19.1]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v0.19.1
