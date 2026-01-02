@@ -19,6 +19,7 @@ This tool can:
   - [Result](#result)
   - [Crate documentation subsections](#crate-documentation-subsections)
 - [Configuration](#configuration)
+- [Semver policy](#semver-policy)
 - [CI Integration](#ci-integration)
 - [FAQ](#faq)
 - [Known Issues](#known-issues)
@@ -199,6 +200,15 @@ If you'd like to see what this looks like when used by a real crate then have a 
 You can configure `cargo-insert-docs` using the cli and via metadata tables inside `Cargo.toml`.
 
 See [docs/config.md](docs/config.md) for details.
+
+## Semver policy
+
+These things are considered minor changes:
+ - changes to the produced documentation
+ - updating the default nightly version of `rustdoc` we invoke
+ - updating the supported rustdoc json version (and losing compatibility with the older version)
+
+So if you require consistent output, pin the version of `cargo-insert-docs` you use.
 
 ## CI Integration
 
