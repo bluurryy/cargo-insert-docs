@@ -48,6 +48,7 @@ allow-branch = ["main"]
 pre-release-commit-message = "release: version {{version}}"
 pre-release-hook = ["just", "pre-release"]
 pre-release-replacements = [
+    { file = "README.md", search = 'cargo-insert-docs@[\d\.]+', replace = "cargo-insert-docs@{{version}}", exactly = 1 },
     { file = "CHANGELOG.md", search = '## \[Unreleased\]', replace = "## [{{version}}] - {{date}}", exactly = 1 },
     { file = "CHANGELOG.md", search = '\[Unreleased\]: .*', replace = "[{{version}}]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v{{version}}", exactly = 1 },
     { file = "CHANGELOG.md", search = '#Unreleased', replace = "#{{version}}", min = 0 },
