@@ -82,7 +82,7 @@ color-eyre = { version = "0.6.5", default-features = false, features = ["capture
 document-features = "0.2.12" # explicitly errors if `default-features = false`
 expect-test = { version = "1.5.1", default-features = false }
 fancy-regex = { version = "0.17.0", default-features = false, features = ["std"] }
-gix = { version = "0.76.0", default-features = false }
+gix = { version = "0.77.0", default-features = false }
 indexmap = { version = "2.12.1", default-features = false, features = ["std"] }
 indoc = { version = "2.0.7", default-features = false }
 macro_rules_attribute = { version = "0.2.2", default-features = false }
@@ -94,7 +94,7 @@ relative-path = { version = "2.0.1", default-features = false, features = ["std"
 rustdoc-types = { version = "0.57.0", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
 serde_json = { version = "1.0.148", default-features = false, features = ["std"] }
-syn = { version = "2.0.111", default-features = false }
+syn = { version = "2.0.112", default-features = false }
 toml = { version = "0.9.10", default-features = false, features = ["display", "parse", "serde", "std"] }
 toml_edit = { version = "0.24.0", default-features = false, features = ["parse"] }
 tracing = { version = "0.1.44", default-features = false, features = ["std"] }
