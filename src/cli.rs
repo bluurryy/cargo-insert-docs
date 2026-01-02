@@ -49,6 +49,7 @@ impl Cli {
             ref features,
             all_features,
             no_default_features,
+            ref hidden_features,
             ref target_selection,
             ref toolchain,
             ref target,
@@ -93,6 +94,13 @@ impl Cli {
                 features: (!features.is_empty()).then(|| {
                     // features are already comma separated, we still need to make them space separated
                     features.iter().flat_map(|f| f.split(' ').map(|s| s.to_string())).collect()
+                }),
+                hidden_features: (!hidden_features.is_empty()).then(|| {
+                    // features are already comma separated, we still need to make them space separated
+                    hidden_features
+                        .iter()
+                        .flat_map(|f| f.split(' ').map(|s| s.to_string()))
+                        .collect()
                 }),
                 all_features: all_features.then_some(true),
                 no_default_features: no_default_features.then_some(true),
@@ -277,6 +285,10 @@ struct Args {
     /// Do not activate the `default` feature
     #[arg(global = true, help_heading = heading::FEATURE_SELECTION, long)]
     no_default_features: bool,
+
+    /// Space or comma separated list of features to hide from the documentation
+    #[arg(global = true, help_heading = heading::FEATURE_SELECTION, long, value_delimiter = ',', value_name = "FEATURES")]
+    hidden_features: Vec<String>,
 
     #[command(flatten)]
     target_selection: TargetSelection,

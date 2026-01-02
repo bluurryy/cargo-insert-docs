@@ -133,6 +133,7 @@ pub struct PackageConfig {
     pub allow_dirty: bool,
     pub allow_staged: bool,
     pub features: Vec<String>,
+    pub hidden_features: Vec<String>,
     pub all_features: bool,
     pub no_default_features: bool,
     #[serde(flatten, serialize_with = "serialize_target_selection")]
@@ -162,6 +163,7 @@ pub struct PackageConfigPatch {
     pub allow_staged: Option<bool>,
     pub features: Option<Vec<String>>,
     pub all_features: Option<bool>,
+    pub hidden_features: Option<Vec<String>>,
     pub no_default_features: Option<bool>,
     pub lib: Option<bool>,
     pub bin: Option<BoolOrString>,
@@ -217,6 +219,9 @@ impl PackageConfigPatch {
         if let Some(features) = &overwrite.features {
             this.features = Some(features.clone());
         }
+        if let Some(hidden_features) = &overwrite.hidden_features {
+            this.hidden_features = Some(hidden_features.clone());
+        }
         if let Some(all_features) = overwrite.all_features {
             this.all_features = Some(all_features);
         }
@@ -267,6 +272,7 @@ impl PackageConfigPatch {
             target,
             target_dir,
             readme_path,
+            hidden_features,
         } = self;
 
         PackageConfig {
@@ -286,6 +292,7 @@ impl PackageConfigPatch {
             allow_dirty: allow_dirty.unwrap_or_default(),
             allow_staged: allow_dirty.or(allow_staged).unwrap_or_default(),
             features: features.unwrap_or_default(),
+            hidden_features: hidden_features.unwrap_or_default(),
             all_features: all_features.unwrap_or_default(),
             no_default_features: no_default_features.unwrap_or_default(),
             target_selection: match lib {

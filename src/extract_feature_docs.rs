@@ -5,8 +5,15 @@ use std::{collections::HashSet, fmt::Write};
 
 use color_eyre::eyre::{Result, bail};
 
-pub fn extract(toml: &str, feature_label: &str) -> Result<String> {
-    Ok(format(&parse(toml)?, feature_label))
+pub fn extract(toml: &str, feature_label: &str, hidden_features: &HashSet<&str>) -> Result<String> {
+    let mut docs = parse(toml)?;
+
+    docs.retain(|entry| match entry {
+        FeatureDocEntry::InBetween { .. } => true,
+        FeatureDocEntry::Feature { name, .. } => !hidden_features.contains(name.as_str()),
+    });
+
+    Ok(format(&docs, feature_label))
 }
 
 type FeatureDocs = Vec<FeatureDocEntry>;

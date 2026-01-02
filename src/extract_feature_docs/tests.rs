@@ -1,8 +1,14 @@
+use std::collections::HashSet;
+
 use color_eyre::eyre::Result;
 use expect_test::expect;
 use indoc::indoc;
 
 use super::{comment_line_unprefixed, extract, parse};
+
+fn extract_simple(toml: &str) -> String {
+    extract(toml, "{feature}", &HashSet::new()).unwrap()
+}
 
 #[test]
 fn test_extract() {
@@ -11,21 +17,15 @@ fn test_extract() {
         - serde — Some docs about serde
         - something_undocumented
     "#]]
-    .assert_eq(
-        &extract(
-            indoc! {r#"
-                [features]
-                default = ["std"]
-                ## Some docs about std
-                std = []
-                ## Some docs about serde
-                serde = []
-                something_undocumented = []
-            "#},
-            "{feature}",
-        )
-        .unwrap(),
-    );
+    .assert_eq(&extract_simple(indoc! {r#"
+        [features]
+        default = ["std"]
+        ## Some docs about std
+        std = []
+        ## Some docs about serde
+        serde = []
+        something_undocumented = []
+    "#}));
 }
 
 #[test]
@@ -34,12 +34,30 @@ fn test_extract_inline() {
         - std *(enabled by default)*
         - serde
     "#]]
+    .assert_eq(&extract_simple(indoc! {r#"
+        features = { default = ["std"], std = [], serde = [] }
+    "#}));
+}
+
+#[test]
+fn test_extract_hidden() {
+    expect![[r#"
+        - documented — bla bla
+        - undocumented
+    "#]]
     .assert_eq(
         &extract(
             indoc! {r#"
-                features = { default = ["std"], std = [], serde = [] }
-            "#},
+        [features]
+        ## bla bla
+        documented = []
+        undocumented = []
+        ## blo blo
+        hidden-documented = []
+        hidden-undocumented = []
+    "#},
             "{feature}",
+            &["hidden-documented", "hidden-undocumented"].into_iter().collect(),
         )
         .unwrap(),
     );
@@ -55,13 +73,12 @@ fn test_feature_syntax_no_space() {
 fn test_feature_syntax_no_space_in_empty_line() {
     assert_eq!(
         "- my_feature — Good\n  \n  docs.\n",
-        extract("[features]\n## Good\n##\n## docs.\nmy_feature = []", "{feature}").unwrap(),
+        extract_simple("[features]\n## Good\n##\n## docs.\nmy_feature = []")
     );
 
     assert_eq!(
         "- my_feature — Good\n  \n  docs.\n",
-        extract("[features]\n## Good\n##\t \u{A0}\n## docs.\nmy_feature = []", "{feature}")
-            .unwrap(),
+        extract_simple("[features]\n## Good\n##\t \u{A0}\n## docs.\nmy_feature = []")
     );
 }
 

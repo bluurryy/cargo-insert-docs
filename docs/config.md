@@ -49,6 +49,7 @@ For the cli, these are not arguments but subcommands instead and calling the sub
 |features|string list||List of features to activate
 |all-features|bool|false|Activate all available features
 |no-default-features|bool|false|Do not activate the `default` feature
+|hidden-features|string list|List of features to hide from the documentation
 
 #### Target Selection
 |Field|Type|Default|Description|
