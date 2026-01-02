@@ -18,6 +18,10 @@ std = []
 serde = []
 something_undocumented = []
 
+## This won't show up
+some-hidden-feature = []
+some-hidden-undocumented-feature = []
+
 ## Actually used feature, enables recursive imports that will cause errors.
 recurse = []
 
@@ -40,3 +44,4 @@ test-crate-dep = { path = "../test-crate-dep" }
 crate-section-name = "docs"
 feature-section-name = "features"
 shrink-headings = 2
+hidden-features = ["some-hidden-feature", "some-hidden-undocumented-feature"]

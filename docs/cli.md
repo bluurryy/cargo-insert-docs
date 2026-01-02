@@ -47,9 +47,10 @@ Package Selection:
       --exclude <SPEC>  Exclude package(s) from documenting
 
 Feature Selection:
-  -F, --features <FEATURES>  Space or comma separated list of features to activate
-      --all-features         Activate all available features
-      --no-default-features  Do not activate the `default` feature
+  -F, --features <FEATURES>         Space or comma separated list of features to activate
+      --all-features                Activate all available features
+      --no-default-features         Do not activate the `default` feature
+      --hidden-features <FEATURES>  Space or comma separated list of features to hide from the documentation
 
 Target Selection:
       --lib           Document only library targets

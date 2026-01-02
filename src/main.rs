@@ -559,9 +559,12 @@ fn insert_features_into_docs(cx: &PackageContext) -> Result<()> {
     };
 
     let cargo_toml = cx.manifest_path.get().read_to_string()?;
+    let hidden_features =
+        cx.cfg.hidden_features.iter().map(|s| s.as_str()).collect::<HashSet<&str>>();
 
-    let feature_docs = extract_feature_docs::extract(&cargo_toml, &cx.cfg.feature_label)
-        .wrap_err("failed to parse Cargo.toml")?;
+    let feature_docs =
+        extract_feature_docs::extract(&cargo_toml, &cx.cfg.feature_label, &hidden_features)
+            .wrap_err("failed to parse Cargo.toml")?;
 
     let new_target_src = feature_docs_section.replace(&feature_docs)?;
 
