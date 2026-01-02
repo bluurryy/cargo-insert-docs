@@ -1,3 +1,8 @@
+//! The configuration parameters that can be set from the command line or via the
+//! metadata table in the workspace and package manifests.
+//!
+//! See `../docs/config.md`.
+
 #[cfg(test)]
 mod tests;
 
@@ -37,6 +42,7 @@ macro_rules! Fields {
     };
 }
 
+/// The resolved configuration for the command line interface.
 pub struct CliConfig {
     pub print_supported_toolchain: bool,
     pub print_config: bool,
@@ -47,6 +53,7 @@ pub struct CliConfig {
     pub manifest_path: Option<PathBuf>,
 }
 
+/// The resolved configuration for the workspace.
 #[derive(Serialize)]
 pub struct WorkspaceConfig {
     pub package: Vec<String>,
@@ -54,6 +61,7 @@ pub struct WorkspaceConfig {
     pub exclude: Vec<String>,
 }
 
+/// Reads configuration parameters from [`cargo_metadata::Metadata::workspace_metadata`].
 pub fn read_workspace_config(
     json: &serde_json::Value,
 ) -> Result<(WorkspaceConfigPatch, PackageConfigPatch)> {
@@ -64,6 +72,7 @@ pub fn read_workspace_config(
     Ok((wrk, pkg))
 }
 
+/// Reads configuration parameters from a package manifest's contents (`Cargo.toml`).
 pub fn read_package_config(toml: &str) -> Result<PackageConfigPatch> {
     let pkg: PackageConfigPatch = metadata_toml(toml)?;
     let fields: HashMap<String, IgnoredAny> = metadata_toml(toml)?;
@@ -71,6 +80,7 @@ pub fn read_package_config(toml: &str) -> Result<PackageConfigPatch> {
     Ok(pkg)
 }
 
+/// Parsed configuration parameters for the workspace.
 #[derive(Default, Clone, Deserialize, Serialize, Fields!)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct WorkspaceConfigPatch {
@@ -106,6 +116,7 @@ impl WorkspaceConfigPatch {
     }
 }
 
+/// The resolved configuration for a package.
 #[derive(Debug, Serialize)]
 pub struct PackageConfig {
     pub feature_into_crate: bool,
@@ -132,6 +143,7 @@ pub struct PackageConfig {
     pub readme_path: Option<PathBuf>,
 }
 
+/// Parsed configuration parameters for packages.
 #[derive(Debug, Default, Clone, Deserialize, Serialize, Fields!)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct PackageConfigPatch {
