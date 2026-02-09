@@ -244,7 +244,7 @@ You can automate this using GitHub Actions with job steps like these:
   - associated types
   - associated constants
 
-- **Can't resolve rescursive imports and some cases of glob imports**
+- **Can't resolve recursive imports and some cases of glob imports**
 
   The rustdoc json output currently doesn't give us information what imports resolve to.
   Resolving imports can be very complicated with cycles, shadowing, renaming and visibility, see [rustdoc-types#51](https://github.com/rust-lang/rustdoc-types/issues/51) and [rust#111338](https://github.com/rust-lang/rust/issues/111338). I have no plans of re-implementing proper rust name resolution myself and hope it becomes part of the json format at some point.
@@ -280,14 +280,11 @@ at your option.
 This project includes code adapted from the Rust standard library 
 (<https://github.com/rust-lang/rust>), 
 Copyright © The Rust Project Developers and cargo (<https://github.com/rust-lang/cargo>).
-Those projects are also licensed under MIT OR Apache-2.0.
+Those projects are licensed under MIT OR Apache-2.0.
 
 ---
 
-This project also vendors code from the
-[`markdown-rs`](https://github.com/wooorm/markdown-rs),
-which is licensed under the MIT license only
-([LICENSE](src/markdown_rs/LICENSE))
+This project also vendors code from [`markdown-rs`](https://github.com/wooorm/markdown-rs) which is licensed under the MIT license ([LICENSE](src/markdown_rs/LICENSE))
 
 ### Your contributions
 
