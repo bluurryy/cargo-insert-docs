@@ -114,10 +114,10 @@
  
  html: <code>MyEnum::MyVariant</code>
  href: enum.MyEnum.html#variant.MyVariant
--
+ 
 -html: <code>std::cmp::Ordering::Less</code>
 -href: https://doc.rust-lang.org/core/cmp/enum.Ordering.html#variant.Less
- 
+-
  html: <code>my_function</code>
  href: fn.my_function.html
  
@@ -171,19 +171,19 @@
  
  html: <code>MyTrait::MY_ASSOCIATED_CONSTANT</code>
  href: trait.MyTrait.html#associatedconstant.MY_ASSOCIATED_CONSTANT
--
+ 
 -html: <code>test_crate_dep::ForeignTrait::FOREIGN_ASSOCIATED_CONSTANT</code>
 -href: ../test_crate_dep/trait.ForeignTrait.html#associatedconstant.FOREIGN_ASSOCIATED_CONSTANT
 -
 -html: <code>f32::NAN</code>
 -href: https://doc.rust-lang.org/std/primitive.f32.html#associatedconstant.NAN
- 
+-
  html: <code>MyTrait::MyAssociatedType</code>
  href: trait.MyTrait.html#associatedtype.MyAssociatedType
- 
+-
 -html: <code>test_crate_dep::ForeignTrait::ForeignAssociatedType</code>
 -href: ../test_crate_dep/trait.ForeignTrait.html#associatedtype.ForeignAssociatedType
--
+ 
  html: <code>Debug</code>
  href: https://doc.rust-lang.org/core/fmt/macros/derive.Debug.html
  
@@ -192,13 +192,19 @@
  
  html: <code>MyStruct::my_method</code>
  href: struct.MyStruct.html#method.my_method
--
+ 
 -html: <code>std::alloc::Layout::size</code>
 -href: https://doc.rust-lang.org/core/alloc/layout/struct.Layout.html#method.size
- 
- html: <code>MyTrait::my_method</code>
--href: trait.MyTrait.html#method.my_method
 -
+ html: <code>MyTrait::my_required_method</code>
+ href: trait.MyTrait.html#tymethod.my_required_method
+ 
 -html: <code>std::iter::Iterator::next</code>
 -href: https://doc.rust-lang.org/core/iter/traits/iterator/trait.Iterator.html#tymethod.next
-+href: trait.MyTrait.html#tymethod.my_method
+-
+ html: <code>MyTrait::my_provided_method</code>
+-href: trait.MyTrait.html#method.my_provided_method
+-
+-html: <code>std::iter::Iterator::size_hint</code>
+-href: https://doc.rust-lang.org/core/iter/traits/iterator/trait.Iterator.html#method.size_hint
++href: trait.MyTrait.html#tymethod.my_provided_method

@@ -85,7 +85,8 @@ But we can have a naive implementation and try to not crash.
 - A link to a keyword is not possible
 - A link to a builtin attribute: [`derive`]
 - A link to a method: [`MyStruct::my_method`] (foreign: `std::alloc::Layout::size`)
-- A link to a trait method: [`MyTrait::my_method`] (foreign: `std::iter::Iterator::next`)
+- A link to a required trait method: [`MyTrait::my_required_method`] (foreign: `std::iter::Iterator::next`)
+- A link to a provided trait method: [`MyTrait::my_provided_method`] (foreign: `std::iter::Iterator::size_hint`)
 
 
 ### Features
@@ -221,7 +222,8 @@ Test if ignoring lines work in a listed code block.
 [`ReexportInline`]: https://docs.rs/test-crate/0.0.0/test_crate/struct.ReexportInline.html
 [`MyUnion`]: https://docs.rs/test-crate/0.0.0/test_crate/union.MyUnion.html
 [`MyTrait`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html
-[`MyTrait::my_method`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#tymethod.my_method
+[`MyTrait::my_required_method`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#tymethod.my_required_method
+[`MyTrait::my_provided_method`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#tymethod.my_provided_method
 [`MyTrait::MyAssociatedType`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#associatedtype.MyAssociatedType
 [`MyTrait::MY_ASSOCIATED_CONSTANT`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#associatedconstant.MY_ASSOCIATED_CONSTANT
 [`MyStruct`]: https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html

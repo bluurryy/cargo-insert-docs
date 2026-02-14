@@ -65,7 +65,8 @@ fn test_tree() {
         ├── MyTrait Trait
         │   ├── MY_ASSOCIATED_CONSTANT AssocConst
         │   ├── MyAssociatedType AssocType
-        │   └── my_method TyMethod
+        │   ├── my_provided_method TyMethod
+        │   └── my_required_method TyMethod
         ├── MyTraitAlias TraitAlias
         ├── MyUnion Union
         ├── ReexportInline Struct
