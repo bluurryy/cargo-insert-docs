@@ -99,8 +99,8 @@ serde_json = { version = "1.0.148", default-features = false, features = ["std"]
 similar = "2.7.0"
 syn = { version = "2.0.112", default-features = false }
 tl = "0.7.8"
-toml = { version = "0.9.10", default-features = false, features = ["display", "parse", "serde", "std"] }
-toml_edit = { version = "0.24.0", default-features = false, features = ["parse"] }
+toml = { version = "1.0.1", default-features = false, features = ["display", "parse", "serde", "std"] }
+toml_edit = { version = "0.25.1", default-features = false, features = ["parse"] }
 tracing = { version = "0.1.44", default-features = false, features = ["std"] }
 tracing-error = { version = "0.2.1", default-features = false }
 tracing-subscriber = { version = "0.3.22", default-features = false, features = ["ansi", "fmt", "smallvec", "std"] }
