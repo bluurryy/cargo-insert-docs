@@ -218,6 +218,7 @@ impl Cmd {
             let stderr_thread = forward(stderr, child.stderr.take().unwrap(), io::stderr());
 
             let status = child.wait()?;
+            check_status(unchecked, &args, status)?;
 
             let stdout = stdout_thread.join().unwrap();
             let stderr = stderr_thread.join().unwrap();
