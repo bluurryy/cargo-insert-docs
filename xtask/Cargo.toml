@@ -8,3 +8,6 @@ anstyle = { workspace = true }
 clap = { workspace = true }
 color-eyre = { workspace = true }
 fancy-regex = { workspace = true }
+markdown = { workspace = true }
+similar = { workspace = true }
+tl = { workspace = true }

@@ -1,5 +1,6 @@
 //! https://github.com/matklad/cargo-xtask
 
+mod compare_links;
 mod util;
 
 use std::env;
@@ -26,7 +27,7 @@ enum Command {
     CheckRecurse,
     CheckConfig,
     CheckBinLib,
-    CheckTestCrateStderr,
+    CheckTestCrate,
 }
 
 fn main() -> Result {
@@ -43,21 +44,21 @@ fn main() -> Result {
     match command {
         Command::Ci => ci(),
         Command::Test => test(),
-        Command::Check => check(),
+        Command::Check => check_simple(),
         Command::CheckRecurse => check_recurse(),
         Command::CheckConfig => check_config(),
-        Command::CheckBinLib => check_bin_lib(),
-        Command::CheckTestCrateStderr => check_test_crate_stderr(),
+        Command::CheckBinLib => check_bin_lib_stderr(),
+        Command::CheckTestCrate => check_test_crate(),
     }
 }
 
 fn ci() -> Result {
     test()?;
-    check()?;
+    check_simple()?;
     check_recurse()?;
     check_config()?;
-    check_bin_lib()?;
-    check_test_crate_stderr()?;
+    check_bin_lib_stderr()?;
+    check_test_crate()?;
     OK
 }
 
@@ -113,6 +114,24 @@ fn test() -> Result {
     OK
 }
 
+fn check_simple() -> Result {
+    cmd!("cargo run -- --check -p test-crate").output()?;
+    cmd!("cargo run -- --check -p test-document-features crate-into-readme").output()?;
+    cmd!("cargo run -- --check -p example-crate").output()?;
+    cmd!("cargo run -- --check -p test-bin crate-into-readme").output()?;
+    cmd!(
+        "cargo run -- --check --workspace",
+        "--exclude test-crate",
+        "--exclude cargo-insert-docs",
+        "--exclude test-bin-lib",
+        "--exclude xtask",
+        "--exclude test-crate-dep",
+        "crate-into-readme"
+    )
+    .output()?;
+    OK
+}
+
 fn check_recurse() -> Result {
     fn test(feature: &str) -> Result {
         let out =
@@ -152,7 +171,7 @@ fn check_config() -> Result {
     OK
 }
 
-fn check_bin_lib() -> Result {
+fn check_bin_lib_stderr() -> Result {
     let out = cmd!("cargo run -- -p test-bin-lib --allow-dirty").unchecked().stderr()?;
 
     if !out.contains("choose one or the other") {
@@ -163,44 +182,37 @@ fn check_bin_lib() -> Result {
     OK
 }
 
-fn check() -> Result {
-    cmd!("cargo run -- --check -p test-crate").output()?;
-    cmd!("cargo run -- --check -p test-document-features crate-into-readme").output()?;
-    cmd!("cargo run -- --check -p example-crate").output()?;
-    cmd!("cargo run -- --check -p test-bin crate-into-readme").output()?;
-    cmd!(
-        "cargo run -- --check --workspace",
-        "--exclude test-crate",
-        "--exclude cargo-insert-docs",
-        "--exclude test-bin-lib",
-        "--exclude xtask",
-        "--exclude test-crate-dep",
-        "crate-into-readme"
-    )
-    .output()?;
-    OK
-}
+fn check_test_crate() -> Result {
+    // run cargo-insert-docs
+    let stderr = cmd!("cargo run -q -- --check -p test-crate --quiet-cargo").stderr()?.strip_ansi();
+    expect_file("tests/test-crate/stderr.txt", &stderr)?;
 
-fn check_test_crate_stderr() -> Result {
-    let path = "tests/test-crate/stderr.txt";
+    // create html
+    cmd!("cargo +nightly doc -p test-crate").run()?;
 
-    let new_stderr =
-        cmd!("cargo run -q -- --check -p test-crate --quiet-cargo").stderr()?.strip_ansi();
+    // diff links
+    {
+        let html = read("target/doc/test_crate/index.html")?;
+        let mut html_links = compare_links::extract_links_from_html(&html);
 
-    let old_stderr = read(path).unwrap_or_default();
+        let md = read("tests/test-crate/MEREAD.md")?;
+        let mut md_links = compare_links::extract_links_from_md(&md).split_off(3);
 
-    if new_stderr != old_stderr {
-        if is_update_expect() {
-            let style = anstyle::Style::new()
-                .fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Yellow)))
-                .bold();
-            eprintln!("{style}STDERR CHANGED{style:#}");
-
-            write(path, &new_stderr)?;
-        } else {
-            print_error("STDERR MISMATCH");
-            bail!("stderr mismatch")
+        for (html, href) in &mut html_links {
+            *html = html.replace("…", "...");
+            *href = href.replace("/nightly/", "/");
         }
+
+        for (_html, href) in &mut md_links {
+            // replace this crate
+            *href = href.replace("https://docs.rs/test-crate/0.0.0/test_crate/", "");
+
+            // replace foreign crate links
+            *href = re!(r#"https:\/\/docs\.rs\/[^\/]+\/[^\/]+\/"#).replace(href, "../").to_string();
+        }
+
+        let diff = compare_links::diff(&html_links, &md_links);
+        expect_file("tests/test-crate/links.diff", &diff)?;
     }
 
     OK
@@ -210,6 +222,31 @@ fn print_error(message: &str) {
     let style =
         anstyle::Style::new().fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Red))).bold();
     eprintln!("{style}{message}{style:#}");
+}
+
+fn expect_file(path: &str, content: &str) -> Result {
+    let new = content;
+    let old = read(path).unwrap_or_default();
+
+    if new != old {
+        if is_update_expect() {
+            let style = anstyle::Style::new()
+                .fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Yellow)))
+                .bold();
+
+            eprintln!("{style}EXPECTED FILE CONTENT CHANGED{style:#}");
+            eprintln!("{path}");
+
+            write(path, new)?;
+        } else {
+            print_error("EXPECTED FILE CONTENT MISMATCH");
+            eprintln!("{path}");
+
+            bail!("expected file content mismatch")
+        }
+    }
+
+    OK
 }
 
 fn is_update_expect() -> bool {
