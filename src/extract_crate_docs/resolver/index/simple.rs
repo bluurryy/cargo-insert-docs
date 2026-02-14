@@ -1,6 +1,6 @@
 //! Parses `.index` into a simpler representation fitting our use case.
 
-use rustdoc_types::{Attribute, Crate, Id, Item, ItemEnum, StructKind, VariantKind};
+use rustdoc_types::{Attribute, Crate, Function, Id, Item, ItemEnum, StructKind, VariantKind};
 
 pub struct SimpleItem<'a> {
     pub name: &'a str,
@@ -24,7 +24,7 @@ pub enum SimpleItemKind {
     StructField,
     Enum,
     Variant,
-    Function,
+    Function { has_body: bool },
     Trait,
     TraitAlias,
     Impl,
@@ -45,7 +45,7 @@ fn name(item: &Item) -> &str {
 
 fn kind(item: &Item) -> SimpleItemKind {
     #[expect(clippy::unneeded_struct_pattern)]
-    match &item.inner {
+    match item.inner {
         ItemEnum::Module { .. } => SimpleItemKind::Module,
         ItemEnum::ExternCrate { .. } => SimpleItemKind::ExternCrate,
         ItemEnum::Use { .. } => SimpleItemKind::Use { inline: is_doc_inline(item) },
@@ -54,7 +54,7 @@ fn kind(item: &Item) -> SimpleItemKind {
         ItemEnum::StructField { .. } => SimpleItemKind::StructField,
         ItemEnum::Enum { .. } => SimpleItemKind::Enum,
         ItemEnum::Variant { .. } => SimpleItemKind::Variant,
-        ItemEnum::Function { .. } => SimpleItemKind::Function,
+        ItemEnum::Function(Function { has_body, .. }) => SimpleItemKind::Function { has_body },
         ItemEnum::Trait { .. } => SimpleItemKind::Trait,
         ItemEnum::TraitAlias { .. } => SimpleItemKind::TraitAlias,
         ItemEnum::Impl { .. } => SimpleItemKind::Impl,

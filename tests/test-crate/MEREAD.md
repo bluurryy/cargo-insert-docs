@@ -223,7 +223,7 @@ Test if ignoring lines work in a listed code block.
 [`MyUnion`]: https://docs.rs/test-crate/0.0.0/test_crate/union.MyUnion.html
 [`MyTrait`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html
 [`MyTrait::my_required_method`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#tymethod.my_required_method
-[`MyTrait::my_provided_method`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#tymethod.my_provided_method
+[`MyTrait::my_provided_method`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#method.my_provided_method
 [`MyTrait::MyAssociatedType`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#associatedtype.MyAssociatedType
 [`MyTrait::MY_ASSOCIATED_CONSTANT`]: https://docs.rs/test-crate/0.0.0/test_crate/trait.MyTrait.html#associatedconstant.MY_ASSOCIATED_CONSTANT
 [`MyStruct`]: https://docs.rs/test-crate/0.0.0/test_crate/struct.MyStruct.html
