@@ -87,6 +87,7 @@ gix = { version = "0.77.0", default-features = false }
 indexmap = { version = "2.12.1", default-features = false, features = ["std"] }
 indoc = { version = "2.0.7", default-features = false }
 macro_rules_attribute = { version = "0.2.2", default-features = false }
+markdown = "1.0.0"
 mimalloc = { version = "0.1.48", default-features = false }
 percent-encoding = { version = "2.3.2", default-features = false, features = ["std"] }
 proc-macro2 = { version = "1.0.104", default-features = false }
@@ -95,7 +96,9 @@ relative-path = { version = "2.0.1", default-features = false, features = ["std"
 rustdoc-types = { version = "0.57.0", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
 serde_json = { version = "1.0.148", default-features = false, features = ["std"] }
+similar = "2.7.0"
 syn = { version = "2.0.112", default-features = false }
+tl = "0.7.8"
 toml = { version = "0.9.10", default-features = false, features = ["display", "parse", "serde", "std"] }
 toml_edit = { version = "0.24.0", default-features = false, features = ["parse"] }
 tracing = { version = "0.1.44", default-features = false, features = ["std"] }

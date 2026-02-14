@@ -86,6 +86,7 @@ impl Out {
     }
 }
 
+#[must_use]
 pub struct Cmd {
     args: Vec<String>,
     unchecked: bool,
@@ -163,6 +164,16 @@ impl Cmd {
         Ok(self.capture_stderr().output()?.stderr)
     }
 
+    #[expect(dead_code)]
+    pub fn status(self) -> Result<ExitStatus> {
+        Ok(self.output()?.status)
+    }
+
+    pub fn run(self) -> Result {
+        self.output()?;
+        OK
+    }
+
     pub fn output(self) -> Result<Output> {
         let Self { args, unchecked, stdout, stderr, hooks } = self;
 
@@ -212,40 +223,47 @@ impl Cmd {
             let stderr = stderr_thread.join().unwrap();
 
             Ok(Output { status, stdout, stderr })
-        } else {
+        } else if stdout.capture || stderr.capture {
             let output = cmd.output()?;
-
-            if !unchecked && !output.status.success() {
-                let command = args
-                    .iter()
-                    .map(|arg| {
-                        if arg.contains(char::is_whitespace) {
-                            Cow::Owned(format!("{arg:?}"))
-                        } else {
-                            Cow::Borrowed(arg.as_str())
-                        }
-                    })
-                    .collect::<Vec<_>>()
-                    .join(" ");
-
-                bail!(
-                    "command did not succeed!\n\
-                            command: {command}"
-                )
-            }
-
+            check_status(unchecked, &args, output.status)?;
             Ok(Output {
                 status: output.status,
                 stdout: String::from_utf8(output.stdout)?,
                 stderr: String::from_utf8(output.stderr)?,
             })
+        } else {
+            let status = cmd.status()?;
+            check_status(unchecked, &args, status)?;
+            Ok(Output { status, stdout: String::new(), stderr: String::new() })
         }
     }
 }
 
+fn check_status(unchecked: bool, args: &[String], status: ExitStatus) -> Result {
+    if !unchecked && !status.success() {
+        let command = args
+            .iter()
+            .map(|arg| {
+                if arg.contains(char::is_whitespace) {
+                    Cow::Owned(format!("{arg:?}"))
+                } else {
+                    Cow::Borrowed(arg.as_str())
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(" ");
+
+        bail!(
+            "command did not succeed!\n\
+                            command: {command}"
+        )
+    }
+
+    OK
+}
+
 #[derive(Debug, Clone)]
 pub struct Output {
-    #[expect(dead_code)]
     pub status: ExitStatus,
     pub stdout: String,
     pub stderr: String,
