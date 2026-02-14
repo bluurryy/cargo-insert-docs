@@ -68,7 +68,11 @@ impl<'a> Tree<'a> {
                         if matches!(parent_item.kind, SimpleItemKind::Trait)
                             && matches!(child_kind, Kind::Function)
                         {
-                            child_kind = Kind::TyMethod;
+                            if let SimpleItemKind::Function { has_body } = child_item.kind {
+                                child_kind = if has_body { Kind::Method } else { Kind::TyMethod };
+                            } else {
+                                unreachable!()
+                            }
                         }
 
                         break Some(parent_id);

@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Fixed
+
+- Fix url for trait provided methods
+
 ## [1.3.0] - 2026-01-02
 
 ### Added

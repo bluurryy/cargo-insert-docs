@@ -161,12 +161,14 @@ enum Kind {
     /// This type doesn't come from rustdoc json directly.
     ///
     /// We infer [`Function`](Kind::Function)s to be [`Method`](Kind::Method)s when
-    /// they're inside an [`rustdoc_types::ItemEnum::Impl`] or [`rustdoc_types::ItemKind::Impl`].
+    /// they're inside an [`rustdoc_types::ItemEnum::Impl`], [`rustdoc_types::ItemKind::Impl`]
+    /// or they are inside an [`rustdoc_types::ItemEnum::Trait`] and have a body.
     Method,
 
     /// This type doesn't come from rustdoc json directly.
     ///
     /// We infer [`Function`](Kind::Function)s to be [`TyMethod`](Kind::TyMethod)s when
-    /// they're inside an [`rustdoc_types::ItemEnum::Trait`] or [`rustdoc_types::ItemKind::Trait`].
+    /// they're inside an [`rustdoc_types::ItemEnum::Trait`] or [`rustdoc_types::ItemKind::Trait`]
+    /// and don't have a body.
     TyMethod,
 }
