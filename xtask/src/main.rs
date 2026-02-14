@@ -64,7 +64,6 @@ fn ci() -> Result {
 
 fn test() -> Result {
     let out = cmd!("cargo test --color always -- --color always")
-        .unchecked()
         .inherit_and_capture()
         .stdout()?
         .strip_ansi();
