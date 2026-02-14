@@ -64,7 +64,7 @@ members = ["tests/*", "xtask"]
 consolidate-commits = false
 
 [workspace.dependencies]
-anstream = { version = "0.6.21", default-features = false, features = ["auto", "wincon"] }
+anstream = { version = "1.0.0", default-features = false, features = ["auto", "wincon"] }
 anstyle = { version = "1.0.13", default-features = false }
 arcstr = { version = "1.2.0", default-features = false }
 cargo_metadata = { version = "0.23.1", default-features = false }
