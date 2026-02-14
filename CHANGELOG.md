@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Changed
+
+- Update default nightly toolchain to `nightly-2026-02-12`
+
 ### Fixed
 
 - Fix url for trait provided methods

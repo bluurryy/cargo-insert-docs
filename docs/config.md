@@ -60,7 +60,7 @@ For the cli, these are not arguments but subcommands instead and calling the sub
 #### Compilation Options
 |Field|Type|Default|Description|
 |---|---|---|---|
-|toolchain|string|`"nightly-2026-01-01"`|Which rustup toolchain to use when invoking rustdoc.
+|toolchain|string|`"nightly-2026-02-12"`|Which rustup toolchain to use when invoking rustdoc.
 |target|string||Target triple to document
 |target-dir|string||Directory for all generated artifacts
 

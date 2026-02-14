@@ -24,7 +24,7 @@ use serde::{
 pub const DEFAULT_FEATURE_LABEL: &str = "**`{feature}`**";
 pub const DEFAULT_FEATURE_SECTION_NAME: &str = "feature documentation";
 pub const DEFAULT_CRATE_SECTION_NAME: &str = "crate documentation";
-pub const DEFAULT_TOOLCHAIN: &str = "nightly-2026-01-01";
+pub const DEFAULT_TOOLCHAIN: &str = "nightly-2026-02-12";
 pub const DEFAULT_SHRINK_HEADINGS: i8 = 1;
 
 macro_rules! Fields {

@@ -22,7 +22,7 @@ fn test_tree() {
         metadata,
         package,
         package_target,
-        toolchain: Some("nightly-2026-01-01"),
+        toolchain: Some("nightly-2026-02-12"),
         all_features: false,
         no_default_features: false,
         features: &mut None.into_iter(),
