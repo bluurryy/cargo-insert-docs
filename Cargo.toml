@@ -68,7 +68,7 @@ anstream = { version = "1.0.0", default-features = false, features = ["auto", "w
 anstyle = { version = "1.0.13", default-features = false }
 arcstr = { version = "1.2.0", default-features = false }
 cargo_metadata = { version = "0.23.1", default-features = false }
-clap = { version = "4.5.53", default-features = false, features = [
+clap = { version = "4.5.58", default-features = false, features = [
     "color",
     "error-context",
     "help",
@@ -84,20 +84,20 @@ document-features = "0.2.12" # explicitly errors if `default-features = false`
 expect-test = { version = "1.5.1", default-features = false }
 fancy-regex = { version = "0.17.0", default-features = false, features = ["std"] }
 gix = { version = "0.79.0", default-features = false }
-indexmap = { version = "2.12.1", default-features = false, features = ["std"] }
+indexmap = { version = "2.13.0", default-features = false, features = ["std"] }
 indoc = { version = "2.0.7", default-features = false }
 macro_rules_attribute = { version = "0.2.2", default-features = false }
 markdown = "1.0.0"
 mimalloc = { version = "0.1.48", default-features = false }
 percent-encoding = { version = "2.3.2", default-features = false, features = ["std"] }
-proc-macro2 = { version = "1.0.104", default-features = false }
+proc-macro2 = { version = "1.0.106", default-features = false }
 rangemap = { version = "1.7.1", default-features = false, features = ["const_fn"] }
 relative-path = { version = "2.0.1", default-features = false, features = ["std", "alloc"] }
 rustdoc-types = { version = "0.57.0", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
-serde_json = { version = "1.0.148", default-features = false, features = ["std"] }
+serde_json = { version = "1.0.149", default-features = false, features = ["std"] }
 similar = "2.7.0"
-syn = { version = "2.0.112", default-features = false }
+syn = { version = "2.0.115", default-features = false }
 tl = "0.7.8"
 toml = { version = "1.0.1", default-features = false, features = ["display", "parse", "serde", "std"] }
 toml_edit = { version = "0.25.1", default-features = false, features = ["parse"] }
