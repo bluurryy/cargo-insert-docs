@@ -169,22 +169,15 @@ fn find_html_comments(markdown: &str) -> impl Iterator<Item = Range<usize>> {
 }
 
 fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
-    let events = parse(markdown);
+    let tree = Tree::new(markdown);
 
     // We don't use `Tree::depth_first` because of borrow issues.
-    (0..events.len()).rev().filter_map(move |index| {
-        let event = &events[index];
+    (0..tree.events.len()).rev().filter_map(move |index| {
+        let node = tree.at(index)?;
 
-        if event.kind != Kind::Exit {
+        if !matches!(node.name(), Name::HtmlFlow | Name::HtmlText) {
             return None;
         }
-
-        if !matches!(event.name, Name::HtmlFlow | Name::HtmlText) {
-            return None;
-        }
-
-        let tree = Tree { markdown, events: &events };
-        let node = tree.at(index).expect("event kind should be exit");
 
         Some(node.byte_range())
     })
@@ -192,11 +185,8 @@ fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
 
 pub fn extract_definitions(markdown: &str) -> [String; 2] {
     let mut out = StringReplacer::new(markdown);
-    let events = parse(markdown);
-    let events = events.as_slice();
     let mut definitions: Vec<&str> = vec![];
-
-    let tree = Tree { markdown, events };
+    let tree = Tree::new(markdown);
 
     for node in tree.depth_first() {
         if node.name() == Name::Definition {
@@ -224,32 +214,36 @@ pub fn end_of_line(markdown: &str, index: usize) -> usize {
 /// Tree interface to a slice of parser events.
 ///
 /// All node iteration is done in reverse order to work nice with a [`StringReplacer`].
-pub struct Tree<'m, 'e> {
+pub struct Tree<'m> {
     pub markdown: &'m str,
-    pub events: &'e [Event],
+    pub events: Vec<Event>,
 }
 
-impl<'m, 'e> Tree<'m, 'e> {
+impl<'m> Tree<'m> {
+    pub fn new(markdown: &'m str) -> Self {
+        Self { markdown, events: parse(markdown) }
+    }
+
     /// Create a node from the given event index.
     ///
     /// A node must point at an `Exit` event.
     /// Returns `None` if the event is an `Enter` event.
-    pub fn at(&self, index: usize) -> Option<Node<'m, 'e, '_>> {
+    pub fn at(&self, index: usize) -> Option<Node<'m, '_>> {
         if self.events[index].kind == Kind::Enter { None } else { Some(Node { tree: self, index }) }
     }
 
-    pub fn depth_first(&self) -> impl Iterator<Item = Node<'m, 'e, '_>> {
+    pub fn depth_first(&self) -> impl Iterator<Item = Node<'m, '_>> {
         (0..self.events.len()).rev().filter_map(|i| self.at(i))
     }
 }
 
 #[derive(Clone, Copy)]
-pub struct Node<'m, 'e, 't> {
-    tree: &'t Tree<'m, 'e>,
+pub struct Node<'m, 't> {
+    tree: &'t Tree<'m>,
     index: usize,
 }
 
-impl<'m, 'e, 't> Node<'m, 'e, 't> {
+impl<'m, 't> Node<'m, 't> {
     pub fn name(&self) -> Name {
         self.tree.events[self.index].name.clone()
     }

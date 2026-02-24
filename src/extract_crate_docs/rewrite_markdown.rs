@@ -5,8 +5,8 @@ use core::{fmt::Write, ops::Range};
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    markdown::{self, Tree, format_link_destination, parse},
-    markdown_rs::event::{Event, Name},
+    markdown::{self, Tree, format_link_destination},
+    markdown_rs::event::Name,
     string_replacer::StringReplacer,
 };
 
@@ -48,16 +48,14 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     let links: HashMap<&str, Option<&str>> =
         options.links.iter().map(|(k, v)| (k.as_str(), v.as_deref())).collect();
 
-    let events = parse(markdown);
-    let events = events.as_slice();
+    let tree = Tree::new(markdown);
 
-    if events.is_empty() {
+    if tree.events.is_empty() {
         return markdown.into();
     }
 
     let mut out = StringReplacer::new(markdown);
-    let unused_definitions = unused_definitions(markdown, events, options);
-    let tree = Tree { markdown, events };
+    let unused_definitions = unused_definitions(&tree, options);
 
     for node in tree.depth_first() {
         match node.name() {
@@ -246,12 +244,10 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
 }
 
 fn unused_definitions<'a>(
-    markdown: &'a str,
-    events: &[Event],
+    tree: &Tree<'a>,
     options: &'a RewriteMarkdownOptions,
 ) -> HashSet<&'a str> {
     let mut used_definitions: HashSet<&str> = HashSet::new();
-    let tree = Tree { events, markdown };
 
     for node in tree.depth_first() {
         if node.name() != Name::Link {
