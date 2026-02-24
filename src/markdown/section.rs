@@ -22,23 +22,23 @@ pub fn find_section(markdown: &str, section_name: &str) -> Option<Section> {
         str.is_empty()
     }
 
-    let is_end = |s| parts_eq(s, &["<!-- ", section_name, " end -->"]);
     let is_start = |s| parts_eq(s, &["<!-- ", section_name, " start -->"]);
+    let is_end = |s| parts_eq(s, &["<!-- ", section_name, " end -->"]);
 
-    let mut end = None::<Range<usize>>;
+    let mut start = None::<Range<usize>>;
 
     for comment in find_html_comments(markdown) {
         let comment_str = &markdown[comment.clone()];
 
-        if let Some(end) = end.clone() {
-            if is_start(comment_str) {
+        if let Some(start) = start.clone() {
+            if is_end(comment_str) {
                 return Some(Section {
-                    span: comment.start..end.end,
-                    content_span: comment.end..end.start,
+                    span: start.start..comment.end,
+                    content_span: start.end..comment.start,
                 });
             }
-        } else if is_end(comment_str) {
-            end = Some(comment);
+        } else if is_start(comment_str) {
+            start = Some(comment);
         }
     }
 
@@ -66,26 +66,25 @@ pub fn find_subsections<'a>(
     section_name: &str,
 ) -> eyre::Result<Vec<(Section, &'a str)>> {
     let mut sections = vec![];
-
-    let mut end = None::<(Range<usize>, &'a str)>;
+    let mut start = None::<(Range<usize>, &'a str)>;
 
     for (range, kind, name) in find_subsection_tags(markdown, section_name) {
-        if let Some((end_range, end_name)) = end {
-            if name == end_name && kind == SectionTagKind::Start {
+        if let Some((start_range, start_name)) = start {
+            if name == start_name && kind == SectionTagKind::End {
                 sections.push((
                     Section {
-                        span: range.start..end_range.end,
-                        content_span: range.end..end_range.start,
+                        span: start_range.start..range.end,
+                        content_span: start_range.end..range.start,
                     },
                     name,
                 ));
-                end = None;
+                start = None;
             } else {
                 bail!("subsections must be disjoint");
             }
         } else {
-            if kind == SectionTagKind::End {
-                end = Some((range, name));
+            if kind == SectionTagKind::Start {
+                start = Some((range, name));
             } else {
                 bail!("subsection end without start");
             }
@@ -131,22 +130,22 @@ enum SectionTagKind {
 }
 
 fn find_html_comments(markdown: &str) -> impl Iterator<Item = Range<usize>> {
-    fn comments(html: &str) -> impl Iterator<Item = Range<usize>> {
-        const START: &str = "<!--";
-        const END: &str = "-->";
-
-        let mut start = html.len();
-
-        std::iter::from_fn(move || {
-            let end = html[..start].rfind(END)? + END.len();
-            start = html[..end].rfind(START)?;
-            Some(start..end)
-        })
-    }
-
     find_html(markdown).flat_map(|html| {
         comments(&markdown[html.clone()])
             .map(move |comment| comment.start + html.start..comment.end + html.start)
+    })
+}
+
+fn comments(html: &str) -> impl Iterator<Item = Range<usize>> {
+    const START: &str = "<!--";
+    const END: &str = "-->";
+
+    let mut end = 0;
+
+    std::iter::from_fn(move || {
+        let start = html[end..].find(START)? + end;
+        end = html[start..].find(END)? + start + END.len();
+        Some(start..end)
     })
 }
 
@@ -154,7 +153,7 @@ fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
     let tree = Tree::new(markdown);
 
     // We don't use `Tree::depth_first` because of borrow issues.
-    (0..tree.events.len()).rev().filter_map(move |index| {
+    (0..tree.events.len()).filter_map(move |index| {
         let node = tree.at(index)?;
 
         if !matches!(node.name(), Name::HtmlFlow | Name::HtmlText) {

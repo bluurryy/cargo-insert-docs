@@ -22,19 +22,26 @@ macro_rules! assert_le {
 
 /// A type to efficiently replace string ranges.
 ///
-/// Ranges and indices must be removed in reverse order and must not overlap.
-///
-/// This type is more efficient than using `String::replace_range` repeatedly.
-/// It also catches bugs by panicking when ranges are replaced in the wrong
-/// order, or if they overlap.
+/// Ranges and indices must be removed in order and must not overlap.
+#[derive(Debug)]
 pub struct StringReplacer<'a> {
+    start: usize,
     string: &'a str,
     chunks: Vec<Cow<'a, str>>,
 }
 
 impl<'a> StringReplacer<'a> {
-    pub const fn new(string: &'a str) -> Self {
-        Self { string, chunks: Vec::new() }
+    pub fn new(string: &'a str) -> Self {
+        Self { start: string.as_ptr().addr(), string, chunks: Vec::new() }
+    }
+
+    pub fn position(&self) -> usize {
+        self.string.as_ptr().addr() - self.start
+    }
+
+    #[expect(dead_code)]
+    pub fn rest(&self) -> &str {
+        self.string
     }
 
     pub fn replace(&mut self, range: Range<usize>, with: impl Into<Cow<'a, str>>) {
@@ -49,33 +56,39 @@ impl<'a> StringReplacer<'a> {
         self.replace(range, "")
     }
 
-    fn replace_inner(&mut self, range: Range<usize>, with: Cow<'a, str>) {
+    fn replace_inner(&mut self, mut range: Range<usize>, with: Cow<'a, str>) {
+        let offset = self.position();
+
+        if range.start < offset {
+            panic!("tried to replace string out of order pos={offset:?} range={range:?}");
+        }
+
+        range.start -= offset;
+        range.end -= offset;
+
         assert_le!(range.start, range.end);
         assert_le!(range.end, self.string.len());
 
-        let end_chunk = &self.string[range.end..];
+        let start_chunk = &self.string[..range.start];
 
-        if !end_chunk.is_empty() {
-            self.chunks.push(Cow::Borrowed(end_chunk));
+        if !start_chunk.is_empty() {
+            self.chunks.push(Cow::Borrowed(start_chunk));
         }
 
         if !with.is_empty() {
             self.chunks.push(with);
         }
 
-        self.string = &self.string[..range.start];
-    }
-
-    pub fn rest(&self) -> &str {
-        self.string
+        self.string = &self.string[range.end..];
     }
 
     pub fn finish(&self) -> String {
-        let cap = self.string.len() + self.chunks.iter().map(|c| c.len()).sum::<usize>();
-        let mut out = String::with_capacity(cap);
+        let mut cap = self.string.len();
+        self.chunks.iter().for_each(|c: &Cow<'_, str>| cap += c.len());
 
+        let mut out = String::with_capacity(cap);
+        self.chunks.iter().for_each(|c| out.push_str(c));
         out.push_str(self.string);
-        self.chunks.iter().rev().for_each(|c| out.push_str(c));
         out
     }
 }

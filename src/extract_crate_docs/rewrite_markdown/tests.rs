@@ -195,6 +195,96 @@ fn test_hidden_code_line() {
 }
 
 #[test]
+fn test_code_block_ignore_line_fenced() {
+    let markdown = r#"\
+```
+# // ignore this line
+#[derive(Debug)] // don't ignore this line
+struct Foo {
+   foo: i32
+}
+
+  # // ignore this aswell
+  #[derive(Debug)] // don't ignore this line
+struct Bar;
+
+let s = "foo
+## bar # baz";
+assert_eq!(s, "foo\n# bar # baz");
+
+let s = "foo
+### bar # baz";
+assert_eq!(s, "foo\n## bar # baz");
+```"#;
+
+    expect![[r#"
+        \
+        ```rust
+        #[derive(Debug)] // don't ignore this line
+        struct Foo {
+           foo: i32
+        }
+
+          #[derive(Debug)] // don't ignore this line
+        struct Bar;
+
+        let s = "foo
+        # bar # baz";
+        assert_eq!(s, "foo\n# bar # baz");
+
+        let s = "foo
+        ## bar # baz";
+        assert_eq!(s, "foo\n## bar # baz");
+        ```"#]]
+    .assert_eq(&rewrite_markdown(markdown, &RewriteMarkdownOptions::default()));
+}
+
+#[test]
+fn test_code_block_ignore_line_indented() {
+    let markdown = r#"
+    # // ignore this line
+    #[derive(Debug)] // don't ignore this line
+    struct Foo {
+        foo: i32
+    }
+
+      # // ignore this aswell
+      #[derive(Debug)] // don't ignore this line
+    struct Bar;
+
+    let s = "foo
+    ## bar # baz";
+    assert_eq!(s, "foo\n# bar # baz");
+
+    let s = "foo
+    ### bar # baz";
+    assert_eq!(s, "foo\n## bar # baz");
+"#;
+
+    expect![[r#"
+
+        ```rust
+        #[derive(Debug)] // don't ignore this line
+        struct Foo {
+            foo: i32
+        }
+
+          #[derive(Debug)] // don't ignore this line
+        struct Bar;
+
+        let s = "foo
+        # bar # baz";
+        assert_eq!(s, "foo\n# bar # baz");
+
+        let s = "foo
+        ## bar # baz";
+        assert_eq!(s, "foo\n## bar # baz");
+        ```
+    "#]]
+    .assert_eq(&rewrite_markdown(markdown, &RewriteMarkdownOptions::default()));
+}
+
+#[test]
 fn test_clean_code_blocks() {
     expect![[r#"
 
@@ -338,6 +428,8 @@ fn test_quoted_code_block() {
 > // this stays\n\
 > # // this is ignored\n\
 > ```";
+
+    println!("{:?}", Tree::new(markdown));
 
     let out = rewrite_markdown(markdown, &RewriteMarkdownOptions::default());
     assert_eq!(out, "> ```rust\n> // this stays\n> ```")

@@ -593,18 +593,19 @@ fn insert_docs_into_readme(cx: &PackageContext) -> Result<()> {
         let [without_definitions, definitions] = markdown::extract_definitions(&crate_docs);
 
         let mut new_readme = StringReplacer::new(&readme);
+        let last_subsection_i = subsections.len().saturating_sub(1);
 
         for (i, (section, name)) in subsections.into_iter().enumerate() {
             let replace_with_section = markdown::find_section(&without_definitions, &format!("{section_name} {name}")).ok_or_else(|| eyre!("\"{section_name}\" subsection \"{name}\" is contained in readme but missing from crate docs"))?;
 
-            if i == 0 {
+            if i == last_subsection_i {
                 let replace_with = &without_definitions[replace_with_section.content_span];
-                new_readme.insert(section.span.end, format!("<!-- {section_name} {name} end -->"));
-                new_readme.insert(section.span.end, &definitions);
-                new_readme.insert(section.span.end, "\n");
-                new_readme.replace(section.span.clone(), replace_with);
                 new_readme
                     .insert(section.span.start, format!("<!-- {section_name} {name} start -->"));
+                new_readme.replace(section.span.clone(), replace_with);
+                new_readme.insert(section.span.end, "\n");
+                new_readme.insert(section.span.end, &definitions);
+                new_readme.insert(section.span.end, format!("<!-- {section_name} {name} end -->"));
             } else {
                 let replace_with = &without_definitions[replace_with_section.span];
                 new_readme.replace(section.span.clone(), replace_with);

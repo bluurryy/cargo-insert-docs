@@ -52,7 +52,6 @@ after sections
     let result = find_subsections(markdown, "my section")
         .unwrap()
         .into_iter()
-        .rev()
         .map(|(range, name)| (name, &markdown[range.span], &markdown[range.content_span]))
         .collect::<Vec<_>>();
 
@@ -87,29 +86,6 @@ fn test_find_subsections_multiple_in_flow() {
 </div>
 "#;
 
-    let result = find_subsections(markdown, "my section")
-        .unwrap()
-        .into_iter()
-        .rev()
-        .map(|(range, name)| (name, &markdown[range.span], &markdown[range.content_span]))
-        .collect::<Vec<_>>();
-
-    expect![[r#"
-        [
-            (
-                "foo",
-                "<!-- my section foo start -->\n<!-- my section foo end -->",
-                "\n",
-            ),
-            (
-                "bar",
-                "<!-- my section bar start -->\n<!-- my section bar end -->",
-                "\n",
-            ),
-        ]
-    "#]]
-    .assert_debug_eq(&result);
-
     let foo = find_section(markdown, "my section foo").unwrap();
     expect![[r#"
         (
@@ -129,6 +105,28 @@ fn test_find_subsections_multiple_in_flow() {
         )
     "#]]
     .assert_debug_eq(&("bar", &markdown[bar.span], &markdown[bar.content_span]));
+
+    let result = find_subsections(markdown, "my section")
+        .unwrap()
+        .into_iter()
+        .map(|(range, name)| (name, &markdown[range.span], &markdown[range.content_span]))
+        .collect::<Vec<_>>();
+
+    expect![[r#"
+        [
+            (
+                "foo",
+                "<!-- my section foo start -->\n<!-- my section foo end -->",
+                "\n",
+            ),
+            (
+                "bar",
+                "<!-- my section bar start -->\n<!-- my section bar end -->",
+                "\n",
+            ),
+        ]
+    "#]]
+    .assert_debug_eq(&result);
 }
 
 #[test]

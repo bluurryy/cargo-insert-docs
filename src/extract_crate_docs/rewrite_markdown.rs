@@ -76,51 +76,57 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                         continue;
                     }
 
-                    for child in node.children() {
-                        if child.name() == Name::CodeFlowChunk {
-                            clean_code_chunk(&mut out, markdown, child.byte_range());
-                        }
-                    }
-
                     out.replace(fence_info.byte_range(), "rust");
-                } else if let Some(fence) =
-                    node.descendants_with_name(Name::CodeFencedFenceSequence).nth(1)
-                {
+
                     for child in node.children() {
                         if child.name() == Name::CodeFlowChunk {
                             clean_code_chunk(&mut out, markdown, child.byte_range());
                         }
                     }
-
+                } else if let Some(fence) = node.descendant(Name::CodeFencedFenceSequence) {
                     out.insert(fence.byte_range().end, "rust");
+
+                    for child in node.children() {
+                        if child.name() == Name::CodeFlowChunk {
+                            clean_code_chunk(&mut out, markdown, child.byte_range());
+                        }
+                    }
                 }
             }
             Name::CodeIndented => {
                 let range = node.byte_range();
-                out.insert(range.end, "\n```");
+                let mut last_space = None;
 
-                let mut last_event_was_code_flow_chunk = false;
+                out.insert(range.start, "```rust\n");
 
                 for child in node.children() {
                     match child.name() {
-                        Name::SpaceOrTab if last_event_was_code_flow_chunk => {
-                            let range = child.byte_range();
-
-                            // a `clean_code_chunk` may have already removed the whole line
-                            if range.end <= out.rest().len() {
-                                out.remove(range)
-                            }
+                        Name::SpaceOrTab => {
+                            last_space = Some(child);
                         }
                         Name::CodeFlowChunk => {
-                            clean_code_chunk(&mut out, markdown, child.byte_range());
+                            let space =
+                                last_space.expect("an indented codeblock must be indented (duh)");
+
+                            match clean_code_line(child.str()) {
+                                Some(CleanAction::RemoveLine) => {
+                                    out.remove(expand_to_line(markdown, child.byte_range()));
+                                }
+                                Some(CleanAction::RemoveHash(idx)) => {
+                                    let hash = idx + child.byte_range().start;
+                                    out.remove(space.byte_range());
+                                    out.remove(hash..hash + 1);
+                                }
+                                None => {
+                                    out.remove(space.byte_range());
+                                }
+                            }
                         }
                         _ => (),
                     }
-
-                    last_event_was_code_flow_chunk = child.name() == Name::CodeFlowChunk;
                 }
 
-                out.insert(range.start, "```rust\n");
+                out.insert(range.end, "\n```");
             }
             Name::Link => {
                 let Some(label) = node.child(Name::Label) else {
@@ -292,22 +298,39 @@ fn expand_to_line(markdown: &str, range: Range<usize>) -> Range<usize> {
 }
 
 fn clean_code_chunk(out: &mut StringReplacer, markdown: &str, range: Range<usize>) {
-    let line = &markdown[range.clone()];
+    match clean_code_line(&markdown[range.clone()]) {
+        Some(CleanAction::RemoveLine) => {
+            out.remove(expand_to_line(markdown, range.clone()));
+        }
+        Some(CleanAction::RemoveHash(idx)) => {
+            let hash = idx + range.start;
+            out.remove(hash..hash + 1);
+        }
+        None => (),
+    }
+}
+
+fn clean_code_line(line: &str) -> Option<CleanAction> {
     let line_trim_start = line.trim_start();
 
     if let Some(rest) = line_trim_start.strip_prefix('#') {
         match rest.bytes().next() {
-            Some(b' ') | None => {
-                out.remove(expand_to_line(markdown, range));
-            }
+            Some(b' ') | None => return Some(CleanAction::RemoveLine),
             Some(b'#') => {
                 // double hash `##`, remove one of the hashes
-                let mid = range.start + substr_range(line, line_trim_start).start;
-                out.remove(mid..mid + 1);
+                let idx = substr_range(line, line_trim_start).start;
+                return Some(CleanAction::RemoveHash(idx));
             }
             Some(_) => (),
         }
     }
+
+    None
+}
+
+pub enum CleanAction {
+    RemoveLine,
+    RemoveHash(usize),
 }
 
 fn substr_range(str: &str, substr: &str) -> Range<usize> {

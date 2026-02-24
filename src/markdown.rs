@@ -29,7 +29,8 @@ pub fn extract_definitions(markdown: &str) -> [String; 2] {
     }
 
     let without_definitions = out.finish();
-    let definitions = definitions.join("");
+    // FIXME: remove the rev, just for testing
+    let definitions = definitions.into_iter().rev().collect::<Vec<_>>().join("");
 
     [without_definitions, definitions]
 }

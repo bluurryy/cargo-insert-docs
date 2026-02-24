@@ -13,9 +13,9 @@ fn test_simple() {
     let str = "foobarbaz";
     let mut replacer = StringReplacer::new(str);
 
-    replacer.replace(6..8, "BA");
-    replacer.replace(4..6, "AR");
     replacer.replace(1..3, "OO");
+    replacer.replace(4..6, "AR");
+    replacer.replace(6..8, "BA");
 
     assert_eq!(replacer.finish(), "fOObARBAz");
 }
@@ -25,8 +25,8 @@ fn test_edges() {
     let str = "foobarbaz";
     let mut replacer = StringReplacer::new(str);
 
-    replacer.replace(6..9, "BAZ");
     replacer.replace(0..3, "FOO");
+    replacer.replace(6..9, "BAZ");
 
     assert_eq!(replacer.finish(), "FOObarBAZ");
 }
@@ -36,9 +36,9 @@ fn test_remove() {
     let str = "foobarbaz";
     let mut replacer = StringReplacer::new(str);
 
-    replacer.replace(7..9, "");
-    replacer.replace(4..5, "");
     replacer.replace(0..2, "");
+    replacer.replace(4..5, "");
+    replacer.replace(7..9, "");
 
     assert_eq!(replacer.finish(), "obrb");
 }
@@ -78,10 +78,10 @@ fn test_panic_out_of_bounds() {
 }
 
 #[test]
-#[should_panic = "assertion `range.end <= self.string.len()` failed"]
+#[should_panic = "tried to replace string out of order"]
 fn test_panic_overlap() {
     let str = "foobarbaz";
     let mut replacer = StringReplacer::new(str);
-    replacer.replace(6..9, "whatever");
     replacer.replace(5..7, "b");
+    replacer.replace(6..9, "whatever");
 }

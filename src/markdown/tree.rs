@@ -21,14 +21,18 @@ impl<'m> Tree<'m> {
 
     /// Create a node from the given event index.
     ///
-    /// A node must point at an `Exit` event.
-    /// Returns `None` if the event is an `Enter` event.
+    /// A node must point at an `Enter` event.
+    /// Returns `None` if the event is an `Exit` event.
     pub fn at(&self, index: usize) -> Option<Node<'m, '_>> {
-        if self.events[index].kind == Kind::Enter { None } else { Some(Node { tree: self, index }) }
+        if self.events[index].kind == Kind::Exit {
+            return None;
+        }
+
+        Some(Node { tree: self, index })
     }
 
     pub fn depth_first(&self) -> impl Iterator<Item = Node<'m, '_>> {
-        (0..self.events.len()).rev().filter_map(|i| self.at(i))
+        (0..self.events.len()).filter_map(|i| self.at(i))
     }
 }
 
@@ -58,18 +62,17 @@ impl<'m, 't> Node<'m, 't> {
     pub fn children(self) -> impl Iterator<Item = Self> {
         let mut depth = 0;
 
-        (0..self.index)
-            .rev()
+        (self.index + 1..self.tree.events.len())
             .map_while(move |i| {
                 let kind = self.tree.events[i].kind.clone();
 
-                if depth == 0 && kind == Kind::Enter {
+                if depth == 0 && kind == Kind::Exit {
                     return None;
                 }
 
                 match kind {
-                    Kind::Enter => depth -= 1,
-                    Kind::Exit => depth += 1,
+                    Kind::Enter => depth += 1,
+                    Kind::Exit => depth -= 1,
                 }
 
                 Some((i, depth))
@@ -89,18 +92,17 @@ impl<'m, 't> Node<'m, 't> {
     pub fn descendants(self) -> impl Iterator<Item = Self> {
         let mut depth = 0;
 
-        (0..self.index)
-            .rev()
+        (self.index + 1..self.tree.events.len())
             .take_while(move |&i| {
                 let kind = self.tree.events[i].kind.clone();
 
-                if depth == 0 && kind == Kind::Enter {
+                if depth == 0 && kind == Kind::Exit {
                     return false;
                 }
 
                 match kind {
-                    Kind::Enter => depth -= 1,
-                    Kind::Exit => depth += 1,
+                    Kind::Enter => depth += 1,
+                    Kind::Exit => depth -= 1,
                 }
 
                 true
@@ -115,29 +117,31 @@ impl<'m, 't> Node<'m, 't> {
 
     pub fn position(self) -> Position {
         let event = &self.tree.events[self.index];
-        let end = event.point.to_unist();
-        let enter_index = self.enter_index();
-        let start = self.tree.events[enter_index].point.to_unist();
+        let start = event.point.to_unist();
+        let exit_index = self.exit(self.index);
+        let end = self.tree.events[exit_index].point.to_unist();
         Position { start, end }
     }
 
-    fn enter_index(self) -> usize {
+    fn exit(&self, mut i: usize) -> usize {
         let mut depth = 0;
 
-        for i in (0..self.index).rev() {
-            let kind = self.tree.events[i].kind.clone();
+        loop {
+            i += 1;
 
-            if depth == 0 && kind == Kind::Enter {
+            let Some(event) = self.tree.events.get(i) else {
+                unreachable!("unpaired enter/exit event")
+            };
+
+            if depth == 0 && event.kind == Kind::Exit {
                 return i;
             }
 
-            match kind {
-                Kind::Enter => depth -= 1,
-                Kind::Exit => depth += 1,
+            match event.kind {
+                Kind::Enter => depth += 1,
+                Kind::Exit => depth -= 1,
             }
         }
-
-        unreachable!("unpaired enter/exit event")
     }
 }
 
