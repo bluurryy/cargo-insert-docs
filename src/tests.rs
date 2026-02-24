@@ -82,8 +82,7 @@ pub fn events_to_string(markdown: &str) -> String {
         count
     }
 
-    let (events, _state) = markdown::parse(markdown, &markdown::parse_options());
-
+    let events = markdown::parse(markdown);
     events_to_string(&events, markdown)
 }
 

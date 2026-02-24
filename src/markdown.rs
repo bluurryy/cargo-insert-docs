@@ -9,24 +9,17 @@ use percent_encoding::percent_encode_byte;
 
 use crate::{
     markdown_rs::{
-        self, ParseOptions,
+        self,
         event::{Event, Kind, Name},
-        parser::ParseState,
         unist::Position,
     },
     string_replacer::StringReplacer,
 };
 
-pub fn parse<'a>(
-    markdown: &'a str,
-    parse_options: &'a ParseOptions,
-) -> (Vec<markdown_rs::event::Event>, ParseState<'a>) {
-    markdown_rs::parser::parse(markdown, parse_options)
+pub fn parse(markdown: &str) -> Vec<markdown_rs::event::Event> {
+    markdown_rs::parser::parse(markdown, &markdown_rs::ParseOptions::gfm())
         .expect("should only fail for mdx which we don't enable")
-}
-
-pub fn parse_options() -> ParseOptions {
-    markdown_rs::ParseOptions::gfm()
+        .0
 }
 
 /// Finds sections like these:
@@ -176,7 +169,7 @@ fn find_html_comments(markdown: &str) -> impl Iterator<Item = Range<usize>> {
 }
 
 fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
-    let (events, _state) = parse(markdown, &parse_options());
+    let events = parse(markdown);
 
     // We don't use `Tree::depth_first` because of borrow issues.
     (0..events.len()).rev().filter_map(move |index| {
@@ -199,7 +192,7 @@ fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
 
 pub fn extract_definitions(markdown: &str) -> [String; 2] {
     let mut out = StringReplacer::new(markdown);
-    let (events, _state) = parse(markdown, &parse_options());
+    let events = parse(markdown);
     let events = events.as_slice();
     let mut definitions: Vec<&str> = vec![];
 

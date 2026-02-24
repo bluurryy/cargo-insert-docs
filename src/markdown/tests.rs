@@ -3,7 +3,7 @@ use core::ops::Range;
 use expect_test::expect;
 
 use crate::{
-    markdown::{format_link_destination, parse, parse_options},
+    markdown::{format_link_destination, parse},
     markdown_rs::event::{Event, Kind},
     tests::TreeFormatterStack,
 };
@@ -245,8 +245,7 @@ pub fn events_to_string(markdown: &str) -> String {
         count
     }
 
-    let (events, _state) = parse(markdown, &parse_options());
-
+    let events = parse(markdown);
     events_to_string(&events, markdown)
 }
 

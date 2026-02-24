@@ -5,7 +5,7 @@ use core::{fmt::Write, ops::Range};
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    markdown::{self, Tree, format_link_destination, parse, parse_options},
+    markdown::{self, Tree, format_link_destination, parse},
     markdown_rs::event::{Event, Name},
     string_replacer::StringReplacer,
 };
@@ -48,7 +48,7 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     let links: HashMap<&str, Option<&str>> =
         options.links.iter().map(|(k, v)| (k.as_str(), v.as_deref())).collect();
 
-    let (events, _state) = parse(markdown, &parse_options());
+    let events = parse(markdown);
     let events = events.as_slice();
 
     if events.is_empty() {
