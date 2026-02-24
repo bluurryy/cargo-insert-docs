@@ -78,18 +78,14 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
 
                     out.replace(fence_info.byte_range(), "rust");
 
-                    for child in node.children() {
-                        if child.name() == Name::CodeFlowChunk {
-                            clean_code_chunk(&mut out, markdown, child.byte_range());
-                        }
+                    for child in node.children_with_name(Name::CodeFlowChunk) {
+                        clean_code_chunk(&mut out, markdown, child.byte_range());
                     }
                 } else if let Some(fence) = node.descendant(Name::CodeFencedFenceSequence) {
                     out.insert(fence.byte_range().end, "rust");
 
-                    for child in node.children() {
-                        if child.name() == Name::CodeFlowChunk {
-                            clean_code_chunk(&mut out, markdown, child.byte_range());
-                        }
+                    for child in node.children_with_name(Name::CodeFlowChunk) {
+                        clean_code_chunk(&mut out, markdown, child.byte_range());
                     }
                 }
             }
