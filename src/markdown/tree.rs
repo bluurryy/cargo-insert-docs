@@ -32,7 +32,11 @@ impl<'m> Tree<'m> {
     }
 
     pub fn depth_first(&self) -> impl Iterator<Item = Node<'m, '_>> {
-        (0..self.events.len()).filter_map(|i| self.at(i))
+        self.indices().filter_map(|i| self.at(i))
+    }
+
+    pub fn indices(&self) -> impl Iterator<Item = usize> + use<> {
+        0..self.events.len()
     }
 }
 

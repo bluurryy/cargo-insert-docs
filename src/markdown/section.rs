@@ -152,8 +152,7 @@ fn comments(html: &str) -> impl Iterator<Item = Range<usize>> {
 fn find_html(markdown: &str) -> impl Iterator<Item = Range<usize>> {
     let tree = Tree::new(markdown);
 
-    // We don't use `Tree::depth_first` because of borrow issues.
-    (0..tree.events.len()).filter_map(move |index| {
+    tree.indices().filter_map(move |index| {
         let node = tree.at(index)?;
 
         if !matches!(node.name(), Name::HtmlFlow | Name::HtmlText) {
