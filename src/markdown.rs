@@ -13,9 +13,6 @@ use crate::{markdown_rs::event::Name, string_replacer::StringReplacer};
 pub use section::{find_section, find_subsections};
 pub use tree::Tree;
 
-#[cfg(test)]
-pub use tree::parse;
-
 pub fn extract_definitions(markdown: &str) -> [String; 2] {
     let mut out = StringReplacer::new(markdown);
     let mut definitions: Vec<&str> = vec![];

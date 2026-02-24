@@ -141,7 +141,7 @@ impl<'m, 't> Node<'m, 't> {
     }
 }
 
-pub fn parse(markdown: &str) -> Vec<markdown_rs::event::Event> {
+fn parse(markdown: &str) -> Vec<markdown_rs::event::Event> {
     markdown_rs::parser::parse(markdown, &markdown_rs::ParseOptions::gfm())
         .expect("should only fail for mdx which we don't enable")
         .0

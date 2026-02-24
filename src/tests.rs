@@ -2,88 +2,81 @@ use core::ops::Range;
 use std::fmt::{self, Write as _};
 
 use crate::{
-    markdown,
+    markdown::Tree,
     markdown_rs::event::{Event, Kind},
 };
 
-#[allow(dead_code)]
-pub fn print_events(markdown: &str) {
-    println!("{}", events_to_string(markdown))
-}
+impl fmt::Debug for Tree<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use crate::tests::TreeFormatterStack;
 
-#[allow(dead_code)]
-pub fn events_to_string(markdown: &str) -> String {
-    fn events_to_string(events: &[Event], source: &str) -> String {
+        fn range(events: &[Event]) -> Range<usize> {
+            let start = events[0].point.index;
+            let mut depth = 0usize;
+
+            for event in &events[1..] {
+                match event.kind {
+                    Kind::Enter => depth += 1,
+                    Kind::Exit => match depth.checked_sub(1) {
+                        Some(new_depth) => depth = new_depth,
+                        None => return start..event.point.index,
+                    },
+                }
+            }
+
+            start..start
+        }
+
+        fn children(events: &[Event]) -> usize {
+            let mut depth = 0usize;
+            let mut count = 0usize;
+
+            for event in events {
+                match event.kind {
+                    Kind::Enter => {
+                        if depth == 0 {
+                            count += 1;
+                        }
+
+                        depth += 1;
+                    }
+                    Kind::Exit => match depth.checked_sub(1) {
+                        Some(new_depth) => depth = new_depth,
+                        None => return count,
+                    },
+                }
+            }
+
+            count
+        }
+
         let mut fmt = TreeFormatterStack::new();
 
         fmt.push();
         fmt.label("Document");
-        fmt.child_len(children(events));
+        fmt.child_len(children(&self.events));
 
-        for (i, event) in events.iter().enumerate() {
+        for (i, event) in self.events.iter().enumerate() {
             match event.kind {
                 Kind::Enter => {
                     fmt.push();
                     let name = &event.name;
-                    let range = range(&events[i..]);
-                    let text = &source[range];
+                    let range = range(&self.events[i..]);
+                    let text = &self.markdown[range];
                     let link = event
                         .link
                         .as_ref()
                         .map(|link| format!(" {{ link: {link:?} }}"))
                         .unwrap_or_default();
                     fmt.label(format!("{name:?} {text:?}{link}"));
-                    fmt.child_len(children(&events[i + 1..]));
+                    fmt.child_len(children(&self.events[i + 1..]));
                 }
                 Kind::Exit => fmt.pop(),
             }
         }
 
-        fmt.finish()
+        f.write_str(&fmt.finish())
     }
-
-    fn range(events: &[Event]) -> Range<usize> {
-        let start = events[0].point.index;
-        let mut depth = 0usize;
-
-        for event in &events[1..] {
-            match event.kind {
-                Kind::Enter => depth += 1,
-                Kind::Exit => match depth.checked_sub(1) {
-                    Some(new_depth) => depth = new_depth,
-                    None => return start..event.point.index,
-                },
-            }
-        }
-
-        start..start
-    }
-
-    fn children(events: &[Event]) -> usize {
-        let mut depth = 0usize;
-        let mut count = 0usize;
-
-        for event in events {
-            match event.kind {
-                Kind::Enter => {
-                    if depth == 0 {
-                        count += 1;
-                    }
-
-                    depth += 1;
-                }
-                Kind::Exit => match depth.checked_sub(1) {
-                    Some(new_depth) => depth = new_depth,
-                    None => return count,
-                },
-            }
-        }
-
-        count
-    }
-
-    let events = markdown::parse(markdown);
-    events_to_string(&events, markdown)
 }
 
 pub struct TreeFormatterStack {

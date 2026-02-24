@@ -4,6 +4,7 @@ use crate::{
     extract_crate_docs::rewrite_markdown::{
         RewriteMarkdownOptions, code_block_fence_is_rust, rewrite_markdown,
     },
+    markdown::Tree,
     pretty_log,
 };
 
@@ -349,7 +350,7 @@ fn test_quoted_code_block_indented() {
 >     // this stays\n\
 ";
 
-    crate::tests::print_events(markdown);
+    println!("{:?}", Tree::new(markdown));
 
     let out = rewrite_markdown(markdown, &RewriteMarkdownOptions::default());
     assert_eq!(out, "> ```rust\n> // this stays\n> ```");
@@ -363,7 +364,7 @@ fn test_quoted_code_block_indented_hidden_line() {
 >     # // this is ignored\n\
 ";
 
-    crate::tests::print_events(markdown);
+    println!("{:?}", Tree::new(markdown));
 
     let out = rewrite_markdown(markdown, &RewriteMarkdownOptions::default());
     assert_eq!(out, "> ```rust\n> // this stays\n> ```");
