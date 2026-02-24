@@ -257,14 +257,12 @@ The crate documentation into readme part was inspired by [`cargo-rdme`](https://
 ## Similar projects
 - [**`document-features`**](https://crates.io/crates/document-features) — 
   Provides a proc macro to insert feature documentation into the crate documentation. 
-- [**`cargo-rdme`**](https://crates.io/crates/cargo-rdme) — 
-  Subcommand to insert crate documentation into readme sections.
+- [**`cargo-rdme`**](https://crates.io/crates/cargo-rdme), [**`cargo-reedme`**](https://crates.io/crates/cargo-reedme) — 
+  Inserts crate documentation into readme sections.
 - [**`cargo-sync-rdme`**](https://crates.io/crates/cargo-sync-rdme) — 
-  Subcommand to insert crate documentation, title and badges into readme sections.
-- [**`cargo-doc2readme`**](https://crates.io/crates/cargo-doc2readme) — 
-  Subcommand that creates a readme file from a template with various fields including crate documentation.
-- [**`cargo-readme`**](https://crates.io/crates/cargo-readme) — 
-  Subcommand that creates a readme file from a template with various fields including crate documentation.
+  Inserts crate documentation, title and badges into readme sections.
+- [**`cargo-readme`**](https://crates.io/crates/cargo-readme), [**`cargo-doc2readme`**](https://crates.io/crates/cargo-doc2readme) — 
+  Creates a readme from a template with various fields including crate documentation.
 
 ## License
 
