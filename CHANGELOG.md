@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Produce link definitions in original order when using subsections
 - Refactor markdown rewrite logic
 
 ## [1.4.0] - 2026-02-14
