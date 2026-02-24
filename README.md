@@ -159,7 +159,7 @@ You can see the rendered version [here](tests/example-crate/README.md).
 Notice how:
 - link definitions for `Image` and `std::io::Read` are added that resolve to `docs.rs` or `doc.rust-lang.org`
 - the code block loses the hidden (`#` prefixed) lines
-- the code block gets marked as `rust`; if the code block already had a marking that is considered rust like `compile_fail`, `ignore`, `should_panic` and such, that would also be replaced by `rust`
+- the code block gets marked as `rust`; if the code block already had a marking that is considered rust like `compile_fail`, `ignore`, `should_panic` and such, that would be replaced by `rust`
 - headings get one `#` added (configurable)
 
 To update the sections just run the command again.
