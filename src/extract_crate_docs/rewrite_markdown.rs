@@ -125,10 +125,12 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                 out.insert(range.end, "\n```");
             }
             Name::Link => {
-                let Some(label) = node.child(Name::Label) else {
+                // The links we care about have a label text.
+                let Some(label_text) = node.descendant(Name::LabelText) else {
                     continue;
                 };
 
+                // Is this a link like `[a](b)`?
                 if let Some(resource) = node.child(Name::Resource) {
                     let Some(dest) = resource.child(Name::ResourceDestination) else {
                         continue;
@@ -143,65 +145,50 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                     };
 
                     let Some(new_url) = resolved else {
-                        let Some(label_text) = label.child(Name::LabelText) else {
-                            continue;
-                        };
-
+                        // This is a link we failed to resolve with rustdoc.
+                        // We replace the link with its label e.g. `[a](b)` -> `a`
                         out.replace(node.byte_range(), label_text.str());
                         continue;
                     };
 
+                    // We resolved the this link via rustdoc.
+                    // We replace the link destination
+                    // e.g. `[Vec](Vec)` -> `[Vec](https://doc.rust-lang.org/std/vec/struct.Vec.html)`
                     out.replace(dest.byte_range(), format_link_destination(new_url));
                     continue;
                 }
 
+                // Is this a reference like `[a][b]` or `[a][]`?
                 if let Some(reference) = node.child(Name::Reference) {
                     let identifier = match reference.child(Name::ReferenceString) {
                         Some(string) => string.str(),
-                        None => match label.child(Name::LabelText) {
-                            Some(label_text) => label_text.str(),
-                            None => continue,
-                        },
+                        None => label_text.str(),
                     };
 
                     let Some(&resolved) = links.get(identifier) else {
                         continue;
                     };
 
-                    let Some(new_url) = resolved else {
-                        let Some(label_text) = label.child(Name::LabelText) else {
-                            continue;
-                        };
-
+                    if resolved.is_none() {
+                        // This is a reference we failed to resolve with rustdoc.
+                        // We replace the reference with its label e.g. `[a][b]` -> `a`
                         out.replace(node.byte_range(), label_text.str());
-                        continue;
                     };
 
-                    // refers to a definition
-                    _ = new_url;
                     continue;
                 }
 
-                // shortcut
-                let Some(label_text) = label.child(Name::LabelText) else {
-                    continue;
-                };
+                // This can now only be a shortcut like `[a]`.
 
                 let Some(&resolved) = links.get(label_text.str()) else {
                     continue;
                 };
 
-                let Some(new_url) = resolved else {
-                    let Some(label_text) = label.child(Name::LabelText) else {
-                        continue;
-                    };
-
+                if resolved.is_none() {
+                    // This points to an reference we failed to resolve with rustdoc.
+                    // We replace the shorcut with its label e.g. `[a]` -> `a`
                     out.replace(node.byte_range(), label_text.str());
-                    continue;
-                };
-
-                // refers to a definition
-                _ = new_url;
+                }
             }
             Name::Definition => {
                 let Some(dest) = node.child(Name::DefinitionDestination) else {
@@ -230,6 +217,8 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                 };
 
                 let Some(new_url) = resolved else {
+                    // We were not able to resolve this link definition so
+                    // we remove it entirely.
                     let mut range = node.byte_range();
                     range.end = end_of_line(markdown, range.end);
                     out.remove(range);
