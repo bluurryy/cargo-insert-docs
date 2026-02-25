@@ -24,8 +24,8 @@ pub fn rewrite_markdown(markdown: &str, options: &RewriteMarkdownOptions) -> Str
 /// If we were not able to resolve an item, then it will get this placeholder destination.
 /// A definition with a placeholder destination will be removed from the final markdown.
 /// We need to temporarily create a definition with a placeholder destination, so
-/// these references actually parse as references. Those references will then get
-/// replaced with their label only.
+/// these references actually parse as references. Those references will later get
+/// replaced by their label only.
 const PLACEHOLDER_DESTINATION: &str = "__PLACEHOLDER_DESTINATION__";
 
 fn add_definitions(markdown: &str, options: &RewriteMarkdownOptions) -> String {
