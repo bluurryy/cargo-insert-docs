@@ -1,10 +1,22 @@
 [package]
-edition = "2024"
 name = "test-crate"
+edition = "2024"
 readme = "MEREAD.md"
+
+[package.metadata.insert-docs]
+crate-section-name = "docs"
+feature-section-name = "features"
+shrink-headings = 2
+hidden-features = ["some-hidden-feature", "some-hidden-undocumented-feature"]
 
 [lib]
 path = "lib.rs"
+
+[dependencies]
+fast-glob = "=1.0.0"
+indoc = { git = "https://github.com/dtolnay/indoc", rev = "4bfa29fcde487bd57c61db452773fff50f20c819" }
+phf_macros = "0.12.1"
+test-crate-dep = { path = "../test-crate-dep" }
 
 [features]
 default = ["std"]
@@ -33,15 +45,3 @@ recurse-glob = []
 
 ## Wow
 something_else = []
-
-[dependencies]
-fast-glob = "=1.0.0"
-indoc = { git = "https://github.com/dtolnay/indoc", rev = "4bfa29fcde487bd57c61db452773fff50f20c819" }
-phf_macros = "0.12.1"
-test-crate-dep = { path = "../test-crate-dep" }
-
-[package.metadata.insert-docs]
-crate-section-name = "docs"
-feature-section-name = "features"
-shrink-headings = 2
-hidden-features = ["some-hidden-feature", "some-hidden-undocumented-feature"]

@@ -1,6 +1,6 @@
 [package]
-edition = "2024"
 name = "test-bin-lib"
+edition = "2024"
 
 [package.metadata.insert-docs]
 bin = true

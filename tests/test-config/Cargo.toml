@@ -1,6 +1,30 @@
 [package]
-edition = "2024"
 name = "test-config"
+edition = "2024"
+
+[package.metadata.insert-docs]
+all-features = true
+allow-missing-section = true
+allow-staged = true
+check = false
+crate-into-readme = true
+crate-section-name = "crate section from package"
+document-private-items = true
+feature-into-crate = true
+feature-label = "feature label from package"
+feature-section-name = "feature section from package"
+features = ["foo", "bar", "baz"]
+lib = true
+link-to-latest = true
+no-default-features = true
+hidden-features = ["bar", "baz"]
+no-deps = true
+readme-path = "readme path from package"
+shrink-headings = -1
+target = "wasm32-unknown-unknown"
+target-dir = "target dir from package"
+this-is-not-a-valid-field = "so please warn about it"
+toolchain = "toolchain from package"
 
 [workspace.metadata.insert-docs]
 all-features = true
@@ -26,27 +50,3 @@ target-dir = "target dir from workspace"
 this-is-not-a-valid-field = "so please warn about it"
 toolchain = "toolchain from workspace"
 workspace = true
-
-[package.metadata.insert-docs]
-all-features = true
-allow-missing-section = true
-allow-staged = true
-check = false
-crate-into-readme = true
-crate-section-name = "crate section from package"
-document-private-items = true
-feature-into-crate = true
-feature-label = "feature label from package"
-feature-section-name = "feature section from package"
-features = ["foo", "bar", "baz"]
-lib = true
-link-to-latest = true
-no-default-features = true
-hidden-features = ["bar", "baz"]
-no-deps = true
-readme-path = "readme path from package"
-shrink-headings = -1
-target = "wasm32-unknown-unknown"
-target-dir = "target dir from package"
-this-is-not-a-valid-field = "so please warn about it"
-toolchain = "toolchain from package"

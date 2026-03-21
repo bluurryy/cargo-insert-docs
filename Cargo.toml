@@ -1,15 +1,102 @@
 [package]
-categories = ["development-tools::cargo-plugins", "command-line-utilities"]
+name = "cargo-insert-docs"
+version = "1.5.0"
+edition = "2024"
 description = "Inserts feature docs into crate docs, and crate docs into README."
 documentation = "https://docs.rs/cargo-insert-docs"
-edition = "2024"
-exclude = [".github"]
-keywords = ["documentation", "cargo", "crate", "readme"]
-license = "MIT OR Apache-2.0"
-name = "cargo-insert-docs"
 readme = "README.md"
 repository = "https://github.com/bluurryy/cargo-insert-docs"
-version = "1.5.0"
+license = "MIT OR Apache-2.0"
+keywords = ["cargo", "crate", "documentation", "readme"]
+categories = ["command-line-utilities", "development-tools::cargo-plugins"]
+exclude = [".github"]
+
+[package.metadata.release]
+allow-branch = ["main"]
+pre-release-commit-message = "release: version {{version}}"
+pre-release-hook = ["just", "pre-release"]
+pre-release-replacements = [
+  { file = "README.md", search = 'cargo-insert-docs@[\d\.]+', replace = "cargo-insert-docs@{{version}}", exactly = 1 },
+  { file = "CHANGELOG.md", search = '## \[Unreleased\]', replace = "## [{{version}}] - {{date}}", exactly = 1 },
+  { file = "CHANGELOG.md", search = '\[Unreleased\]: .*', replace = "[{{version}}]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v{{version}}", exactly = 1 },
+  { file = "CHANGELOG.md", search = "#Unreleased", replace = "#{{version}}", min = 0 },
+  { file = "CHANGELOG.md", search = "<!-- next-header -->", replace = "<!-- next-header -->\n## [Unreleased]\n", exactly = 1 },
+  { file = "CHANGELOG.md", search = "<!-- next-url -->", replace = "<!-- next-url -->\n[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/{{tag_name}}...HEAD", exactly = 1 },
+]
+
+[workspace]
+members = ["tests/*", "xtask"]
+exclude = ["tests/test-config"]
+
+[workspace.dependencies]
+anstream = { version = "1.0.0", default-features = false, features = [
+  "auto",
+  "wincon"
+] }
+anstyle = { version = "1.0.13", default-features = false }
+arcstr = { version = "1.2.0", default-features = false }
+cargo_metadata = { version = "0.23.1", default-features = false }
+clap = { version = "4.5.58", default-features = false, features = [
+  "color",
+  "derive",
+  "error-context",
+  "help",
+  "std",
+  "suggestions",
+  "usage",
+  "wrap_help",
+] }
+clap-cargo = { version = "0.18.3", default-features = false, features = ["clap"] }
+color-eyre = { version = "0.6.5", default-features = false, features = [
+  "capture-spantrace",
+  "track-caller"
+] }
+document-features = "0.2.12"  # explicitly errors if `default-features = false`
+expect-test = { version = "1.5.1", default-features = false }
+fancy-regex = { version = "0.17.0", default-features = false, features = ["std"] }
+gix = { version = "0.79.0", default-features = false }
+indexmap = { version = "2.13.0", default-features = false, features = ["std"] }
+indoc = { version = "2.0.7", default-features = false }
+macro_rules_attribute = { version = "0.2.2", default-features = false }
+markdown = "1.0.0"
+mimalloc = { version = "0.1.48", default-features = false }
+percent-encoding = { version = "2.3.2", default-features = false, features = [
+  "std"
+] }
+proc-macro2 = { version = "1.0.106", default-features = false }
+rangemap = { version = "1.7.1", default-features = false, features = [
+  "const_fn"
+] }
+relative-path = { version = "2.0.1", default-features = false, features = [
+  "alloc",
+  "std"
+] }
+rustdoc-types = { version = "0.57.0", default-features = false }
+serde = { version = "1.0.228", default-features = false, features = ["std"] }
+serde_json = { version = "1.0.149", default-features = false, features = ["std"] }
+similar = "2.7.0"
+syn = { version = "2.0.115", default-features = false }
+tl = "0.7.8"
+toml = { version = "1.0.1", default-features = false, features = [
+  "display",
+  "parse",
+  "serde",
+  "std"
+] }
+toml_edit = { version = "0.25.1", default-features = false, features = ["parse"] }
+tracing = { version = "0.1.44", default-features = false, features = ["std"] }
+tracing-error = { version = "0.2.1", default-features = false }
+tracing-subscriber = { version = "0.3.22", default-features = false, features = [
+  "ansi",
+  "fmt",
+  "smallvec",
+  "std"
+] }
+unicode-id = { version = "0.3.6", default-features = false }
+unindent = { version = "0.2.4", default-features = false }
+
+[workspace.metadata.release]
+consolidate-commits = false
 
 [dependencies]
 anstream = { workspace = true }
@@ -30,7 +117,7 @@ relative-path = { workspace = true }
 rustdoc-types = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-syn = { workspace = true, features = ["parsing", "printing", "full"] }
+syn = { workspace = true, features = ["full", "parsing", "printing"] }
 toml = { workspace = true }
 toml_edit = { workspace = true }
 tracing = { workspace = true }
@@ -42,67 +129,3 @@ unicode-id = { workspace = true }
 expect-test = { workspace = true }
 indoc = { workspace = true }
 unindent = { workspace = true }
-
-[package.metadata.release]
-allow-branch = ["main"]
-pre-release-commit-message = "release: version {{version}}"
-pre-release-hook = ["just", "pre-release"]
-pre-release-replacements = [
-    { file = "README.md", search = 'cargo-insert-docs@[\d\.]+', replace = "cargo-insert-docs@{{version}}", exactly = 1 },
-    { file = "CHANGELOG.md", search = '## \[Unreleased\]', replace = "## [{{version}}] - {{date}}", exactly = 1 },
-    { file = "CHANGELOG.md", search = '\[Unreleased\]: .*', replace = "[{{version}}]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v{{version}}", exactly = 1 },
-    { file = "CHANGELOG.md", search = '#Unreleased', replace = "#{{version}}", min = 0 },
-    { file = "CHANGELOG.md", search = '<!-- next-header -->', replace = "<!-- next-header -->\n## [Unreleased]\n", exactly = 1 },
-    { file = "CHANGELOG.md", search = '<!-- next-url -->', replace = "<!-- next-url -->\n[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/{{tag_name}}...HEAD", exactly = 1 },
-]
-
-[workspace]
-exclude = ["tests/test-config"]
-members = ["tests/*", "xtask"]
-
-[workspace.metadata.release]
-consolidate-commits = false
-
-[workspace.dependencies]
-anstream = { version = "1.0.0", default-features = false, features = ["auto", "wincon"] }
-anstyle = { version = "1.0.13", default-features = false }
-arcstr = { version = "1.2.0", default-features = false }
-cargo_metadata = { version = "0.23.1", default-features = false }
-clap = { version = "4.5.58", default-features = false, features = [
-    "color",
-    "error-context",
-    "help",
-    "std",
-    "suggestions",
-    "usage",
-    "derive",
-    "wrap_help",
-] }
-clap-cargo = { version = "0.18.3", default-features = false, features = ["clap"] }
-color-eyre = { version = "0.6.5", default-features = false, features = ["capture-spantrace", "track-caller"] }
-document-features = "0.2.12" # explicitly errors if `default-features = false`
-expect-test = { version = "1.5.1", default-features = false }
-fancy-regex = { version = "0.17.0", default-features = false, features = ["std"] }
-gix = { version = "0.79.0", default-features = false }
-indexmap = { version = "2.13.0", default-features = false, features = ["std"] }
-indoc = { version = "2.0.7", default-features = false }
-macro_rules_attribute = { version = "0.2.2", default-features = false }
-markdown = "1.0.0"
-mimalloc = { version = "0.1.48", default-features = false }
-percent-encoding = { version = "2.3.2", default-features = false, features = ["std"] }
-proc-macro2 = { version = "1.0.106", default-features = false }
-rangemap = { version = "1.7.1", default-features = false, features = ["const_fn"] }
-relative-path = { version = "2.0.1", default-features = false, features = ["std", "alloc"] }
-rustdoc-types = { version = "0.57.0", default-features = false }
-serde = { version = "1.0.228", default-features = false, features = ["std"] }
-serde_json = { version = "1.0.149", default-features = false, features = ["std"] }
-similar = "2.7.0"
-syn = { version = "2.0.115", default-features = false }
-tl = "0.7.8"
-toml = { version = "1.0.1", default-features = false, features = ["display", "parse", "serde", "std"] }
-toml_edit = { version = "0.25.1", default-features = false, features = ["parse"] }
-tracing = { version = "0.1.44", default-features = false, features = ["std"] }
-tracing-error = { version = "0.2.1", default-features = false }
-tracing-subscriber = { version = "0.3.22", default-features = false, features = ["ansi", "fmt", "smallvec", "std"] }
-unicode-id = { version = "0.3.6", default-features = false }
-unindent = { version = "0.2.4", default-features = false }

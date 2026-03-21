@@ -1,11 +1,11 @@
 [package]
-edition = "2024"
 name = "example-crate"
+edition = "2024"
 
 [features]
-default = ["std", "jpg"]
+default = ["jpg", "std"]
 
-## Enables loading [`Image`]s 
+## Enables loading [`Image`]s
 ## from [`std::io::Read`].
 std = []
 
