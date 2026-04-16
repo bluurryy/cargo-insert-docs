@@ -1,6 +1,6 @@
 [package]
 name = "cargo-insert-docs"
-version = "1.5.0"
+version = "1.6.0"
 edition = "2024"
 description = "Inserts feature docs into crate docs, and crate docs into README."
 documentation = "https://docs.rs/cargo-insert-docs"
