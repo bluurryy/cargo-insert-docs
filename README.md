@@ -36,7 +36,7 @@ cargo binstall cargo-insert-docs
 cargo install cargo-insert-docs
 ```
 
-To extract the crate documentation, `cargo-insert-docs` invokes `cargo +nightly-2026-02-24 rustdoc`. This will automatically install the required nightly toolchain.
+To extract the crate documentation, `cargo-insert-docs` invokes `cargo +nightly-2026-04-14 rustdoc`. This will automatically install the required nightly toolchain.
 
 ## Usage
 
@@ -203,7 +203,7 @@ See [docs/config.md](docs/config.md) for details.
 
 ## Semver policy
 
-These things are considered minor changes:
+These things are considered **minor** changes:
  - changes to the produced documentation
  - updating the default nightly version of `rustdoc` we invoke
  - updating the supported rustdoc json version (and losing compatibility with the older version)
