@@ -1,6 +1,9 @@
 [package]
-edition = "2024"
 name = "test-document-features"
+edition = "2024"
+
+[dependencies]
+document-features = { workspace = true }
 
 [features]
 default = ["std"]
@@ -13,6 +16,3 @@ std = []
 
 ## Adds some cool stuff I hope.
 nightly-whatever = []
-
-[dependencies]
-document-features = { workspace = true }

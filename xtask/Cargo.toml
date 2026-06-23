@@ -1,6 +1,6 @@
 [package]
-edition = "2024"
 name = "xtask"
+edition = "2024"
 
 [dependencies]
 anstream = { workspace = true }
