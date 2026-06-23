@@ -38,7 +38,7 @@ The html docs already have a table of contents on the left side panel.
 - A link with escaped characters: [Vec \[...\] tor](https://doc.rust-lang.org/alloc/vec/struct.Vec.html "does \"this\" work?")
 
 ##### Inter-doc links
-- A link to another crate: [`glob_match`](https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html).
+- A link to another crate: [`glob_match`](https://docs.rs/fast-glob/1.0.1/fast_glob/fn.glob_match.html).
 - A shortcut to another crate [`fast_glob::glob_match`].
 - A link to a crate from github: [`indoc::indoc!`].
 
@@ -218,7 +218,7 @@ Test if ignoring lines work in a listed code block.
 [`Vec`]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html
 [`alloc`]: https://doc.rust-lang.org/alloc/index.html
 [`derive`]: https://doc.rust-lang.org/core/macros/builtin/attr.derive.html
-[`fast_glob::glob_match`]: https://docs.rs/fast-glob/1.0.0/fast_glob/fn.glob_match.html
+[`fast_glob::glob_match`]: https://docs.rs/fast-glob/1.0.1/fast_glob/fn.glob_match.html
 [`i32`]: https://doc.rust-lang.org/std/primitive.i32.html
 [`indoc::indoc!`]: https://docs.rs/indoc/2.0.7/indoc/macro.indoc.html
 [`my_function`]: https://docs.rs/test-crate/0.0.0/test_crate/fn.my_function.html
@@ -227,7 +227,7 @@ Test if ignoring lines work in a listed code block.
 [`my_inline_glob_imported_fn`]: https://docs.rs/test-crate/0.0.0/test_crate/fn.my_inline_glob_imported_fn.html
 [`my_macro`]: https://docs.rs/test-crate/0.0.0/test_crate/macro.my_macro.html
 [`my_module`]: https://docs.rs/test-crate/0.0.0/test_crate/my_module/index.html
-[`phf_macros::phf_map`]: https://docs.rs/phf_macros/0.12.1/phf_macros/macro.phf_map.html
+[`phf_macros::phf_map`]: https://docs.rs/phf_macros/0.14.0/phf_macros/macro.phf_map.html
 [`std::cmp::Ordering`]: https://doc.rust-lang.org/core/cmp/enum.Ordering.html
 [`std::f32::consts::E`]: https://doc.rust-lang.org/core/f32/consts/constant.E.html
 [`std::format_args`]: https://doc.rust-lang.org/core/macro.format_args.html

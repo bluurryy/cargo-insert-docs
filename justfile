@@ -15,3 +15,7 @@ update-cli-md:
     open --raw docs/cli.md 
     | str replace --regex '(?<=```console\n)[\s\S]*?(?=```)' ("$ cargo insert-docs -h\n\n" ++ $s ++ "\n") 
     | save -f docs/cli.md
+
+update-expect:
+    cargo run -- -p test-crate
+    UPDATE_EXPECT=1 cargo xtask ci
