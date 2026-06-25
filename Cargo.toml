@@ -120,7 +120,7 @@ relative-path = {
   default-features = false,
   features = ["alloc", "std"]
 }
-rustdoc-types = { version = "0.57.4", default-features = false }
+rustdoc-types = { version = "0.58.0", default-features = false }
 serde = { version = "1.0.228", default-features = false, features = ["std"] }
 serde_json = {
   version = "1.0.150",

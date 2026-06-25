@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Changed
+
+- Update default nightly toolchain to `nightly-2026-06-24` (changed rustdoc json to version 58)
+
 ## [1.7.0] - 2026-06-23
 
 ### Changed

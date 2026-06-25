@@ -8,6 +8,10 @@ pre-release:
     just update-cli-md
     cargo +nightly test -p test-crate
 
+update:
+    just update-cli-md
+    just update-expect
+
 update-cli-md:
     #!/usr/bin/env nu
     stty cols 120
