@@ -14,10 +14,7 @@ path = "lib.rs"
 
 [dependencies]
 fast-glob = "1.0.1"
-indoc = {
-  git = "https://github.com/dtolnay/indoc",
-  rev = "4bfa29fcde487bd57c61db452773fff50f20c819"
-}
+indoc = { git = "https://github.com/dtolnay/indoc", rev = "4bfa29fcde487bd57c61db452773fff50f20c819" }
 phf_macros = "0.14.0"
 test-crate-dep = { path = "../test-crate-dep" }
 
