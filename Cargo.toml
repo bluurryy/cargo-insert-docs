@@ -38,8 +38,8 @@ clap-cargo = { version = "0.18.3", default-features = false, features = ["clap"]
 color-eyre = { version = "0.6.5", default-features = false, features = ["capture-spantrace", "track-caller"] }
 document-features = "0.2.12"  # explicitly errors if `default-features = false`
 expect-test = { version = "1.5.1", default-features = false }
-fancy-regex = { version = "0.18.0", default-features = false, features = ["std"] }
-gix = { version = "0.85.0", default-features = false }
+fancy-regex = { version = "0.19.0", default-features = false, features = ["std"] }
+gix = { version = "0.86.0", default-features = false }
 indexmap = { version = "2.14.0", default-features = false, features = ["std"] }
 indoc = { version = "2.0.7", default-features = false }
 macro_rules_attribute = { version = "0.2.3", default-features = false }
@@ -53,7 +53,7 @@ rustdoc-types = { version = "0.60.0", default-features = false }
 serde = { version = "1.0.229", default-features = false, features = ["std"] }
 serde_json = { version = "1.0.151", default-features = false, features = ["std"] }
 similar = "3.1.1"
-syn = { version = "2.0.119", default-features = false }
+syn = { version = "3.0.3", default-features = false }
 tl = "0.7.8"
 toml = { version = "1.1.4", default-features = false, features = ["display", "parse", "serde", "std"] }
 toml_edit = { version = "0.25.13", default-features = false, features = ["parse"] }
