@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+## [1.10.0] - 2026-08-03
+
 ### Added
 
 - Create links to items in foreign crates (due to nightly toolchain upgrade). We can't create 
@@ -356,7 +358,8 @@ _This release does not make any breaking changes. The version is bumped to `1.0.
 ## [0.1.0] - 2025-07-09
 
 <!-- next-url -->
-[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v1.10.0...HEAD
+[1.10.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.10.0
 [1.9.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.9.0
 [1.8.1]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.8.1
 [1.8.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.8.0
