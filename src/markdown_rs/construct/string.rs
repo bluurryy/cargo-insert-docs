@@ -19,7 +19,7 @@ use crate::markdown_rs::subtokenize::Subresult;
 use crate::markdown_rs::tokenizer::Tokenizer;
 
 /// Characters that can start something in string.
-const MARKERS: [u8; 2] = [b'&', b'\\'];
+const MARKERS: [u8; 2] = *b"&\\";
 
 /// Start of string.
 ///
