@@ -33,26 +33,24 @@ impl<'a> Tree<'a> {
                 continue;
             };
 
-            let parent_id = {
-                if let Some(&(mut parent_id)) = parents.get(&child_id) {
-                    let parent_item = &paths[&parent_id];
+            let parent_id = parents.get(&child_id).copied();
 
-                    // Afaict this won't happen currently, paths to methods or impls
-                    // won't even get generated. But since the `ItemKind` exists, it
-                    // makes sense for us to handle this here. Perhaps in the future
-                    // this will do something.
-                    if matches!(parent_item.kind, ItemKind::Impl)
-                        && let Some(&grand_parent_id) = parents.get(&parent_id)
-                    {
-                        parent_id = grand_parent_id;
-                        child_kind = Kind::Method;
-                    }
+            if let Some(parent_id) = parent_id {
+                let parent_item = &paths[&parent_id];
 
-                    Some(parent_id)
-                } else {
-                    None
+                // In `paths`, a method's parent is the `Trait`, `Struct`, `Enum` or `Union`.
+                //
+                // We currently can't tell apart `method`s from `tymethods` (required methods).
+                // We always create `method`s for now.
+                if matches!(child_kind, Kind::Function)
+                    && matches!(
+                        parent_item.kind,
+                        ItemKind::Trait | ItemKind::Struct | ItemKind::Enum | ItemKind::Union,
+                    )
+                {
+                    child_kind = Kind::Method;
                 }
-            };
+            }
 
             inv_tree
                 .insert(child_id, Value { parent: parent_id, kind: child_kind, name: child_name });

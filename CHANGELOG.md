@@ -8,8 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Create links to items in foreign crates (due to nightly toolchain upgrade). We can't create 
+  correct links to a trait's required methods yet, but they at least point to the right trait.
+
 ### Changed
 
+- Update default nightly toolchain to `nightly-2026-08-02` (changed rustdoc json to version 61)
 - Update dependencies
 
 ## [1.9.0] - 2026-07-04

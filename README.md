@@ -36,7 +36,7 @@ cargo binstall cargo-insert-docs
 cargo install cargo-insert-docs
 ```
 
-To extract the crate documentation, `cargo-insert-docs` invokes `cargo +nightly-2026-07-04 rustdoc`. This will automatically install the required nightly toolchain.
+To extract the crate documentation, `cargo-insert-docs` invokes `cargo +nightly-2026-08-02 rustdoc`. This will automatically install the required nightly toolchain.
 
 ## Usage
 
@@ -236,13 +236,11 @@ You can automate this using GitHub Actions with job steps like these:
 
 ## Known Issues
 
-- **Can't resolve links to certain items in foreign crates**
+- **Creates wrong link for trait required methods**
 
-  Due to limitations of the rustdoc json format, `cargo-insert-docs` currently can't resolve the following items in foreign crates:
-  - methods
-  - enum variants
-  - associated types
-  - associated constants
+  Due to limitations of the rustdoc json format, we can't differentiate between a trait's required methods and provided methods.
+  Currently we always create a link to a provided method like https://doc.rust-lang.org/core/iter/traits/iterator/trait.Iterator.html#method.next instead of https://doc.rust-lang.org/core/iter/traits/iterator/trait.Iterator.html#tymethod.next. Notice `#method` instead of `#tymethod`. The resulting link, when wrong, still sends you to the correct trait but the browser won't focus on the method.
+
 
 - **Can't resolve recursive imports and some cases of glob imports**
 

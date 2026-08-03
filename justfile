@@ -23,3 +23,6 @@ update-cli-md:
 update-expect:
     cargo run -- -p test-crate
     UPDATE_EXPECT=1 cargo xtask ci
+
+get-json crate:
+    cat ./target/insert-docs/doc/{{ crate }}.json

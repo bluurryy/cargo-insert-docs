@@ -23,7 +23,7 @@ let image = Image::load("cat.png");
 ```
 
 [`Image`]: https://docs.rs/example-crate/0.0.0/example_crate/struct.Image.html
-[`std::io::Read`]: https://doc.rust-lang.org/std/io/trait.Read.html
+[`std::io::Read`]: https://doc.rust-lang.org/alloc/io/read/trait.Read.html
 
 <!-- crate documentation end -->
 

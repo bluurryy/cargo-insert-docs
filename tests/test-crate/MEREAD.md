@@ -64,9 +64,9 @@ But we can have a naive implementation and try to not crash.
 - A link to a use: [`MyStructUse`] (foreign: [`test_crate_dep::foreign_extern_crate`])
 - A link to a union: [`MyUnion`] (foreign: [`std::mem::MaybeUninit`])
 - A link to a struct: [`MyStruct`] (foreign: [`std::mem::Discriminant`])
-- A link to a struct field: [`MyStruct::my_field`] (foreign: `std::ops::Range::start`)
+- A link to a struct field: [`MyStruct::my_field`] (foreign: [`std::ops::Range::start`])
 - A link to an enum: [`MyEnum`] (foreign: [`std::cmp::Ordering`])
-- A link to a variant: [`MyEnum::MyVariant`] (foreign: `std::cmp::Ordering::Less`)
+- A link to a variant: [`MyEnum::MyVariant`] (foreign: [`std::cmp::Ordering::Less`])
 - A link to a function: [`my_function`] (foreign: [`std::mem::drop`])
 - A link to a trait: [`MyTrait`] (foreign: [`std::iter::Iterator`])
 - A link to a trait alias: [`IntoString`] (foreign: [`test_crate_dep::ForeignTraitAlias`])
@@ -78,15 +78,15 @@ But we can have a naive implementation and try to not crash.
 - A link to a macro: [`my_macro`] (foreign: [`std::format_args`])
 - A link to a proc macro: [`phf_macros::phf_map`]
 - A link to a primitive: [`i32`]
-- A link to an associated constant: [`MyTrait::MY_ASSOCIATED_CONSTANT`] (foreign: `test_crate_dep::ForeignTrait::FOREIGN_ASSOCIATED_CONSTANT`, `f32::NAN`)
-- A link to an associated type: [`MyTrait::MyAssociatedType`] (foreign: `test_crate_dep::ForeignTrait::ForeignAssociatedType`)
+- A link to an associated constant: [`MyTrait::MY_ASSOCIATED_CONSTANT`] (foreign: [`test_crate_dep::ForeignTrait::FOREIGN_ASSOCIATED_CONSTANT`], [`f32::NAN`])
+- A link to an associated type: [`MyTrait::MyAssociatedType`] (foreign: [`test_crate_dep::ForeignTrait::ForeignAssociatedType`])
 - A link to a proc macro attribute is not possible?
 - A link to a proc macro derive: [`Debug`]
 - A link to a keyword is not possible
 - A link to a builtin attribute: [`derive`]
-- A link to a method: [`MyStruct::my_method`] (foreign: `std::alloc::Layout::size`)
-- A link to a required trait method: [`MyTrait::my_required_method`] (foreign: `std::iter::Iterator::next`)
-- A link to a provided trait method: [`MyTrait::my_provided_method`] (foreign: `std::iter::Iterator::size_hint`)
+- A link to a method: [`MyStruct::my_method`] (foreign: [`std::alloc::Layout::size`])
+- A link to a required trait method: [`MyTrait::my_required_method`] (foreign: [`std::iter::Iterator::next`])
+- A link to a provided trait method: [`MyTrait::my_provided_method`] (foreign: [`std::iter::Iterator::size_hint`])
 
 
 ### Features
@@ -218,6 +218,7 @@ Test if ignoring lines work in a listed code block.
 [`Vec`]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html
 [`alloc`]: https://doc.rust-lang.org/alloc/index.html
 [`derive`]: https://doc.rust-lang.org/core/macros/builtin/attr.derive.html
+[`f32::NAN`]: https://doc.rust-lang.org/std/primitive.f32.html#associatedconstant.NAN
 [`fast_glob::glob_match`]: https://docs.rs/fast-glob/1.1.0/fast_glob/fn.glob_match.html
 [`i32`]: https://doc.rust-lang.org/std/primitive.i32.html
 [`indoc::indoc!`]: https://docs.rs/indoc/2.0.7/indoc/macro.indoc.html
@@ -228,16 +229,23 @@ Test if ignoring lines work in a listed code block.
 [`my_macro`]: https://docs.rs/test-crate/0.0.0/test_crate/macro.my_macro.html
 [`my_module`]: https://docs.rs/test-crate/0.0.0/test_crate/my_module/index.html
 [`phf_macros::phf_map`]: https://docs.rs/phf_macros/0.14.0/phf_macros/macro.phf_map.html
+[`std::alloc::Layout::size`]: https://doc.rust-lang.org/core/alloc/layout/struct.Layout.html#method.size
+[`std::cmp::Ordering::Less`]: https://doc.rust-lang.org/core/cmp/enum.Ordering.html#variant.Less
 [`std::cmp::Ordering`]: https://doc.rust-lang.org/core/cmp/enum.Ordering.html
 [`std::f32::consts::E`]: https://doc.rust-lang.org/core/f32/consts/constant.E.html
 [`std::format_args`]: https://doc.rust-lang.org/core/macro.format_args.html
+[`std::iter::Iterator::next`]: https://doc.rust-lang.org/core/iter/traits/iterator/trait.Iterator.html#method.next
+[`std::iter::Iterator::size_hint`]: https://doc.rust-lang.org/core/iter/traits/iterator/trait.Iterator.html#method.size_hint
 [`std::iter::Iterator`]: https://doc.rust-lang.org/core/iter/traits/iterator/trait.Iterator.html
 [`std::mem::Discriminant`]: https://doc.rust-lang.org/core/mem/struct.Discriminant.html
 [`std::mem::MaybeUninit`]: https://doc.rust-lang.org/core/mem/maybe_uninit/union.MaybeUninit.html
 [`std::mem::drop`]: https://doc.rust-lang.org/core/mem/fn.drop.html
 [`std::mem`]: https://doc.rust-lang.org/core/mem/index.html
+[`std::ops::Range::start`]: https://doc.rust-lang.org/core/ops/range/struct.Range.html#structfield.start
 [`test_crate_dep::FOREIGN_STATIC`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/static.FOREIGN_STATIC.html
 [`test_crate_dep::ForeignExternType`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/foreigntype.ForeignExternType.html
+[`test_crate_dep::ForeignTrait::FOREIGN_ASSOCIATED_CONSTANT`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/trait.ForeignTrait.html#associatedconstant.FOREIGN_ASSOCIATED_CONSTANT
+[`test_crate_dep::ForeignTrait::ForeignAssociatedType`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/trait.ForeignTrait.html#associatedtype.ForeignAssociatedType
 [`test_crate_dep::ForeignTraitAlias`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/traitalias.ForeignTraitAlias.html
 [`test_crate_dep::foreign_extern_crate`]: https://doc.rust-lang.org/alloc/index.html
 [`test_crate_dep::foreign_mod`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/foreign_mod/index.html

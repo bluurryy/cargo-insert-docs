@@ -42,7 +42,7 @@ fn test_simple() {
         [
             PathItem {
                 name: "write",
-                kind: Function,
+                kind: Method,
             },
             PathItem {
                 name: "Write",
