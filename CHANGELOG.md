@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Create links to items in foreign crates (due to nightly toolchain upgrade). We can't create 
-  correct links to a trait's required methods yet, but they at least point to the right trait.
+  correct links to a trait's *required* methods yet, but they at least point to the right trait.
 
 ### Changed
 
