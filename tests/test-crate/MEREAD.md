@@ -87,7 +87,7 @@ But we can have a naive implementation and try to not crash.
 - A link to a method: [`MyStruct::my_method`] (foreign: [`std::alloc::Layout::size`])
 - A link to a required trait method: [`MyTrait::my_required_method`] (foreign: [`std::iter::Iterator::next`])
 - A link to a provided trait method: [`MyTrait::my_provided_method`] (foreign: [`std::iter::Iterator::size_hint`])
-- A link to an overloaded name: [`mod@overloaded_name`], [`fn@overloaded_name`], [`macro@overloaded_name`] (foreign: [`mod@std::vec`], [`macro@std::vec`])
+- A link to an overloaded name: [`overloaded_name`][`mod@overloaded_name`], [`overloaded_name`][`fn@overloaded_name`], [`overloaded_name`][`macro@overloaded_name`] (foreign: [`std::vec`][`mod@std::vec`], [`std::vec`][`macro@std::vec`])
 - A link into an overloaded mod name: [`overloaded_name::something`], (foreign: [`std::vec::Vec`])
 
 

@@ -209,24 +209,19 @@
  html: <code>std::iter::Iterator::size_hint</code>
  href: https://doc.rust-lang.org/core/iter/traits/iterator/trait.Iterator.html#method.size_hint
  
--html: <code>overloaded_name</code>
-+html: <code>mod@overloaded_name</code>
+ html: <code>overloaded_name</code>
  href: overloaded_name/index.html
  
--html: <code>overloaded_name</code>
-+html: <code>fn@overloaded_name</code>
+ html: <code>overloaded_name</code>
  href: fn.overloaded_name.html
  
--html: <code>overloaded_name</code>
-+html: <code>macro@overloaded_name</code>
+ html: <code>overloaded_name</code>
  href: macro.overloaded_name.html
  
--html: <code>std::vec</code>
-+html: <code>mod@std::vec</code>
+ html: <code>std::vec</code>
  href: https://doc.rust-lang.org/alloc/vec/index.html
  
--html: <code>std::vec</code>
-+html: <code>macro@std::vec</code>
+ html: <code>std::vec</code>
  href: https://doc.rust-lang.org/alloc/macro.vec.html
  
  html: <code>overloaded_name::something</code>

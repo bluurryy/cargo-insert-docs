@@ -2,7 +2,7 @@ use expect_test::expect;
 
 use crate::{
     extract_crate_docs::rewrite_markdown::{
-        RewriteMarkdownOptions, code_block_fence_is_rust, rewrite_markdown,
+        RewriteMarkdownOptions, add_definitions, code_block_fence_is_rust, rewrite_markdown,
     },
     markdown::Tree,
     pretty_log,
@@ -460,4 +460,26 @@ fn test_quoted_code_block_indented_hidden_line() {
 
     let out = rewrite_markdown(markdown, &RewriteMarkdownOptions::default());
     assert_eq!(out, "> ```rust\n> // this stays\n> ```");
+}
+
+#[test]
+fn test_removing_namespace_disambiguator() {
+    let markdown = "\
+[`fn@a`]
+[fn@b]
+[`fn@c`]
+[fn@d]
+    ";
+
+    let mut options = RewriteMarkdownOptions::default();
+    options.links.push(("`fn@a`".into(), None));
+    options.links.push(("fn@b".into(), None));
+    options.links.push(("`fn@c`".into(), Some("https://rust-lang.org/c".into())));
+    options.links.push(("fn@d".into(), Some("https://rust-lang.org/d".into())));
+
+    println!("{:?}", Tree::new(&add_definitions(markdown, &options)));
+
+    let out = rewrite_markdown(markdown, &options);
+
+    println!("OUT:\n{out}");
 }

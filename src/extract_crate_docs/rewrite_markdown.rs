@@ -2,7 +2,10 @@
 mod tests;
 
 use core::{fmt::Write, ops::Range};
-use std::collections::{HashMap, HashSet};
+use std::{
+    borrow::Cow,
+    collections::{HashMap, HashSet},
+};
 
 use crate::{
     markdown::{self, Tree, format_link_destination},
@@ -28,7 +31,7 @@ pub fn rewrite_markdown(markdown: &str, options: &RewriteMarkdownOptions) -> Str
 /// replaced by their label only.
 const PLACEHOLDER_DESTINATION: &str = "__PLACEHOLDER_DESTINATION__";
 
-fn add_definitions(markdown: &str, options: &RewriteMarkdownOptions) -> String {
+pub(crate) fn add_definitions(markdown: &str, options: &RewriteMarkdownOptions) -> String {
     let mut markdown = markdown.to_string();
 
     if !options.links.is_empty() {
@@ -184,10 +187,15 @@ fn rewrite(markdown: &str, options: &RewriteMarkdownOptions) -> String {
                     continue;
                 };
 
+                let old_label = Cow::Borrowed(label_text.str());
+                let new_label = remove_namespace_disambiguator(&old_label).map(Cow::Owned);
+
                 if resolved.is_none() {
                     // This points to an reference we failed to resolve with rustdoc.
                     // We replace the shorcut with its label e.g. `[a]` -> `a`
-                    out.replace(node.byte_range(), label_text.str());
+                    out.replace(node.byte_range(), new_label.unwrap_or(old_label));
+                } else if let Some(new_label) = new_label {
+                    out.replace(node.byte_range(), format!("[{new_label}][{old_label}]"));
                 }
             }
             Name::Definition => {
@@ -337,4 +345,22 @@ fn code_block_fence_is_rust(lang: &str) -> bool {
             false
         }
     }
+}
+
+/// Returns `None` if no namespace disambiguator was found.
+//
+// Relevant rustdoc code:
+// - src/librustdoc/html/markdown.rs#eb1aebfb95c857a47a789862034dc970f307a27d
+// - src/librustdoc/passes/collect_intra_doc_links.rs#f1acecf9b8e31f4aa9979c0cbf005ba3fb4385a7
+fn remove_namespace_disambiguator(link: &str) -> Option<String> {
+    let index = link.find('@')?;
+
+    let dis_start =
+        link[..index].rfind(|c: char| !c.is_ascii_alphabetic()).map(|i| i + 1).unwrap_or(0);
+    let dis_end = index + 1;
+
+    let a = &link[0..dis_start];
+    let b = &link[dis_end..];
+
+    Some(format!("{a}{b}"))
 }
