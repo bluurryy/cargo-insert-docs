@@ -97,7 +97,7 @@ struct Value<'a> {
 }
 
 fn parents(paths: &Paths) -> HashMap<Id, Id> {
-    let path_to_id = path_to_id(paths);
+    let path_to_id = parent_path_to_id_map(paths);
     let mut parents = HashMap::new();
     let mut ids = paths.keys().copied().collect::<Vec<_>>();
     ids.sort_unstable();
@@ -121,14 +121,42 @@ fn parents(paths: &Paths) -> HashMap<Id, Id> {
     parents
 }
 
-fn path_to_id(paths: &Paths) -> HashMap<&[String], Id> {
+/// Only registers names of the type namespace (includes modules),
+/// since those are only valid parents.
+///
+/// This prevents names overloaded by namespace to mess things up.
+/// For instance a parent path `std::vec` should be the module,
+/// not the `vec!` macro.
+fn parent_path_to_id_map(paths: &Paths) -> HashMap<&[String], Id> {
     let mut path_to_id = HashMap::new();
 
     for (&id, item_summary) in paths {
-        path_to_id.insert(item_summary.path.as_slice(), id);
+        if is_in_type_namespace(item_summary.kind) {
+            path_to_id.insert(item_summary.path.as_slice(), id);
+        }
     }
 
     path_to_id
+}
+
+/// https://doc.rust-lang.org/reference/names/namespaces.html
+fn is_in_type_namespace(kind: ItemKind) -> bool {
+    use ItemKind::*;
+
+    matches!(
+        kind,
+        Module
+            | ExternCrate
+            | Struct
+            | Union
+            | Enum
+            | TypeAlias
+            | Trait
+            | TraitAlias
+            | ExternType
+            | AssocType
+            | Primitive
+    )
 }
 
 fn item_name(item: &ItemSummary) -> &str {

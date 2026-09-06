@@ -87,6 +87,8 @@ But we can have a naive implementation and try to not crash.
 - A link to a method: [`MyStruct::my_method`] (foreign: [`std::alloc::Layout::size`])
 - A link to a required trait method: [`MyTrait::my_required_method`] (foreign: [`std::iter::Iterator::next`])
 - A link to a provided trait method: [`MyTrait::my_provided_method`] (foreign: [`std::iter::Iterator::size_hint`])
+- A link to an overloaded name: [`mod@overloaded_name`], [`fn@overloaded_name`], [`macro@overloaded_name`] (foreign: [`mod@std::vec`], [`macro@std::vec`])
+- A link into an overloaded mod name: [`overloaded_name::something`], (foreign: [`std::vec::Vec`])
 
 
 ### Features
@@ -220,14 +222,20 @@ Test if ignoring lines work in a listed code block.
 [`derive`]: https://doc.rust-lang.org/core/macros/builtin/attr.derive.html
 [`f32::NAN`]: https://doc.rust-lang.org/std/primitive.f32.html#associatedconstant.NAN
 [`fast_glob::glob_match`]: https://docs.rs/fast-glob/1.1.0/fast_glob/fn.glob_match.html
+[`fn@overloaded_name`]: https://docs.rs/test-crate/0.0.0/test_crate/fn.overloaded_name.html
 [`i32`]: https://doc.rust-lang.org/std/primitive.i32.html
 [`indoc::indoc!`]: https://docs.rs/indoc/2.0.7/indoc/macro.indoc.html
+[`macro@overloaded_name`]: https://docs.rs/test-crate/0.0.0/test_crate/macro.overloaded_name.html
+[`macro@std::vec`]: https://doc.rust-lang.org/alloc/macro.vec.html
+[`mod@overloaded_name`]: https://docs.rs/test-crate/0.0.0/test_crate/overloaded_name/index.html
+[`mod@std::vec`]: https://doc.rust-lang.org/alloc/vec/index.html
 [`my_function`]: https://docs.rs/test-crate/0.0.0/test_crate/fn.my_function.html
 [`my_glob_imported_fn_from_private_mod`]: https://docs.rs/test-crate/0.0.0/test_crate/fn.my_glob_imported_fn_from_private_mod.html
 [`my_glob_imported_fn`]: https://docs.rs/test-crate/0.0.0/test_crate/to_be_glob_imported/fn.my_glob_imported_fn.html
 [`my_inline_glob_imported_fn`]: https://docs.rs/test-crate/0.0.0/test_crate/fn.my_inline_glob_imported_fn.html
 [`my_macro`]: https://docs.rs/test-crate/0.0.0/test_crate/macro.my_macro.html
 [`my_module`]: https://docs.rs/test-crate/0.0.0/test_crate/my_module/index.html
+[`overloaded_name::something`]: https://docs.rs/test-crate/0.0.0/test_crate/overloaded_name/fn.something.html
 [`phf_macros::phf_map`]: https://docs.rs/phf_macros/0.14.0/phf_macros/macro.phf_map.html
 [`std::alloc::Layout::size`]: https://doc.rust-lang.org/core/alloc/layout/struct.Layout.html#method.size
 [`std::cmp::Ordering::Less`]: https://doc.rust-lang.org/core/cmp/enum.Ordering.html#variant.Less
@@ -242,6 +250,7 @@ Test if ignoring lines work in a listed code block.
 [`std::mem::drop`]: https://doc.rust-lang.org/core/mem/fn.drop.html
 [`std::mem`]: https://doc.rust-lang.org/core/mem/index.html
 [`std::ops::Range::start`]: https://doc.rust-lang.org/core/ops/range/struct.Range.html#structfield.start
+[`std::vec::Vec`]: https://doc.rust-lang.org/alloc/vec/struct.Vec.html
 [`test_crate_dep::FOREIGN_STATIC`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/static.FOREIGN_STATIC.html
 [`test_crate_dep::ForeignExternType`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/foreigntype.ForeignExternType.html
 [`test_crate_dep::ForeignTrait::FOREIGN_ASSOCIATED_CONSTANT`]: https://docs.rs/test-crate-dep/0.0.0/test_crate_dep/trait.ForeignTrait.html#associatedconstant.FOREIGN_ASSOCIATED_CONSTANT

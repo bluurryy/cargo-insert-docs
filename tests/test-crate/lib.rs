@@ -75,6 +75,8 @@
 //! - A link to a method: [`MyStruct::my_method`] (foreign: [`std::alloc::Layout::size`])
 //! - A link to a required trait method: [`MyTrait::my_required_method`] (foreign: [`std::iter::Iterator::next`])
 //! - A link to a provided trait method: [`MyTrait::my_provided_method`] (foreign: [`std::iter::Iterator::size_hint`])
+//! - A link to an overloaded name: [`mod@overloaded_name`], [`fn@overloaded_name`], [`macro@overloaded_name`] (foreign: [`mod@std::vec`], [`macro@std::vec`])
+//! - A link into an overloaded mod name: [`overloaded_name::something`], (foreign: [`std::vec::Vec`])
 //!
 //! [`ThinRope`]: String
 //!
@@ -318,3 +320,12 @@ pub static MY_STATIC: i32 = 0;
 unsafe extern "C" {
     pub type MyExternType;
 }
+
+pub mod overloaded_name {
+    pub fn something() {}
+}
+#[macro_export]
+macro_rules! overloaded_name {
+    () => {};
+}
+pub fn overloaded_name() {}

@@ -76,6 +76,10 @@ fn test_tree() {
         ├── my_inline_glob_imported_fn Function
         ├── my_macro Macro
         ├── my_module Module
+        ├── overloaded_name Function
+        ├── overloaded_name Macro
+        ├── overloaded_name Module
+        │   └── something Function
         ├── reexport Module
         │   └── Reexport Struct
         ├── reexport_inline Module
@@ -98,6 +102,12 @@ impl fmt::Display for Tree<'_> {
 }
 
 fn format_tree(tree: &Tree) -> String {
+    #[derive(PartialEq, Eq, PartialOrd, Ord)]
+    struct SortKey<'a> {
+        name: &'a str,
+        kind: String,
+    }
+
     let mut branches: HashMap<Id, Branch> = HashMap::new();
 
     for (&id, value) in &tree.inv_tree {
@@ -110,8 +120,13 @@ fn format_tree(tree: &Tree) -> String {
         }
     }
 
+    let get_sort_key = |id: &Id| {
+        let item = &tree.inv_tree[id];
+        SortKey { name: item.name, kind: format!("{:?}", item.kind) }
+    };
+
     for branch in branches.values_mut() {
-        branch.children.sort_by_key(|id| tree.inv_tree[id].name);
+        branch.children.sort_by_key(get_sort_key);
     }
 
     let mut roots = tree
@@ -120,7 +135,7 @@ fn format_tree(tree: &Tree) -> String {
         .filter_map(|(&i, v)| v.parent.is_none().then_some(i))
         .collect::<Vec<_>>();
 
-    roots.sort_by_key(|id| tree.inv_tree[id].name);
+    roots.sort_by_key(get_sort_key);
 
     let mut out = String::new();
 
