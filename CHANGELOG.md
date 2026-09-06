@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix wrong link when parent name also exists in another namespace (like `std::vec` referring a module and macro)
-- Remove namespace disambiguator from readme (e.g. `fn@foo`)
+- Remove namespace disambiguator from readme doc links (e.g. `fn@foo`)
 
 ## [1.10.0] - 2026-08-03
 
