@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Changed
+
+- Update default nightly toolchain to `nightly-2026-09-05`
+
 ### Fixed
 
 - Fix wrong link when parent name also exists in another namespace (like `std::vec` referring a module and macro)
