@@ -107,7 +107,7 @@ pub fn generate(options: Options) -> Result<PathBuf> {
     command.arg("--package").arg(&package.id.repr);
     command.arg("-Z").arg("unstable-options");
     command.arg("--output-format").arg("json");
-    command.arg("--message-format").arg("json");
+    command.arg("--message-format").arg("json-diagnostic-rendered-ansi");
 
     if document_private_items {
         command.arg("--document-private-items");
