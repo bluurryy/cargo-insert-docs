@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+## [1.12.1] - 2026-09-28
+
 ### Fixed
 
 - Fix crate documentation extraction when a build target is configured
@@ -381,7 +383,8 @@ _This release does not make any breaking changes. The version is bumped to `1.0.
 ## [0.1.0] - 2025-07-09
 
 <!-- next-url -->
-[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v1.12.0...HEAD
+[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v1.12.1...HEAD
+[1.12.1]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.12.1
 [1.12.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.12.0
 [1.11.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.11.0
 [1.10.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.10.0

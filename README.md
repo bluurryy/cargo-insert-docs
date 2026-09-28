@@ -220,7 +220,7 @@ You can automate this using GitHub Actions with job steps like these:
 - uses: actions/checkout@v4
 - uses: taiki-e/install-action@v2
   with:
-    tool: cargo-insert-docs@1.12.0
+    tool: cargo-insert-docs@1.12.1
 - run: cargo insert-docs --check --all-features
 ```
 
