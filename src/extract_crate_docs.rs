@@ -4,15 +4,14 @@ mod rewrite_markdown;
 use std::path::PathBuf;
 
 use cargo_metadata::Metadata;
-use color_eyre::eyre::{OptionExt as _, Report, Result, bail};
+use color_eyre::eyre::{OptionExt as _, Report, Result};
 use rustdoc_types::Crate;
 use tracing::warn;
 
 use crate::{
     PackageContext,
     extract_crate_docs::rewrite_markdown::{RewriteMarkdownOptions, rewrite_markdown},
-    read_to_string,
-    rustdoc_json::{self, CommandOutput},
+    read_to_string, rustdoc_json,
 };
 
 use resolver::{Resolver, ResolverOptions};
@@ -32,28 +31,12 @@ pub fn extract(cx: &PackageContext) -> Result<String> {
 }
 
 fn generate_rustdoc_json(cx: &PackageContext) -> Result<PathBuf> {
-    let command_output = if cx.cli.cfg.quiet {
-        CommandOutput::Ignore
-    } else if cx.cli.cfg.quiet_cargo {
-        CommandOutput::Collect
-    } else {
-        CommandOutput::Inherit
-    };
-
-    if matches!(command_output, CommandOutput::Inherit) {
-        // the command invocation will write directly to the terminal
-        // setting this flag here will make the log insert a newline
-        // before the next log message
-        cx.log.foreign_write_incoming();
-    }
-
     let target_dir = match cx.cfg.target_dir.clone() {
         Some(target_dir) => target_dir,
         None => cx.metadata.target_directory.join("insert-docs").into_std_path_buf(),
     };
 
-    let (output, path) = rustdoc_json::generate(rustdoc_json::Options {
-        metadata: &cx.metadata,
+    let path = rustdoc_json::generate(rustdoc_json::Options {
         package: cx.package,
         package_target: cx.target,
         toolchain: Some(&cx.cfg.toolchain),
@@ -64,22 +47,11 @@ fn generate_rustdoc_json(cx: &PackageContext) -> Result<PathBuf> {
         target: cx.cfg.target.as_deref(),
         target_dir: Some(&target_dir),
         quiet: cx.cli.cfg.quiet,
+        quiet_cargo: cx.cli.cfg.quiet_cargo,
         document_private_items: cx.cfg.document_private_items,
-        output: command_output,
         no_deps: cx.cfg.no_deps,
+        log: cx.log.clone(),
     })?;
-
-    if !output.status.success() {
-        if command_output == CommandOutput::Collect {
-            // write an empty line to separate our messages from the invoked command
-            cx.log.foreign_write_incoming();
-            eprint!("{}", String::from_utf8_lossy(&output.stderr));
-        }
-
-        let see = if command_output != CommandOutput::Ignore { " (see stderr above)" } else { "" };
-
-        bail!("Failed to build rustdoc JSON{see}");
-    }
 
     Ok(path)
 }

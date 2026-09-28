@@ -1,10 +1,11 @@
 use std::{collections::HashMap, fmt, fs};
 
+use anstream::ColorChoice;
 use cargo_metadata::MetadataCommand;
 use expect_test::expect;
 use rustdoc_types::{Crate, Id};
 
-use crate::{rustdoc_json, tests::TreeFormatter};
+use crate::{pretty_log::PrettyLog, rustdoc_json, tests::TreeFormatter};
 
 use super::{Tree, Value};
 
@@ -18,8 +19,7 @@ fn test_tree() {
     let package = metadata.packages.iter().find(|p| p.name.as_str() == "test-crate").unwrap();
     let package_target = package.targets.iter().find(|t| t.is_lib()).unwrap();
 
-    let (_, path) = rustdoc_json::generate(rustdoc_json::Options {
-        metadata,
+    let path = rustdoc_json::generate(rustdoc_json::Options {
         package,
         package_target,
         toolchain: Some("nightly-2026-09-24"),
@@ -30,9 +30,13 @@ fn test_tree() {
         target: None,
         target_dir: None,
         quiet: false,
+        quiet_cargo: false,
         document_private_items: false,
         no_deps: false,
-        output: rustdoc_json::CommandOutput::Inherit,
+        log: PrettyLog::new(Box::new(anstream::AutoStream::new(
+            std::io::stderr(),
+            ColorChoice::Never,
+        ))),
     })
     .unwrap();
 

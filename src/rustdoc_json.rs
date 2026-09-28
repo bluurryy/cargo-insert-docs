@@ -1,18 +1,17 @@
 use std::{
     path::{Path, PathBuf},
-    process::{Command, Output, Stdio},
+    process::{Command, Stdio},
 };
 
-use crate::config::is_lib_like;
-use cargo_metadata::{Metadata, Package, Target};
-use color_eyre::eyre::{Context, Result, bail};
+use crate::{config::is_lib_like, pretty_log::PrettyLog};
+use cargo_metadata::{Package, Target};
+use color_eyre::eyre::{Context, OptionExt, Result, bail};
 use rustdoc_types::Crate;
 use serde::Deserialize;
 use tracing::error_span;
 
 pub struct Options<'a> {
     // metadata
-    pub metadata: &'a Metadata,
     pub package: &'a Package,
     pub package_target: &'a Target,
 
@@ -25,26 +24,19 @@ pub struct Options<'a> {
     pub target: Option<&'a str>,
     pub target_dir: Option<&'a Path>,
     pub quiet: bool,
+    pub quiet_cargo: bool,
     pub no_deps: bool,
 
     // flags for rustdoc
     pub document_private_items: bool,
 
-    // process handling
-    pub output: CommandOutput,
-}
-
-#[derive(Clone, Copy, PartialEq)]
-pub enum CommandOutput {
-    Inherit,
-    Ignore,
-    Collect,
+    // logging
+    pub log: PrettyLog,
 }
 
 /// Package must have a `lib` target.
-pub fn generate(options: Options) -> Result<(Output, PathBuf)> {
+pub fn generate(options: Options) -> Result<PathBuf> {
     let Options {
-        metadata,
         package,
         package_target,
         toolchain,
@@ -57,7 +49,9 @@ pub fn generate(options: Options) -> Result<(Output, PathBuf)> {
         target_dir,
         no_deps,
         quiet,
-        output: output_option,
+        quiet_cargo,
+        log,
+        ..
     } = options;
 
     let mut command = Command::new("cargo");
@@ -114,37 +108,77 @@ pub fn generate(options: Options) -> Result<(Output, PathBuf)> {
     }
 
     command.arg("--package").arg(&package.id.repr);
-    command.arg("--");
     command.arg("-Z").arg("unstable-options");
     command.arg("--output-format").arg("json");
+    command.arg("--message-format").arg("json");
 
     if document_private_items {
         command.arg("--document-private-items");
     }
 
-    if matches!(output_option, CommandOutput::Ignore) {
-        command.stdout(Stdio::null());
+    if quiet || quiet_cargo {
         command.stderr(Stdio::null());
     }
 
-    let result = if matches!(output_option, CommandOutput::Collect) {
-        command.output()
-    } else {
-        command.status().map(|status| Output { status, stdout: vec![], stderr: vec![] })
+    if !quiet_cargo {
+        command.stderr(Stdio::inherit());
+
+        // the command invocation will write directly to the terminal
+        // setting this flag here will make the log insert a newline
+        // before the next log message
+        log.foreign_write_incoming();
+    }
+
+    let output = command.output().wrap_err("failed to spawn cargo")?;
+
+    if !output.status.success() {
+        if quiet {
+            bail!("you shouldn't be able to see this :/");
+        } else {
+            if quiet_cargo {
+                // write an empty line to separate our messages from the invoked command
+                log.foreign_write_incoming();
+                eprint!("{}", String::from_utf8_lossy(&output.stderr));
+            }
+
+            bail!("Failed to build rustdoc JSON (see stderr above)");
+        }
+    }
+
+    let mut artifact = None;
+
+    for message in cargo_metadata::Message::parse_stream(&output.stdout[..]) {
+        let cargo_metadata::Message::CompilerArtifact(new_artifact) = message? else {
+            continue;
+        };
+
+        if new_artifact.package_id != package.id {
+            continue;
+        }
+
+        if !new_artifact.target.doc {
+            continue;
+        }
+
+        if artifact.is_none() {
+            artifact = Some(new_artifact);
+        } else {
+            bail!("multiple eligable artifacts? this is a bug");
+        }
+    }
+
+    let Some(artifact) = artifact else {
+        bail!("rustdoc json compiler artifact was not created");
     };
 
-    let output = result.wrap_err_with(|| format!("failed to run {command:?}"))?;
+    let path = artifact
+        .filenames
+        .into_iter()
+        .next()
+        .map(|p| p.into_std_path_buf())
+        .ok_or_eyre("rustdoc json compiler artifact did not produce files")?;
 
-    let mut path = match target_dir {
-        Some(path) => path.to_path_buf(),
-        None => metadata.target_directory.as_std_path().to_path_buf(),
-    };
-
-    path.push("doc");
-    path.push(package_target.name.replace('-', "_"));
-    path.set_extension("json");
-
-    Ok((output, path))
+    Ok(path)
 }
 
 pub fn parse(rustdoc_json: &str, toolchain: &str) -> Result<Crate> {

@@ -1,0 +1,3 @@
+[package]
+name = "test-custom-build-target"
+edition = "2024"

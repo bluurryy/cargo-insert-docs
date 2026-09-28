@@ -6,7 +6,7 @@ mod util;
 use std::env;
 
 use clap::{CommandFactory, Parser, Subcommand};
-use color_eyre::eyre::bail;
+use color_eyre::eyre::{OptionExt, bail};
 
 use util::{OK, Result, cmd, eprintln, println, re, read, write};
 
@@ -28,6 +28,7 @@ enum Command {
     CheckConfig,
     CheckBinLib,
     CheckTestCrate,
+    CheckCustomBuildTarget,
 }
 
 fn main() -> Result {
@@ -49,6 +50,7 @@ fn main() -> Result {
         Command::CheckConfig => check_config(),
         Command::CheckBinLib => check_bin_lib_stderr(),
         Command::CheckTestCrate => check_test_crate(),
+        Command::CheckCustomBuildTarget => check_custom_build_target(),
     }
 }
 
@@ -128,7 +130,39 @@ fn check_simple() -> Result {
         "crate-into-readme"
     )
     .output()?;
+
     OK
+}
+
+fn check_custom_build_target() -> Result {
+    let exe = get_cargo_insert_docs_executable_path()?;
+
+    cmd!(Verbatim(&exe), "crate-into-readme --check")
+        .current_dir("tests/test-custom-build-target")
+        .run()?;
+
+    OK
+}
+
+fn get_cargo_insert_docs_executable_path() -> Result<String> {
+    let stdout = cmd!("cargo build --message-format=json --quiet").stdout()?;
+    let mut executable = None;
+
+    for message in cargo_metadata::Message::parse_stream(stdout.as_bytes()) {
+        let cargo_metadata::Message::CompilerArtifact(artifact) = message? else {
+            continue;
+        };
+
+        if artifact.target.name == "cargo-insert-docs"
+            && let Some(artifact_executable) = artifact.executable
+        {
+            executable = Some(artifact_executable);
+        }
+    }
+
+    executable
+        .map(Into::into)
+        .ok_or_eyre("can't find cargo-insert-docs executable that was just built")
 }
 
 fn check_recurse() -> Result {

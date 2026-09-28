@@ -2428,6 +2428,7 @@ version = "0.0.0"
 dependencies = [
  "anstream",
  "anstyle",
+ "cargo_metadata",
  "clap",
  "color-eyre",
  "fancy-regex",

@@ -41,7 +41,6 @@ pub fn write(relative_to_workspace_path: impl AsRef<Path>, content: &str) -> Res
 }
 
 pub(crate) enum Arg<'a> {
-    #[expect(dead_code)]
     Verbatim(&'a str),
     WhitespaceSeparate(&'a str),
 }
@@ -92,6 +91,8 @@ pub struct Cmd {
     unchecked: bool,
     stdout: Out,
     stderr: Out,
+    current_dir: Option<String>,
+    envs: Vec<(String, String)>,
     #[expect(clippy::type_complexity)]
     hooks: Vec<Box<dyn FnOnce(&mut Command)>>,
 }
@@ -103,8 +104,21 @@ impl Cmd {
             unchecked: false,
             stdout: Out::ONLY_INHERIT,
             stderr: Out::ONLY_INHERIT,
+            current_dir: None,
+            envs: Vec::new(),
             hooks: Vec::new(),
         }
+    }
+
+    pub fn current_dir(mut self, dir: &str) -> Self {
+        self.current_dir = Some(dir.to_string());
+        self
+    }
+
+    #[expect(dead_code)]
+    pub fn env(mut self, key: &str, value: &str) -> Self {
+        self.envs.push((key.to_string(), value.to_string()));
+        self
     }
 
     pub fn unchecked(mut self) -> Self {
@@ -175,13 +189,23 @@ impl Cmd {
     }
 
     pub fn output(self) -> Result<Output> {
-        let Self { args, unchecked, stdout, stderr, hooks } = self;
+        let Self { args, unchecked, stdout, stderr, hooks, envs, current_dir } = self;
 
         let mut cmd = Command::new(&args[0]);
         cmd.args(&args[1..]);
-        cmd.current_dir(WORKSPACE_DIR.get().unwrap());
+
+        if let Some(current_dir) = current_dir {
+            cmd.current_dir(current_dir);
+        } else {
+            cmd.current_dir(WORKSPACE_DIR.get().unwrap());
+        }
+
         cmd.stdout(stdout.io());
         cmd.stderr(stderr.io());
+
+        for (key, value) in envs {
+            cmd.env(key, value);
+        }
 
         for hook in hooks {
             hook(&mut cmd);

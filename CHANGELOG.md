@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Fixed
+
+- Fix crate documentation extraction when a build target is configured
+
 ## [1.12.0] - 2026-09-25
 
 ### Changed
