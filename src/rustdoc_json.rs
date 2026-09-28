@@ -120,15 +120,6 @@ pub fn generate(options: Options) -> Result<PathBuf> {
         command.stderr(Stdio::null());
     }
 
-    if !quiet_cargo {
-        command.stderr(Stdio::inherit());
-
-        // the command invocation will write directly to the terminal
-        // setting this flag here will make the log insert a newline
-        // before the next log message
-        log.foreign_write_incoming();
-    }
-
     let output = command.output().wrap_err("failed to spawn cargo")?;
 
     if !output.status.success() {
@@ -138,6 +129,18 @@ pub fn generate(options: Options) -> Result<PathBuf> {
             if quiet_cargo {
                 // write an empty line to separate our messages from the invoked command
                 log.foreign_write_incoming();
+
+                // print compiler messages
+                for message in cargo_metadata::Message::parse_stream(&output.stdout[..]) {
+                    let Ok(message) = message else { break };
+                    let cargo_metadata::Message::CompilerMessage(message) = message else {
+                        continue;
+                    };
+                    let Some(rendered) = message.message.rendered else { continue };
+                    eprintln!("{rendered}");
+                }
+
+                // print stderr (just a one liner like "error: could not document ...")
                 eprint!("{}", String::from_utf8_lossy(&output.stderr));
             }
 
@@ -145,29 +148,31 @@ pub fn generate(options: Options) -> Result<PathBuf> {
         }
     }
 
-    let mut artifact = None;
+    let mut eligible_artifacts = Vec::new();
 
     for message in cargo_metadata::Message::parse_stream(&output.stdout[..]) {
-        let cargo_metadata::Message::CompilerArtifact(new_artifact) = message? else {
+        let cargo_metadata::Message::CompilerArtifact(artifact) = message? else {
             continue;
         };
 
-        if new_artifact.package_id != package.id {
+        if !artifact.target.doc {
             continue;
         }
 
-        if !new_artifact.target.doc {
+        if artifact.package_id != package.id {
             continue;
         }
 
-        if artifact.is_none() {
-            artifact = Some(new_artifact);
-        } else {
-            bail!("multiple eligable artifacts? this is a bug");
-        }
+        eligible_artifacts.push(artifact);
     }
 
-    let Some(artifact) = artifact else {
+    if eligible_artifacts.len() > 1 {
+        bail!(
+            "rustdoc json produced multiple compiler artifacts; there are probably multiple build targets configured; choose one with `--target`"
+        );
+    }
+
+    let Some(artifact) = eligible_artifacts.into_iter().next() else {
         bail!("rustdoc json compiler artifact was not created");
     };
 

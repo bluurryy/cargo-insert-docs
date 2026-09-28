@@ -57,6 +57,7 @@ fn main() -> Result {
 fn ci() -> Result {
     test()?;
     check_simple()?;
+    check_custom_build_target()?;
     check_recurse()?;
     check_config()?;
     check_bin_lib_stderr()?;
@@ -139,6 +140,10 @@ fn check_custom_build_target() -> Result {
 
     cmd!(Verbatim(&exe), "crate-into-readme --check")
         .current_dir("tests/test-custom-build-target")
+        .run()?;
+
+    cmd!(Verbatim(&exe), "crate-into-readme --check --target wasm32-unknown-unknown")
+        .current_dir("tests/test-custom-build-target-multiple")
         .run()?;
 
     OK
