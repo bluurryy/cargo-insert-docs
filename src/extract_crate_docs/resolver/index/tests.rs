@@ -22,7 +22,7 @@ fn test_tree() {
     let path = rustdoc_json::generate(rustdoc_json::Options {
         package,
         package_target,
-        toolchain: Some("nightly-2026-09-24"),
+        toolchain: "nightly-2026-09-24",
         all_features: false,
         no_default_features: false,
         features: &mut None.into_iter(),

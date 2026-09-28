@@ -39,7 +39,7 @@ fn generate_rustdoc_json(cx: &PackageContext) -> Result<PathBuf> {
     let path = rustdoc_json::generate(rustdoc_json::Options {
         package: cx.package,
         package_target: cx.target,
-        toolchain: Some(&cx.cfg.toolchain),
+        toolchain: &cx.cfg.toolchain,
         all_features: cx.cfg.all_features,
         no_default_features: cx.cfg.no_default_features,
         features: &mut cx.enabled_features.iter().map(|s| &**s),

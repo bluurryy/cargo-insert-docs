@@ -16,7 +16,7 @@ pub struct Options<'a> {
     pub package_target: &'a Target,
 
     // flags for cargo
-    pub toolchain: Option<&'a str>,
+    pub toolchain: &'a str,
     pub all_features: bool,
     pub no_default_features: bool,
     pub features: &'a mut dyn Iterator<Item = &'a str>,
@@ -56,10 +56,7 @@ pub fn generate(options: Options) -> Result<PathBuf> {
 
     let mut command = Command::new("cargo");
 
-    if let Some(toolchain) = toolchain {
-        command.arg(format!("+{toolchain}"));
-    }
-
+    command.arg(format!("+{toolchain}"));
     command.arg("rustdoc");
 
     if is_lib_like(package_target) {
@@ -126,17 +123,26 @@ pub fn generate(options: Options) -> Result<PathBuf> {
         if quiet {
             bail!("you shouldn't be able to see this :/");
         } else {
-            if quiet_cargo {
+            if !quiet_cargo {
                 // write an empty line to separate our messages from the invoked command
                 log.foreign_write_incoming();
 
                 // print compiler messages
                 for message in cargo_metadata::Message::parse_stream(&output.stdout[..]) {
                     let Ok(message) = message else { break };
+
                     let cargo_metadata::Message::CompilerMessage(message) = message else {
                         continue;
                     };
-                    let Some(rendered) = message.message.rendered else { continue };
+
+                    let Some(rendered) = message.message.rendered else {
+                        continue;
+                    };
+
+                    // show that targets must be installed for the specific toolchain cargo-insert-docs uses
+                    let rendered = rendered
+                        .replace("rustup target add", &format!("rustup +{toolchain} target add"));
+
                     eprintln!("{rendered}");
                 }
 
