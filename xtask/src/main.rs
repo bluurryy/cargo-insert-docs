@@ -100,6 +100,7 @@ fn main() -> Result {
             "--exclude test-bin-lib-both-active",
             "--exclude xtask",
             "--exclude test-crate-dep",
+            "--exclude test-document-private-items",
             "crate-into-readme"
         )
         .run()
@@ -254,6 +255,13 @@ fn main() -> Result {
         }
 
         OK
+    });
+
+    reg.add("test-document-private-items", || {
+        cargo_insert_docs!(
+            "crate-into-readme -p test-document-private-items --document-private-items --check"
+        )
+        .run()
     });
 
     reg.run(args.filter.as_deref());

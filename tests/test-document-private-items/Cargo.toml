@@ -1,0 +1,3 @@
+[package]
+name = "test-document-private-items"
+edition = "2024"
