@@ -3,7 +3,7 @@ default:
 
 pre-release:
     cargo fmt --check
-    cargo clippy --all-features -- -D warnings
+    cargo clippy --all-features --tests --examples -- -D warnings
     cargo xtask ci
     just update-cli-md
     cargo +nightly test -p test-crate

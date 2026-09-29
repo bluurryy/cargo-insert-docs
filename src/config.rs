@@ -62,7 +62,7 @@ pub struct WorkspaceConfig {
 }
 
 /// Reads configuration parameters from [`cargo_metadata::Metadata::workspace_metadata`].
-pub fn read_workspace_config(
+pub fn read_workspace_config_patch(
     json: &serde_json::Value,
 ) -> Result<(WorkspaceConfigPatch, PackageConfigPatch)> {
     let wrk: WorkspaceConfigPatch = metadata_json(json)?;
@@ -73,7 +73,7 @@ pub fn read_workspace_config(
 }
 
 /// Reads configuration parameters from a package manifest's contents (`Cargo.toml`).
-pub fn read_package_config(toml: &str) -> Result<PackageConfigPatch> {
+pub fn read_package_config_patch(toml: &str) -> Result<PackageConfigPatch> {
     let pkg: PackageConfigPatch = metadata_toml(toml)?;
     let fields: HashMap<String, IgnoredAny> = metadata_toml(toml)?;
     warn_about_unused_fields(fields, &[PackageConfigPatch::FIELDS]);

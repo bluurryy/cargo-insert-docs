@@ -10,8 +10,8 @@ use crate::config::{BoolOrString, CliConfig, PackageConfigPatch, WorkspaceConfig
 
 pub struct Cli {
     pub cfg: CliConfig,
-    pub workspace_patch: WorkspaceConfigPatch,
-    pub package_patch: PackageConfigPatch,
+    pub workspace_config_patch: WorkspaceConfigPatch,
+    pub package_config_patch: PackageConfigPatch,
 }
 
 impl Cli {
@@ -72,12 +72,12 @@ impl Cli {
                 quiet_cargo: quiet || quiet_cargo,
                 manifest_path: manifest_path.clone(),
             },
-            workspace_patch: WorkspaceConfigPatch {
+            workspace_config_patch: WorkspaceConfigPatch {
                 package: (!package.is_empty()).then(|| package.clone()),
                 workspace: workspace.then_some(true),
                 exclude: (!exclude.is_empty()).then(|| exclude.clone()),
             },
-            package_patch: PackageConfigPatch {
+            package_config_patch: PackageConfigPatch {
                 feature_into_crate: command.map(|c| c == Command::FeatureIntoCrate),
                 crate_into_readme: command.map(|c| c == Command::CrateIntoReadme),
                 feature_label: feature_label.clone(),

@@ -1,129 +1,90 @@
 use std::{
-    path::{Path, PathBuf},
+    path::PathBuf,
     process::{Command, Stdio},
 };
 
-use crate::{config::is_lib_like, pretty_log::PrettyLog};
-use cargo_metadata::{Package, Target};
+use crate::{
+    PackageContext, config::is_lib_like, package_context::CliContext, pretty_log::PrettyLog,
+};
 use color_eyre::eyre::{Context, OptionExt, Result, bail};
 use rustdoc_types::Crate;
 use serde::Deserialize;
 use tracing::error_span;
 
-pub struct Options<'a> {
-    // metadata
-    pub package: &'a Package,
-    pub package_target: &'a Target,
-
-    // flags for cargo
-    pub toolchain: &'a str,
-    pub all_features: bool,
-    pub no_default_features: bool,
-    pub features: &'a mut dyn Iterator<Item = &'a str>,
-    pub manifest_path: Option<&'a Path>,
-    pub target: Option<&'a str>,
-    pub target_dir: Option<&'a Path>,
-    pub quiet: bool,
-    pub quiet_cargo: bool,
-    pub no_deps: bool,
-
-    // flags for rustdoc
-    pub document_private_items: bool,
-
-    // logging
-    pub log: PrettyLog,
-}
-
 /// Package must have a `lib` target.
-pub fn generate(options: Options) -> Result<PathBuf> {
-    let Options {
-        package,
-        package_target,
-        toolchain,
-        all_features,
-        no_default_features,
-        features,
-        document_private_items,
-        manifest_path,
-        target,
-        target_dir,
-        no_deps,
-        quiet,
-        quiet_cargo,
-        log,
-        ..
-    } = options;
-
+pub fn generate(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result<PathBuf> {
     let mut command = Command::new("cargo");
 
-    command.arg(format!("+{toolchain}"));
-    command.arg("rustdoc");
+    command.arg(format!("+{}", pkg.toolchain));
 
-    if is_lib_like(package_target) {
+    command.args([
+        "rustdoc",
+        "-Z",
+        "unstable-options",
+        "--output-format",
+        "json",
+        "--message-format",
+        "json-diagnostic-rendered-ansi",
+    ]);
+
+    if is_lib_like(&pkg.cargo_target) {
         command.arg("--lib");
-    } else if package_target.is_bin() {
-        command.arg("--bin").arg(&package_target.name);
+    } else if pkg.cargo_target.is_bin() {
+        command.arg("--bin").arg(&pkg.cargo_target.name);
     } else {
         bail!("target must be lib or bin")
     }
 
-    if quiet {
+    if cli.quiet {
         command.arg("--quiet");
     }
 
     command.arg("--color").arg("always");
 
-    if let Some(manifest_path) = manifest_path {
-        command.arg("--manifest-path");
-        command.arg(manifest_path);
-    }
+    command.arg("--manifest-path");
+    command.arg(&pkg.manifest_path);
 
-    if let Some(target) = target {
+    if let Some(target) = pkg.target.as_deref() {
         command.arg("--target");
         command.arg(target);
     }
 
-    if let Some(target_dir) = target_dir {
-        command.arg("--target-dir");
-        command.arg(target_dir);
-    }
+    command.arg("--target-dir");
+    command.arg(&pkg.target_dir);
 
-    if all_features {
+    if pkg.all_features {
         command.arg("--all-features");
     }
 
-    if no_default_features {
+    if pkg.no_default_features {
         command.arg("--no-default-features");
     }
 
-    for feature in features {
+    for feature in &pkg.features {
         command.arg("--features").arg(feature);
     }
 
-    if no_deps {
+    if pkg.no_deps {
         command.arg("--no-deps");
     }
 
-    command.arg("--package").arg(&package.id.repr);
-    command.arg("-Z").arg("unstable-options");
-    command.arg("--output-format").arg("json");
-    command.arg("--message-format").arg("json-diagnostic-rendered-ansi");
+    command.arg("--package").arg(&pkg.id.repr);
 
-    if document_private_items {
+    if pkg.document_private_items {
         command.arg("--document-private-items");
     }
 
-    if quiet || quiet_cargo {
+    if cli.quiet || cli.quiet_cargo {
         command.stderr(Stdio::null());
     }
 
     let output = command.output().wrap_err("failed to spawn cargo")?;
 
     if !output.status.success() {
-        if quiet {
+        if cli.quiet {
             bail!("you shouldn't be able to see this :/");
         } else {
-            if !quiet_cargo {
+            if !cli.quiet_cargo {
                 // write an empty line to separate our messages from the invoked command
                 log.foreign_write_incoming();
 
@@ -140,8 +101,10 @@ pub fn generate(options: Options) -> Result<PathBuf> {
                     };
 
                     // show that targets must be installed for the specific toolchain cargo-insert-docs uses
-                    let rendered = rendered
-                        .replace("rustup target add", &format!("rustup +{toolchain} target add"));
+                    let rendered = rendered.replace(
+                        "rustup target add",
+                        &format!("rustup +{} target add", pkg.toolchain),
+                    );
 
                     eprintln!("{rendered}");
                 }
@@ -165,7 +128,7 @@ pub fn generate(options: Options) -> Result<PathBuf> {
             continue;
         }
 
-        if artifact.package_id != package.id {
+        if artifact.package_id != pkg.id {
             continue;
         }
 

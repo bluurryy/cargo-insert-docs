@@ -145,7 +145,6 @@ impl TreeFormatter {
         let is_last = child_i == self.child_len.wrapping_sub(1);
 
         for (i, line) in string.lines().enumerate() {
-            #[expect(clippy::collapsible_else_if)]
             let indent = if i == 0 {
                 if is_last { "└── " } else { "├── " }
             } else {

@@ -1,43 +1,37 @@
 use std::{collections::HashMap, fmt, fs};
 
 use anstream::ColorChoice;
-use cargo_metadata::MetadataCommand;
+use cargo_metadata::{MetadataCommand, Package};
 use expect_test::expect;
 use rustdoc_types::{Crate, Id};
 
-use crate::{pretty_log::PrettyLog, rustdoc_json, tests::TreeFormatter};
+use crate::{
+    config::PackageConfigPatch,
+    package_context::{CliContext, PackageContext},
+    pretty_log::PrettyLog,
+    rustdoc_json,
+    tests::TreeFormatter,
+};
 
 use super::{Tree, Value};
 
+fn get_package(path: &str) -> Package {
+    MetadataCommand::new().manifest_path(path).exec().unwrap().workspace_default_packages()[0]
+        .clone()
+}
+
 #[test]
 fn test_tree() {
-    const MANIFEST_DIR: &str = env!("CARGO_MANIFEST_DIR");
-
-    let metadata =
-        &MetadataCommand::new().manifest_path(format!("{MANIFEST_DIR}/Cargo.toml")).exec().unwrap();
-
-    let package = metadata.packages.iter().find(|p| p.name.as_str() == "test-crate").unwrap();
-    let package_target = package.targets.iter().find(|t| t.is_lib()).unwrap();
-
-    let path = rustdoc_json::generate(rustdoc_json::Options {
-        package,
-        package_target,
-        toolchain: "nightly-2026-09-24",
-        all_features: false,
-        no_default_features: false,
-        features: &mut None.into_iter(),
-        manifest_path: None,
-        target: None,
-        target_dir: None,
-        quiet: false,
-        quiet_cargo: false,
-        document_private_items: false,
-        no_deps: false,
-        log: PrettyLog::new(Box::new(anstream::AutoStream::new(
-            std::io::stderr(),
-            ColorChoice::Never,
-        ))),
-    })
+    let path = rustdoc_json::generate(
+        &PrettyLog::new(Box::new(anstream::AutoStream::new(std::io::stderr(), ColorChoice::Never))),
+        &CliContext::default(),
+        &PackageContext::resolve(
+            &get_package(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/test-crate/Cargo.toml")),
+            &PackageConfigPatch { ..Default::default() }.finish(),
+        )
+        .unwrap()
+        .expect("no target?"),
+    )
     .unwrap();
 
     let json = fs::read_to_string(path).expect("failed to read generated rustdoc json");

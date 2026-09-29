@@ -1,8 +1,6 @@
 mod resolver;
 mod rewrite_markdown;
 
-use std::path::PathBuf;
-
 use cargo_metadata::Metadata;
 use color_eyre::eyre::{OptionExt as _, Report, Result};
 use rustdoc_types::Crate;
@@ -11,49 +9,25 @@ use tracing::warn;
 use crate::{
     PackageContext,
     extract_crate_docs::rewrite_markdown::{RewriteMarkdownOptions, rewrite_markdown},
+    package_context::CliContext,
+    pretty_log::PrettyLog,
     read_to_string, rustdoc_json,
 };
 
 use resolver::{Resolver, ResolverOptions};
 
-pub fn extract(cx: &PackageContext) -> Result<String> {
-    let path = generate_rustdoc_json(cx)?;
+pub fn extract(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result<String> {
+    let path = rustdoc_json::generate(log, cli, pkg)?;
     let json = read_to_string(&path)?;
-    let krate = rustdoc_json::parse(&json, &cx.cfg.toolchain)?;
+    let krate = rustdoc_json::parse(&json, &pkg.toolchain)?;
 
     extract_docs(ExtractDocsOptions {
         krate: &krate,
-        metadata: &cx.metadata,
+        metadata: &pkg.metadata,
         on_not_found: &mut |link, cause| warn!(%cause, %link, "failed to resolve doc link"),
-        link_to_latest: cx.cfg.link_to_latest,
-        shrink_headings: cx.cfg.shrink_headings,
+        link_to_latest: pkg.link_to_latest,
+        shrink_headings: pkg.shrink_headings,
     })
-}
-
-fn generate_rustdoc_json(cx: &PackageContext) -> Result<PathBuf> {
-    let target_dir = match cx.cfg.target_dir.clone() {
-        Some(target_dir) => target_dir,
-        None => cx.metadata.target_directory.join("insert-docs").into_std_path_buf(),
-    };
-
-    let path = rustdoc_json::generate(rustdoc_json::Options {
-        package: cx.package,
-        package_target: cx.target,
-        toolchain: &cx.cfg.toolchain,
-        all_features: cx.cfg.all_features,
-        no_default_features: cx.cfg.no_default_features,
-        features: &mut cx.enabled_features.iter().map(|s| &**s),
-        manifest_path: Some(cx.package.manifest_path.as_std_path()),
-        target: cx.cfg.target.as_deref(),
-        target_dir: Some(&target_dir),
-        quiet: cx.cli.cfg.quiet,
-        quiet_cargo: cx.cli.cfg.quiet_cargo,
-        document_private_items: cx.cfg.document_private_items,
-        no_deps: cx.cfg.no_deps,
-        log: cx.log.clone(),
-    })?;
-
-    Ok(path)
 }
 
 struct ExtractDocsOptions<'a> {
