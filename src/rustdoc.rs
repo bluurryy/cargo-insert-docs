@@ -80,11 +80,15 @@ fn generate_and_get_path(
         cmd.arg("--features").arg(feature);
     }
 
+    cmd.arg("--package").arg(&pkg.id.repr);
+
+    // The rest are flags only for rustdoc
+    cmd.arg("--");
+
     if pkg.no_deps {
+        // FIXME: we're using rustdoc, which doesn't have this flag, remove it?
         cmd.arg("--no-deps");
     }
-
-    cmd.arg("--package").arg(&pkg.id.repr);
 
     if pkg.document_private_items {
         cmd.arg("--document-private-items");

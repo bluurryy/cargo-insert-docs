@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix `--bin` on a crate with a library target erroring, reporting multiple compilation targets
+- Fix `--document-private-items` erroring
 - Fix `--color` not affecting cargo messages
 
 ## [1.12.1] - 2026-09-28
