@@ -13,11 +13,11 @@ use tracing::error_span;
 
 /// Package must have a `lib` target.
 pub fn generate(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result<PathBuf> {
-    let mut command = Command::new("cargo");
+    let mut cmd = Command::new("cargo");
 
-    command.arg(format!("+{}", pkg.toolchain));
+    cmd.arg(format!("+{}", pkg.toolchain));
 
-    command.args([
+    cmd.args([
         "rustdoc",
         "-Z",
         "unstable-options",
@@ -28,57 +28,57 @@ pub fn generate(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Resu
     ]);
 
     if is_lib_like(&pkg.cargo_target) {
-        command.arg("--lib");
+        cmd.arg("--lib");
     } else if pkg.cargo_target.is_bin() {
-        command.arg("--bin").arg(&pkg.cargo_target.name);
+        cmd.arg("--bin").arg(&pkg.cargo_target.name);
     } else {
         bail!("target must be lib or bin")
     }
 
     if cli.quiet {
-        command.arg("--quiet");
+        cmd.arg("--quiet");
     }
 
-    command.arg("--color").arg("always");
+    cmd.arg("--color").arg("always");
 
-    command.arg("--manifest-path");
-    command.arg(&pkg.manifest_path);
+    cmd.arg("--manifest-path");
+    cmd.arg(&pkg.manifest_path);
 
     if let Some(target) = pkg.target.as_deref() {
-        command.arg("--target");
-        command.arg(target);
+        cmd.arg("--target");
+        cmd.arg(target);
     }
 
-    command.arg("--target-dir");
-    command.arg(&pkg.target_dir);
+    cmd.arg("--target-dir");
+    cmd.arg(&pkg.target_dir);
 
     if pkg.all_features {
-        command.arg("--all-features");
+        cmd.arg("--all-features");
     }
 
     if pkg.no_default_features {
-        command.arg("--no-default-features");
+        cmd.arg("--no-default-features");
     }
 
     for feature in &pkg.features {
-        command.arg("--features").arg(feature);
+        cmd.arg("--features").arg(feature);
     }
 
     if pkg.no_deps {
-        command.arg("--no-deps");
+        cmd.arg("--no-deps");
     }
 
-    command.arg("--package").arg(&pkg.id.repr);
+    cmd.arg("--package").arg(&pkg.id.repr);
 
     if pkg.document_private_items {
-        command.arg("--document-private-items");
+        cmd.arg("--document-private-items");
     }
 
     if cli.quiet || cli.quiet_cargo {
-        command.stderr(Stdio::null());
+        cmd.stderr(Stdio::null());
     }
 
-    let output = command.output().wrap_err("failed to spawn cargo")?;
+    let output = cmd.output().wrap_err("failed to spawn cargo")?;
 
     if !output.status.success() {
         if cli.quiet {

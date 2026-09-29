@@ -140,13 +140,13 @@ impl Cli {
 /// we parse the filename, remove the "cargo-" prefix and the ".exe" suffix
 /// to get the name of the second argument.
 fn parse_args() -> Args {
-    let command = std::env::args_os().next().expect("first argument is missing");
-    let command = subcommand_name(command.as_os_str());
-    let command = command.as_ref();
+    let cmd = std::env::args_os().next().expect("first argument is missing");
+    let cmd = subcommand_name(cmd.as_os_str());
+    let cmd = cmd.as_ref();
 
     let args_os = std::env::args_os()
         .enumerate()
-        .filter(|(index, arg)| *index != 1 || Some(arg) != command)
+        .filter(|(index, arg)| *index != 1 || Some(arg) != cmd)
         .map(|(_, arg)| arg);
 
     Args::parse_from(args_os)
