@@ -14,7 +14,6 @@ use crate::{
 
 #[derive(Default)]
 pub struct CliContext {
-    #[expect(dead_code)]
     pub color: ColorChoice,
     #[expect(dead_code)]
     pub verbose: u8,
