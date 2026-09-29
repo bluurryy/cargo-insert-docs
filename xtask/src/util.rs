@@ -342,3 +342,44 @@ impl AnsiStripExt for String {
         strip_str(&self).to_string()
     }
 }
+
+/// This is used to invoke the cargo-insert-docs executable directly.
+/// The advantage over `cargo run --` is that this works fine with a custom `.current_dir()`,
+/// whereas `cargo run` would cause issues with cargo config files. If you were to set the current dir
+/// to the directory you'd like to document, then the cargo config of that directory would be used
+/// to build `cargo-insert-docs` which is not what you want. If you use the working directory of the
+/// workspace then the cargo config of the documentee is not loaded which is also not what you want.
+macro_rules! cargo_insert_docs {
+    ($($tt:tt)*) => {
+        cmd!(Verbatim($crate::util::exe()), $($tt)*)
+    };
+}
+
+pub(crate) use cargo_insert_docs;
+
+pub fn exe() -> &'static str {
+    fn get_cargo_insert_docs_executable_path() -> Result<String> {
+        let stdout = cmd!("cargo build --message-format=json --quiet").stdout()?;
+        let mut executable = None;
+
+        for message in cargo_metadata::Message::parse_stream(stdout.as_bytes()) {
+            let cargo_metadata::Message::CompilerArtifact(artifact) = message? else {
+                continue;
+            };
+
+            if artifact.target.name == "cargo-insert-docs"
+                && let Some(artifact_executable) = artifact.executable
+            {
+                executable = Some(artifact_executable);
+            }
+        }
+
+        executable
+            .map(Into::into)
+            .ok_or_eyre("can't find cargo-insert-docs executable that was just built")
+    }
+
+    static EXE: OnceLock<String> = OnceLock::new();
+
+    EXE.get_or_init(|| get_cargo_insert_docs_executable_path().unwrap())
+}

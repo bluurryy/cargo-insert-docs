@@ -3,14 +3,14 @@
 mod compare_links;
 mod util;
 
-use std::env;
+use std::{env, sync::OnceLock};
 
 use clap::{CommandFactory, Parser, Subcommand};
 use color_eyre::eyre::{OptionExt, bail};
 
 use util::{OK, Result, cmd, eprintln, println, re, read, write};
 
-use crate::util::AnsiStripExt;
+use crate::util::{AnsiStripExt, cargo_insert_docs};
 
 #[derive(Parser)]
 struct Args {
@@ -117,12 +117,12 @@ fn test() -> Result {
 }
 
 fn check_simple() -> Result {
-    cmd!("cargo run -- --check -p test-crate").output()?;
-    cmd!("cargo run -- --check -p test-document-features crate-into-readme").output()?;
-    cmd!("cargo run -- --check -p example-crate").output()?;
-    cmd!("cargo run -- --check -p test-bin crate-into-readme").output()?;
-    cmd!(
-        "cargo run -- --check --workspace",
+    cargo_insert_docs!("--check -p test-crate").run()?;
+    cargo_insert_docs!("--check -p test-document-features crate-into-readme").run()?;
+    cargo_insert_docs!("--check -p example-crate").run()?;
+    cargo_insert_docs!("--check -p test-bin crate-into-readme").run()?;
+    cargo_insert_docs!(
+        "--check --workspace",
         "--exclude test-crate",
         "--exclude cargo-insert-docs",
         "--exclude test-bin-lib",
@@ -130,50 +130,28 @@ fn check_simple() -> Result {
         "--exclude test-crate-dep",
         "crate-into-readme"
     )
-    .output()?;
+    .run()?;
 
     OK
 }
 
 fn check_custom_build_target() -> Result {
-    let exe = get_cargo_insert_docs_executable_path()?;
-
-    cmd!(Verbatim(&exe), "crate-into-readme --check")
+    cargo_insert_docs!("crate-into-readme --check")
         .current_dir("tests/test-custom-build-target")
         .run()?;
 
-    cmd!(Verbatim(&exe), "crate-into-readme --check --target wasm32-unknown-unknown")
+    cargo_insert_docs!("crate-into-readme --check --target wasm32-unknown-unknown")
         .current_dir("tests/test-custom-build-target-multiple")
         .run()?;
 
     OK
 }
 
-fn get_cargo_insert_docs_executable_path() -> Result<String> {
-    let stdout = cmd!("cargo build --message-format=json --quiet").stdout()?;
-    let mut executable = None;
-
-    for message in cargo_metadata::Message::parse_stream(stdout.as_bytes()) {
-        let cargo_metadata::Message::CompilerArtifact(artifact) = message? else {
-            continue;
-        };
-
-        if artifact.target.name == "cargo-insert-docs"
-            && let Some(artifact_executable) = artifact.executable
-        {
-            executable = Some(artifact_executable);
-        }
-    }
-
-    executable
-        .map(Into::into)
-        .ok_or_eyre("can't find cargo-insert-docs executable that was just built")
-}
-
 fn check_recurse() -> Result {
     fn test(feature: &str) -> Result {
-        let out =
-            cmd!("cargo run -- -p test-crate -F", feature, "--allow-dirty").unchecked().stderr()?;
+        let out = cargo_insert_docs!("-p test-crate -F", feature, "--allow-dirty")
+            .unchecked()
+            .stderr()?;
 
         println!("{out}");
 
@@ -191,7 +169,7 @@ fn check_recurse() -> Result {
 }
 
 fn check_config() -> Result {
-    let out = cmd!("cargo run -- --manifest-path tests/test-config/Cargo.toml --print-config")
+    let out = cargo_insert_docs!("--manifest-path tests/test-config/Cargo.toml --print-config")
         .stdout()?;
 
     if env::var("UPDATE_EXPECT").as_deref() == Ok("1") {
@@ -210,7 +188,7 @@ fn check_config() -> Result {
 }
 
 fn check_bin_lib_stderr() -> Result {
-    let out = cmd!("cargo run -- -p test-bin-lib --allow-dirty").unchecked().stderr()?;
+    let out = cargo_insert_docs!("-p test-bin-lib --allow-dirty").unchecked().stderr()?;
 
     if !out.contains("choose one or the other") {
         print_error("EXPECTED A DIFFERENT ERROR");
