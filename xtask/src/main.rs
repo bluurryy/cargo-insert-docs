@@ -184,7 +184,7 @@ fn main() -> Result {
 
     reg.add("test-bin-lib_none", || {
         cargo_insert_docs!(
-            "crate-into-readme --check --target-dir tests/test-bin-lib/target/foo/lib --crate-section-name",
+            "--check --target-dir tests/test-bin-lib/target/foo/lib --crate-section-name",
             Verbatim("lib documentation")
         )
         .current_dir("tests/test-bin-lib")
@@ -193,7 +193,7 @@ fn main() -> Result {
 
     reg.add("test-bin-lib_lib", || {
         cargo_insert_docs!(
-            "crate-into-readme --check --target-dir tests/test-bin-lib/target/foo/lib --lib --crate-section-name",
+            "--check --target-dir tests/test-bin-lib/target/foo/lib --lib --crate-section-name",
             Verbatim("lib documentation")
         )
         .current_dir("tests/test-bin-lib")
@@ -201,18 +201,16 @@ fn main() -> Result {
     });
     reg.add("test-bin-lib_bin", || {
         cargo_insert_docs!(
-            "crate-into-readme --check --target-dir tests/test-bin-lib/target/foo/bin --bin --crate-section-name",
+            "--check --target-dir tests/test-bin-lib/target/foo/bin --bin --crate-section-name",
             Verbatim("bin documentation")
         )
         .current_dir("tests/test-bin-lib")
         .run()
     });
     reg.add("test-bin-lib_both", || {
-        cargo_insert_docs!(
-            "crate-into-readme --check --target-dir tests/test-bin-lib/target/foo/lib --lib --bin"
-        )
-        .current_dir("tests/test-bin-lib")
-        .expect_error_containing("you have to choose one or the other")
+        cargo_insert_docs!("--check --target-dir tests/test-bin-lib/target/foo/lib --lib --bin")
+            .current_dir("tests/test-bin-lib")
+            .expect_error_containing("cannot be used with")
     });
 
     reg.add("expect_bin-lib-both-active", || {
