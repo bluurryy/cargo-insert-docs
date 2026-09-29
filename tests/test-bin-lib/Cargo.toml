@@ -3,4 +3,5 @@ name = "test-bin-lib"
 edition = "2024"
 
 [package.metadata.insert-docs]
-feature-into-crate = false
+# FIXME: this doesn't do anything, only when in a workspace for some reason
+# feature-into-crate = false

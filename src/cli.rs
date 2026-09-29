@@ -343,11 +343,11 @@ enum Command {
 #[group(multiple = false)]
 struct TargetSelection {
     /// Document only library targets
-    #[arg(help_heading = heading::TARGET_SELECTION, long)]
+    #[arg(global = true, help_heading = heading::TARGET_SELECTION, long)]
     lib: bool,
 
     /// Document only the specified binary
-    #[arg(help_heading = heading::TARGET_SELECTION, long, value_name = "NAME")]
+    #[arg(global = true, help_heading = heading::TARGET_SELECTION, long, value_name = "NAME")]
     bin: Option<Option<String>>,
 }
 
