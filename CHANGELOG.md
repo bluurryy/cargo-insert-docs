@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+## [1.12.2] - 2026-09-29
+
 ### Fixed
 
 - Fix `--bin` on a crate with a library target erroring, reporting multiple compilation targets
@@ -391,7 +393,8 @@ _This release does not make any breaking changes. The version is bumped to `1.0.
 ## [0.1.0] - 2025-07-09
 
 <!-- next-url -->
-[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v1.12.1...HEAD
+[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v1.12.2...HEAD
+[1.12.2]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.12.2
 [1.12.1]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.12.1
 [1.12.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.12.0
 [1.11.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.11.0
