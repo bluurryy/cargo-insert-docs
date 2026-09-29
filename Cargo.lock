@@ -2163,6 +2163,10 @@ name = "test-bin-lib"
 version = "0.0.0"
 
 [[package]]
+name = "test-bin-lib-both-active"
+version = "0.0.0"
+
+[[package]]
 name = "test-crate"
 version = "0.0.0"
 dependencies = [

@@ -114,11 +114,11 @@ fn generate_and_get_path(
             continue;
         };
 
-        if !artifact.target.doc {
+        if artifact.package_id != pkg.id {
             continue;
         }
 
-        if artifact.package_id != pkg.id {
+        if artifact.target != pkg.cargo_target {
             continue;
         }
 

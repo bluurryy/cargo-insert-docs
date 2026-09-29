@@ -97,6 +97,7 @@ fn main() -> Result {
             "--exclude test-crate",
             "--exclude cargo-insert-docs",
             "--exclude test-bin-lib",
+            "--exclude test-bin-lib-both-active",
             "--exclude xtask",
             "--exclude test-crate-dep",
             "crate-into-readme"
@@ -157,15 +158,41 @@ fn main() -> Result {
         OK
     });
 
-    reg.add("expect_bin-lib", || {
-        let out = cargo_insert_docs!("-p test-bin-lib --allow-dirty").unchecked().stderr()?;
+    // For the `test-bin-lib_*` tests we need to choose a different target dir for lib and bin,
+    // otherwise we can get stale documentation from the other target.
 
-        if !out.contains("choose one or the other") {
-            print_error("EXPECTED A DIFFERENT ERROR");
-            bail!("test-bin-lib failed");
-        }
+    reg.add("test-bin-lib_none", || {
+        cargo_insert_docs!(
+            "-p test-bin-lib --check --target-dir tests/test-bin-lib/target/foo/lib --crate-section-name",
+            Verbatim("lib documentation")
+        )
+        .run()
+    });
 
-        OK
+    reg.add("test-bin-lib_lib", || {
+        cargo_insert_docs!(
+            "-p test-bin-lib --check --target-dir tests/test-bin-lib/target/foo/lib --lib --crate-section-name",
+            Verbatim("lib documentation")
+        )
+        .run()
+    });
+    reg.add("test-bin-lib_bin", || {
+        cargo_insert_docs!(
+            "-p test-bin-lib --check --target-dir tests/test-bin-lib/target/foo/bin --bin --crate-section-name",
+            Verbatim("bin documentation")
+        )
+        .run()
+    });
+    reg.add("test-bin-lib_both", || {
+        cargo_insert_docs!(
+            "-p test-bin-lib --check --target-dir tests/test-bin-lib/target/foo/lib --lib --bin"
+        )
+        .expect_error_containing("cannot be used with")
+    });
+
+    reg.add("expect_bin-lib-both-active", || {
+        cargo_insert_docs!("-p test-bin-lib-both-active --check")
+            .expect_error_containing("choose one or the other")
     });
 
     reg.add("compare-links-with-html", || {

@@ -188,6 +188,23 @@ impl Cmd {
         OK
     }
 
+    pub fn expect_error_containing(self, text: &str) -> Result {
+        let out = self.unchecked().capture_stderr().output()?;
+
+        if out.status.success() {
+            bail!("expected error but got success");
+        }
+
+        if !out.stderr.contains(text) {
+            print_error("EXPECTED A DIFFERENT ERROR");
+            eprintln!("expected stderr containing: {text}\n");
+            eprintln!("stderr:\n{}\n", out.stderr);
+            bail!("test-bin-lib-both-active failed");
+        }
+
+        OK
+    }
+
     pub fn output(self) -> Result<Output> {
         let Self { args, unchecked, stdout, stderr, hooks, envs, current_dir } = self;
 

@@ -1,3 +1,7 @@
-<!-- crate documentation start -->
+<!-- bin documentation start -->
+bin
+<!-- bin documentation end -->
+
+<!-- lib documentation start -->
 lib
-<!-- crate documentation end -->
+<!-- lib documentation end -->
