@@ -12,7 +12,6 @@ use std::{
     path::PathBuf,
 };
 
-use anstream::ColorChoice;
 use cargo_metadata::Target;
 use color_eyre::eyre::{Result, WrapErr as _};
 use macro_rules_attribute::derive;
@@ -40,17 +39,6 @@ macro_rules! Fields {
             ];
         }
     };
-}
-
-/// The resolved configuration for the command line interface.
-pub struct CliConfig {
-    pub print_supported_toolchain: bool,
-    pub print_config: bool,
-    pub color: ColorChoice,
-    pub verbose: u8,
-    pub quiet: bool,
-    pub quiet_cargo: bool,
-    pub manifest_path: Option<PathBuf>,
 }
 
 /// The resolved configuration for the workspace.

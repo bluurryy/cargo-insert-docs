@@ -55,21 +55,21 @@ static GLOBAL: MiMalloc = MiMalloc;
 fn main() -> ExitCode {
     let cli = Cli::parse();
 
-    if cli.cfg.print_supported_toolchain {
+    if cli.print_supported_toolchain {
         println!("{}", config::DEFAULT_TOOLCHAIN);
         return ExitCode::SUCCESS;
     }
 
-    let stream: Box<dyn AnyWrite> = if cli.cfg.quiet {
+    let stream: Box<dyn AnyWrite> = if cli.quiet {
         Box::new(io::empty())
     } else {
-        Box::new(anstream::AutoStream::new(std::io::stderr(), cli.cfg.color))
+        Box::new(anstream::AutoStream::new(std::io::stderr(), cli.color))
     };
 
     let log = PrettyLog::new(stream);
-    log.source_info(cli.cfg.verbose >= 2);
+    log.source_info(cli.verbose >= 2);
 
-    let log_level = if cli.cfg.verbose >= 1 { "trace" } else { "info" };
+    let log_level = if cli.verbose >= 1 { "trace" } else { "info" };
     log.install(&format!("cargo_insert_docs={log_level}"));
 
     if let Err(err) = try_main(&cli, &log) {
@@ -84,7 +84,7 @@ fn main() -> ExitCode {
 fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
     let mut cmd = MetadataCommand::new();
 
-    if let Some(manifest_path) = cli.cfg.manifest_path.as_deref() {
+    if let Some(manifest_path) = cli.manifest_path.as_deref() {
         cmd.manifest_path(manifest_path);
     }
 
@@ -126,7 +126,7 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
 
     // Error if a feature is not available in any selected package.
     // This is an error solely because this is likely a user bug.
-    if !cli.cfg.print_config {
+    if !cli.print_config {
         let pkg = workspace_package_config_patch.clone().apply(&cli.package_config_patch).finish();
 
         let all_available_features = packages
@@ -186,7 +186,7 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
         })
         .collect::<Result<Vec<_>>>()?;
 
-    if cli.cfg.print_config {
+    if cli.print_config {
         #[derive(Serialize)]
         struct WorkspaceAndPackageConfigPatch<'a> {
             #[serde(flatten)]
@@ -279,21 +279,19 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
     // we don't log the package name, since it doesn't provide useful information.
     let log_package_name = workspace_cfg.workspace || workspace_cfg.package.is_empty();
 
+    let cli = &CliContext {
+        color: cli.color,
+        verbose: cli.verbose,
+        quiet: cli.quiet,
+        quiet_cargo: cli.quiet_cargo,
+    };
+
     for pkg in &pkgs {
         let log_package_name =
             log_package_name || (*pkg.metadata.workspace_default_members).len() > 1;
 
         let _span = log_package_name.then(|| pkg.info_span());
-        run_package(
-            log,
-            &CliContext {
-                color: cli.cfg.color,
-                verbose: cli.cfg.verbose,
-                quiet: cli.cfg.quiet,
-                quiet_cargo: cli.cfg.quiet_cargo,
-            },
-            pkg,
-        );
+        run_package(log, cli, pkg);
     }
 
     Ok(())

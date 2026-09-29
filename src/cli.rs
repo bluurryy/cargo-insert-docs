@@ -6,10 +6,20 @@ use std::{
 use clap::{Parser, ValueEnum};
 use clap_cargo::style::CLAP_STYLING;
 
-use crate::config::{BoolOrString, CliConfig, PackageConfigPatch, WorkspaceConfigPatch};
+use crate::config::{BoolOrString, PackageConfigPatch, WorkspaceConfigPatch};
 
 pub struct Cli {
-    pub cfg: CliConfig,
+    /// Configuration flags that change behavior.
+    pub print_supported_toolchain: bool,
+    pub print_config: bool,
+    pub manifest_path: Option<PathBuf>,
+
+    /// Configuration flags that are affect stderr.
+    pub color: anstream::ColorChoice,
+    pub verbose: u8,
+    pub quiet: bool,
+    pub quiet_cargo: bool,
+
     pub workspace_config_patch: WorkspaceConfigPatch,
     pub package_config_patch: PackageConfigPatch,
 }
@@ -59,19 +69,17 @@ impl Cli {
         } = *args;
 
         Self {
-            cfg: CliConfig {
-                print_supported_toolchain,
-                print_config,
-                color: match color.unwrap_or(ColorChoice::Auto) {
-                    ColorChoice::Auto => anstream::ColorChoice::Auto,
-                    ColorChoice::Always => anstream::ColorChoice::Always,
-                    ColorChoice::Never => anstream::ColorChoice::Never,
-                },
-                verbose,
-                quiet,
-                quiet_cargo: quiet || quiet_cargo,
-                manifest_path: manifest_path.clone(),
+            print_supported_toolchain,
+            print_config,
+            color: match color.unwrap_or(ColorChoice::Auto) {
+                ColorChoice::Auto => anstream::ColorChoice::Auto,
+                ColorChoice::Always => anstream::ColorChoice::Always,
+                ColorChoice::Never => anstream::ColorChoice::Never,
             },
+            verbose,
+            quiet,
+            quiet_cargo: quiet || quiet_cargo,
+            manifest_path: manifest_path.clone(),
             workspace_config_patch: WorkspaceConfigPatch {
                 package: (!package.is_empty()).then(|| package.clone()),
                 workspace: workspace.then_some(true),
