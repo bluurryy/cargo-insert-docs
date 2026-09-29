@@ -383,3 +383,41 @@ pub fn exe() -> &'static str {
 
     EXE.get_or_init(|| get_cargo_insert_docs_executable_path().unwrap())
 }
+
+pub fn print_error(message: &str) {
+    let style =
+        anstyle::Style::new().fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Red))).bold();
+    eprintln!("{style}{message}{style:#}");
+}
+
+pub fn print_warning(message: &str) {
+    let style = anstyle::Style::new()
+        .fg_color(Some(anstyle::Color::Ansi(anstyle::AnsiColor::Yellow)))
+        .bold();
+    eprintln!("{style}{message}{style:#}");
+}
+
+pub fn expect_file(path: &str, content: &str) -> Result {
+    let new = content;
+    let old = read(path).unwrap_or_default();
+
+    if new != old {
+        if is_update_expect() {
+            print_warning("EXPECTED FILE CONTENT CHANGED");
+            eprintln!("{path}");
+
+            write(path, new)?;
+        } else {
+            print_error("EXPECTED FILE CONTENT MISMATCH");
+            eprintln!("{path}");
+
+            bail!("expected file content mismatch")
+        }
+    }
+
+    OK
+}
+
+pub fn is_update_expect() -> bool {
+    env::var("UPDATE_EXPECT").as_deref() == Ok("1")
+}

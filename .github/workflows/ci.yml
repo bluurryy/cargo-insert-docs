@@ -31,4 +31,4 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: rustup +$(cargo run -- --print-supported-toolchain) target add wasm32-unknown-unknown wasm32-wasip3
-      - run: cargo xtask ci
+      - run: cargo xtask

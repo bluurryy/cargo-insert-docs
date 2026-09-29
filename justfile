@@ -4,7 +4,7 @@ default:
 pre-release:
     cargo fmt --check
     cargo clippy --all-features --tests --examples -- -D warnings
-    cargo xtask ci
+    cargo xtask
     just update-cli-md
     cargo +nightly test -p test-crate
 
@@ -22,7 +22,7 @@ update-cli-md:
 
 update-expect:
     cargo run -- -p test-crate
-    UPDATE_EXPECT=1 cargo xtask ci
+    UPDATE_EXPECT=1 cargo xtask
 
 get-json crate:
     cat ./target/insert-docs/doc/{{ crate }}.json
