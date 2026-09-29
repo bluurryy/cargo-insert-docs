@@ -85,8 +85,11 @@ fn generate_and_get_path(
         cmd.arg("--document-private-items");
     }
 
-    if cli.quiet || cli.quiet_cargo {
+    if cli.quiet_cargo {
         cmd.stderr(Stdio::null());
+    } else {
+        log.foreign_write_incoming();
+        cmd.stderr(Stdio::inherit());
     }
 
     let output = cmd.output().wrap_err("failed to spawn cargo")?;
