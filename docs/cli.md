@@ -25,7 +25,6 @@ Options:
 
 Cargo Doc Options:
       --document-private-items  Document private items
-      --no-deps                 Don't build documentation for dependencies
 
 Mode Selection:
       --check  Runs in 'check' mode, not writing to files but erroring if something is out of date

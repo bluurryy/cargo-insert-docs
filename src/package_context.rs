@@ -36,7 +36,6 @@ pub struct PackageContext {
     pub target: Option<String>,
     pub all_features: bool,
     pub no_default_features: bool,
-    pub no_deps: bool,
     pub document_private_items: bool,
 
     // verbatim from config; for ourselves
@@ -138,7 +137,6 @@ impl PackageContext {
             target: cfg.target.clone(),
             all_features: cfg.all_features,
             no_default_features: cfg.no_default_features,
-            no_deps: cfg.no_deps,
             document_private_items: cfg.document_private_items,
 
             // verbatim from config; for ourselves

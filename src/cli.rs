@@ -51,7 +51,6 @@ impl Cli {
             shrink_headings,
             link_to_latest,
             document_private_items,
-            no_deps,
             check,
             allow_missing_section,
             allow_dirty,
@@ -94,7 +93,6 @@ impl Cli {
                 shrink_headings,
                 link_to_latest: link_to_latest.then_some(true),
                 document_private_items: document_private_items.then_some(true),
-                no_deps: no_deps.then_some(true),
                 check: check.then_some(true),
                 allow_missing_section: allow_missing_section.then_some(true),
                 allow_dirty: allow_dirty.then_some(true),
@@ -230,10 +228,6 @@ struct Args {
     /// Document private items
     #[arg(global = true, help_heading = heading::CARGO_DOC_OPTIONS, long)]
     document_private_items: bool,
-
-    /// Don't build documentation for dependencies
-    #[arg(global = true, help_heading = heading::CARGO_DOC_OPTIONS, long)]
-    no_deps: bool,
 
     /// Runs in 'check' mode, not writing to files but erroring if something is out of date
     ///

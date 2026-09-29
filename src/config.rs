@@ -115,7 +115,6 @@ pub struct PackageConfig {
     pub shrink_headings: i8,
     pub link_to_latest: bool,
     pub document_private_items: bool,
-    pub no_deps: bool,
     pub check: bool,
     pub allow_missing_section: bool,
     pub allow_dirty: bool,
@@ -144,7 +143,6 @@ pub struct PackageConfigPatch {
     pub shrink_headings: Option<i8>,
     pub link_to_latest: Option<bool>,
     pub document_private_items: Option<bool>,
-    pub no_deps: Option<bool>,
     pub check: Option<bool>,
     pub allow_missing_section: Option<bool>,
     pub allow_dirty: Option<bool>,
@@ -188,9 +186,6 @@ impl PackageConfigPatch {
         }
         if let Some(document_private_items) = overwrite.document_private_items {
             this.document_private_items = Some(document_private_items);
-        }
-        if let Some(no_deps) = overwrite.no_deps {
-            this.no_deps = Some(no_deps);
         }
         if let Some(check) = overwrite.check {
             this.check = Some(check);
@@ -246,7 +241,6 @@ impl PackageConfigPatch {
             shrink_headings,
             link_to_latest,
             document_private_items,
-            no_deps,
             check,
             allow_missing_section,
             allow_dirty,
@@ -274,7 +268,6 @@ impl PackageConfigPatch {
             shrink_headings: shrink_headings.unwrap_or(DEFAULT_SHRINK_HEADINGS),
             link_to_latest: link_to_latest.unwrap_or_default(),
             document_private_items: document_private_items.unwrap_or_default(),
-            no_deps: no_deps.unwrap_or_default(),
             check: check.unwrap_or_default(),
             allow_missing_section: allow_missing_section.unwrap_or_default(),
             allow_dirty: allow_dirty.unwrap_or_default(),
