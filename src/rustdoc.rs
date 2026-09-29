@@ -6,6 +6,7 @@ use std::{
 use crate::{
     PackageContext, config::is_lib_like, package_context::CliContext, pretty_log::PrettyLog, util,
 };
+use anstream::ColorChoice;
 use color_eyre::eyre::{Context, OptionExt, Result, bail};
 use rustdoc_types::Crate;
 use serde::Deserialize;
@@ -35,7 +36,7 @@ fn generate_and_get_path(
         "--output-format",
         "json",
         "--message-format",
-        "json-diagnostic-rendered-ansi",
+        "json-render-diagnostics",
     ]);
 
     if is_lib_like(&pkg.cargo_target) {
@@ -50,7 +51,11 @@ fn generate_and_get_path(
         cmd.arg("--quiet");
     }
 
-    cmd.arg("--color").arg("always");
+    cmd.arg("--color").arg(match cli.color {
+        ColorChoice::Auto => "auto",
+        ColorChoice::Always => "always",
+        ColorChoice::Never | ColorChoice::AlwaysAnsi => "never",
+    });
 
     cmd.arg("--manifest-path");
     cmd.arg(&pkg.manifest_path);
@@ -98,35 +103,6 @@ fn generate_and_get_path(
         if cli.quiet {
             bail!("you shouldn't be able to see this :/");
         } else {
-            if !cli.quiet_cargo {
-                // write an empty line to separate our messages from the invoked command
-                log.foreign_write_incoming();
-
-                // print compiler messages
-                for message in cargo_metadata::Message::parse_stream(&output.stdout[..]) {
-                    let Ok(message) = message else { break };
-
-                    let cargo_metadata::Message::CompilerMessage(message) = message else {
-                        continue;
-                    };
-
-                    let Some(rendered) = message.message.rendered else {
-                        continue;
-                    };
-
-                    // show that targets must be installed for the specific toolchain cargo-insert-docs uses
-                    let rendered = rendered.replace(
-                        "rustup target add",
-                        &format!("rustup +{} target add", pkg.toolchain),
-                    );
-
-                    eprintln!("{rendered}");
-                }
-
-                // print stderr (just a one liner like "error: could not document ...")
-                eprint!("{}", String::from_utf8_lossy(&output.stderr));
-            }
-
             bail!("Failed to build rustdoc JSON (see stderr above)");
         }
     }
