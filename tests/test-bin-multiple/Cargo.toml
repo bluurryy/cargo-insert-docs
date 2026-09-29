@@ -1,0 +1,12 @@
+[package]
+name = "test-bin-multiple"
+edition = "2024"
+
+[[bin]]
+name = "foo"
+
+[[bin]]
+name = "bar"
+
+[package.metadata.insert-docs]
+feature-into-crate = false

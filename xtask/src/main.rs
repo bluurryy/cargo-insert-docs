@@ -158,36 +158,59 @@ fn main() -> Result {
         OK
     });
 
+    // FIXME: It should be an error to not specify a --bin when there are multiple
+    //        (rustdoc doesn't care, but lets rather be explicit, like `cargo run`)
+
+    reg.add("test-bin-multiple_main", || {
+        cargo_insert_docs!("--check --crate-section-name main --bin test-bin-multiple")
+            .current_dir("tests/test-bin-multiple")
+            .run()
+    });
+
+    reg.add("test-bin-multiple_foo", || {
+        cargo_insert_docs!("--check --crate-section-name foo --bin foo")
+            .current_dir("tests/test-bin-multiple")
+            .run()
+    });
+
+    reg.add("test-bin-multiple_bar", || {
+        cargo_insert_docs!("--check --crate-section-name bar --bin bar")
+            .current_dir("tests/test-bin-multiple")
+            .run()
+    });
+
     // For the `test-bin-lib_*` tests we need to choose a different target dir for lib and bin,
     // otherwise we can get stale documentation from the other target.
 
     reg.add("test-bin-lib_none", || {
         cargo_insert_docs!(
-            "-p test-bin-lib --check --target-dir tests/test-bin-lib/target/foo/lib --crate-section-name",
+            "--check --target-dir tests/test-bin-lib/target/foo/lib --crate-section-name",
             Verbatim("lib documentation")
         )
+        .current_dir("tests/test-custom-build-target-multiple")
         .run()
     });
 
     reg.add("test-bin-lib_lib", || {
         cargo_insert_docs!(
-            "-p test-bin-lib --check --target-dir tests/test-bin-lib/target/foo/lib --lib --crate-section-name",
+            "--check --target-dir tests/test-bin-lib/target/foo/lib --lib --crate-section-name",
             Verbatim("lib documentation")
         )
+        .current_dir("tests/test-custom-build-target-multiple")
         .run()
     });
     reg.add("test-bin-lib_bin", || {
         cargo_insert_docs!(
-            "-p test-bin-lib --check --target-dir tests/test-bin-lib/target/foo/bin --bin --crate-section-name",
+            "--check --target-dir tests/test-bin-lib/target/foo/bin --bin --crate-section-name",
             Verbatim("bin documentation")
         )
+        .current_dir("tests/test-custom-build-target-multiple")
         .run()
     });
     reg.add("test-bin-lib_both", || {
-        cargo_insert_docs!(
-            "-p test-bin-lib --check --target-dir tests/test-bin-lib/target/foo/lib --lib --bin"
-        )
-        .expect_error_containing("cannot be used with")
+        cargo_insert_docs!("--check --target-dir tests/test-bin-lib/target/foo/lib --lib --bin")
+            .current_dir("tests/test-custom-build-target-multiple")
+            .expect_error_containing("cannot be used with")
     });
 
     reg.add("expect_bin-lib-both-active", || {
