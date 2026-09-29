@@ -11,14 +11,14 @@ use crate::{
     extract_crate_docs::rewrite_markdown::{RewriteMarkdownOptions, rewrite_markdown},
     package_context::CliContext,
     pretty_log::PrettyLog,
-    read_to_string, rustdoc_json,
+    rustdoc_json, util,
 };
 
 use resolver::{Resolver, ResolverOptions};
 
 pub fn extract(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result<String> {
     let path = rustdoc_json::generate(log, cli, pkg)?;
-    let json = read_to_string(&path)?;
+    let json = util::read_to_string(&path)?;
     let krate = rustdoc_json::parse(&json, &pkg.toolchain)?;
 
     extract_docs(ExtractDocsOptions {

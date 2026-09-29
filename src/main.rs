@@ -19,20 +19,21 @@ mod rustdoc_json;
 mod string_replacer;
 #[cfg(test)]
 mod tests;
+mod util;
 
 extern crate alloc;
 
 use core::fmt::Write;
 use std::{
     collections::{HashMap, HashSet},
-    fs, io,
-    path::{Path, PathBuf},
+    io,
+    path::Path,
     process::ExitCode,
     time::Instant,
 };
 
 use cargo_metadata::{Metadata, MetadataCommand, Package};
-use color_eyre::eyre::{OptionExt, Result, WrapErr as _, bail, eyre};
+use color_eyre::eyre::{Result, WrapErr as _, bail, eyre};
 use mimalloc::MiMalloc;
 use relative_path::PathExt;
 use serde::Serialize;
@@ -168,7 +169,7 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
         .map(|package| {
             let _span = info_span!("", package = package.name.as_str()).entered();
 
-            let toml = RelativePath::relative_to_parent(package.manifest_path.as_ref())?
+            let toml = util::RelativePath::relative_to_parent(package.manifest_path.as_ref())?
                 .read_to_string()?;
             let patch = config::read_package_config_patch(&toml)?;
 
@@ -426,40 +427,6 @@ fn find_package_by_name<'a>(metadata: &'a Metadata, package_name: &str) -> Resul
     bail!("no package named \"{package_name}\" found")
 }
 
-// for better error messages when reading / writing files
-#[derive(Clone)]
-struct RelativePath {
-    full_path: PathBuf,
-    relative: PathBuf,
-}
-
-impl RelativePath {
-    fn from_origin_relative(origin: &Path, relative: &Path) -> Self {
-        Self { full_path: origin.join(relative), relative: relative.into() }
-    }
-
-    fn relative_to_parent(path: &Path) -> Result<Self> {
-        Ok(Self {
-            relative: path.file_name().ok_or_eyre("path has no file name")?.into(),
-            full_path: path.into(),
-        })
-    }
-
-    fn read_to_string(&self) -> Result<String> {
-        let _span = error_span!("", path = %self.full_path.display()).entered();
-
-        fs::read_to_string(&self.full_path)
-            .with_context(|| format!("failed to read {}", self.relative.display()))
-    }
-
-    fn write(&self, contents: &str) -> Result<()> {
-        let _span = error_span!("", path = %self.full_path.display()).entered();
-
-        fs::write(&self.full_path, contents)
-            .with_context(|| format!("failed to write {}", self.relative.display()))
-    }
-}
-
 fn task(
     log: &PrettyLog,
     cli: &CliContext,
@@ -501,7 +468,7 @@ fn insert_features_into_docs(
     let not_found_level = if pkg.allow_missing_section { Level::WARN } else { Level::ERROR };
 
     let target_path = pkg.cargo_target.src_path.as_std_path();
-    let target_src = read_to_string(target_path)?;
+    let target_src = util::read_to_string(target_path)?;
 
     let Some(feature_docs_section) =
         edit_crate_docs::FeatureDocsSection::find(&target_src, &pkg.feature_section_name)?
@@ -520,8 +487,8 @@ fn insert_features_into_docs(
         return Err(eyre!("section not found in {target_name}")).with_severity(not_found_level);
     };
 
-    let cargo_toml =
-        RelativePath::relative_to_parent(pkg.manifest_path.as_std_path())?.read_to_string()?;
+    let cargo_toml = util::RelativePath::relative_to_parent(pkg.manifest_path.as_std_path())?
+        .read_to_string()?;
 
     let hidden_features = pkg.hidden_features.iter().map(|s| s.as_str()).collect::<HashSet<&str>>();
 
@@ -536,7 +503,7 @@ fn insert_features_into_docs(
             bail!("feature documentation is stale");
         }
 
-        write(target_path, new_target_src.as_bytes())?;
+        util::write(target_path, new_target_src.as_bytes())?;
     }
 
     Ok(())
@@ -601,30 +568,4 @@ fn insert_docs_into_readme(log: &PrettyLog, cli: &CliContext, pkg: &PackageConte
     }
 
     Ok(())
-}
-
-/// Better error reporting version of [`std::fs::read_to_string`].
-fn read_to_string(path: &Path) -> Result<String> {
-    let _span = error_span!("", path = %path.display()).entered();
-
-    let file_name = path
-        .file_name()
-        .and_then(|s| s.to_str())
-        .map(|s| s.to_string())
-        .unwrap_or_else(|| path.display().to_string());
-
-    fs::read_to_string(path).with_context(|| format!("failed to read {file_name}"))
-}
-
-/// Better error reporting version of [`std::fs::write`].
-fn write(path: &Path, content: &[u8]) -> Result<()> {
-    let _span = error_span!("", path = %path.display()).entered();
-
-    let file_name = path
-        .file_name()
-        .and_then(|s| s.to_str())
-        .map(|s| s.to_string())
-        .unwrap_or_else(|| path.display().to_string());
-
-    fs::write(path, content).with_context(|| format!("failed to write to {file_name}"))
 }

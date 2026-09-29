@@ -8,8 +8,8 @@ use color_eyre::eyre::{OptionExt, Result};
 use tracing::info_span;
 
 use crate::{
-    RelativePath,
     config::{self, PackageConfig, is_lib_like},
+    util::RelativePath,
 };
 
 #[derive(Default)]
