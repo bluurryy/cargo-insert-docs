@@ -4,15 +4,26 @@ use std::{
 };
 
 use crate::{
-    PackageContext, config::is_lib_like, package_context::CliContext, pretty_log::PrettyLog,
+    PackageContext, config::is_lib_like, package_context::CliContext, pretty_log::PrettyLog, util,
 };
 use color_eyre::eyre::{Context, OptionExt, Result, bail};
 use rustdoc_types::Crate;
 use serde::Deserialize;
 use tracing::error_span;
 
+pub fn generate(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result<Crate> {
+    let path = generate_and_get_path(log, cli, pkg)?;
+    let json = util::read_to_string(&path)?;
+    let krate = parse(&json, &pkg.toolchain)?;
+    Ok(krate)
+}
+
 /// Package must have a `lib` target.
-pub fn generate(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result<PathBuf> {
+fn generate_and_get_path(
+    log: &PrettyLog,
+    cli: &CliContext,
+    pkg: &PackageContext,
+) -> Result<PathBuf> {
     let mut cmd = Command::new("cargo");
 
     cmd.arg(format!("+{}", pkg.toolchain));
@@ -155,7 +166,7 @@ pub fn generate(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Resu
     Ok(path)
 }
 
-pub fn parse(rustdoc_json: &str, toolchain: &str) -> Result<Crate> {
+fn parse(rustdoc_json: &str, toolchain: &str) -> Result<Crate> {
     #[derive(Deserialize)]
     struct CrateWithJustTheFormatVersion {
         format_version: u32,

@@ -1,9 +1,9 @@
-use std::{collections::HashMap, fmt, fs};
+use std::{collections::HashMap, fmt};
 
 use anstream::ColorChoice;
 use cargo_metadata::{MetadataCommand, Package};
 use expect_test::expect;
-use rustdoc_types::{Crate, Id};
+use rustdoc_types::Id;
 
 use crate::{
     config::PackageConfigPatch,
@@ -22,7 +22,7 @@ fn get_package(path: &str) -> Package {
 
 #[test]
 fn test_tree() {
-    let path = rustdoc_json::generate(
+    let krate = rustdoc_json::generate(
         &PrettyLog::new(Box::new(anstream::AutoStream::new(std::io::stderr(), ColorChoice::Never))),
         &CliContext::default(),
         &PackageContext::resolve(
@@ -34,8 +34,6 @@ fn test_tree() {
     )
     .unwrap();
 
-    let json = fs::read_to_string(path).expect("failed to read generated rustdoc json");
-    let krate: Crate = serde_json::from_str(&json).expect("failed to parse generated rustdoc json");
     let tree = Tree::new(&krate).unwrap();
 
     expect![[r#"
