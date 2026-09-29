@@ -11,14 +11,14 @@ use crate::{
     extract_crate_docs::rewrite_markdown::{RewriteMarkdownOptions, rewrite_markdown},
     package_context::CliContext,
     pretty_log::PrettyLog,
-    rustdoc_json,
+    rustdoc,
 };
 
 use resolver::{Resolver, ResolverOptions};
 
 pub fn extract(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result<String> {
     extract_docs(ExtractDocsOptions {
-        krate: &rustdoc_json::generate(log, cli, pkg)?,
+        krate: &rustdoc::generate(log, cli, pkg)?,
         metadata: &pkg.metadata,
         on_not_found: &mut |link, cause| warn!(%cause, %link, "failed to resolve doc link"),
         link_to_latest: pkg.link_to_latest,

@@ -15,7 +15,7 @@ mod markdown;
 mod markdown_rs;
 mod package_context;
 mod pretty_log;
-mod rustdoc_json;
+mod rustdoc;
 mod string_replacer;
 #[cfg(test)]
 mod tests;

@@ -9,7 +9,7 @@ use crate::{
     config::PackageConfigPatch,
     package_context::{CliContext, PackageContext},
     pretty_log::PrettyLog,
-    rustdoc_json,
+    rustdoc,
     tests::TreeFormatter,
 };
 
@@ -22,7 +22,7 @@ fn get_package(path: &str) -> Package {
 
 #[test]
 fn test_tree() {
-    let krate = rustdoc_json::generate(
+    let krate = rustdoc::generate(
         &PrettyLog::new(Box::new(anstream::AutoStream::new(std::io::stderr(), ColorChoice::Never))),
         &CliContext::default(),
         &PackageContext::resolve(
