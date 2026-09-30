@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Fixed
+
+- Fix crate documentation extraction when using a custom build directory (error: failed to link or copy)
+
 ## [1.12.2] - 2026-09-29
 
 ### Fixed

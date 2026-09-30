@@ -1,147 +1,119 @@
-use std::{
-    path::PathBuf,
-    process::{Command, Stdio},
-};
+mod cargo_rustdoc;
+mod unit_graph;
 
-use crate::{
-    PackageContext, config::is_lib_like, package_context::CliContext, pretty_log::PrettyLog, util,
-};
-use anstream::ColorChoice;
+use std::path::PathBuf;
+
+use crate::{PackageContext, package_context::CliContext, pretty_log::PrettyLog, util};
+use cargo_metadata::Target;
 use color_eyre::eyre::{Context, OptionExt, Result, bail};
 use rustdoc_types::Crate;
 use serde::Deserialize;
 use tracing::error_span;
 
 pub fn generate(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result<Crate> {
+    create_doc_directory(log, cli, pkg)?;
     let path = generate_and_get_path(log, cli, pkg)?;
     let json = util::read_to_string(&path)?;
     let krate = parse(&json, &pkg.toolchain)?;
     Ok(krate)
 }
 
-/// Package must have a `lib` target.
 fn generate_and_get_path(
     log: &PrettyLog,
     cli: &CliContext,
     pkg: &PackageContext,
 ) -> Result<PathBuf> {
-    let mut cmd = Command::new("cargo");
+    let stdout = cargo_rustdoc::command().run(log, cli, pkg)?;
+    let mut json_files = Vec::new();
 
-    cmd.arg(format!("+{}", pkg.toolchain));
-
-    cmd.args([
-        "rustdoc",
-        "-Z",
-        "unstable-options",
-        "--output-format",
-        "json",
-        "--message-format",
-        "json-render-diagnostics",
-    ]);
-
-    if is_lib_like(&pkg.cargo_target) {
-        cmd.arg("--lib");
-    } else if pkg.cargo_target.is_bin() {
-        cmd.arg("--bin").arg(&pkg.cargo_target.name);
-    } else {
-        bail!("target must be lib or bin")
-    }
-
-    if cli.quiet {
-        cmd.arg("--quiet");
-    }
-
-    cmd.arg("--color").arg(match cli.color {
-        ColorChoice::Auto => "auto",
-        ColorChoice::Always => "always",
-        ColorChoice::Never | ColorChoice::AlwaysAnsi => "never",
-    });
-
-    cmd.arg("--manifest-path");
-    cmd.arg(&pkg.manifest_path);
-
-    if let Some(target) = pkg.target.as_deref() {
-        cmd.arg("--target");
-        cmd.arg(target);
-    }
-
-    cmd.arg("--target-dir");
-    cmd.arg(&pkg.target_dir);
-
-    if pkg.all_features {
-        cmd.arg("--all-features");
-    }
-
-    if pkg.no_default_features {
-        cmd.arg("--no-default-features");
-    }
-
-    for feature in &pkg.features {
-        cmd.arg("--features").arg(feature);
-    }
-
-    cmd.arg("--package").arg(&pkg.id.repr);
-
-    // The rest are flags only for rustdoc
-    cmd.arg("--");
-
-    if pkg.document_private_items {
-        cmd.arg("--document-private-items");
-    }
-
-    if cli.quiet_cargo {
-        cmd.stderr(Stdio::null());
-    } else {
-        log.foreign_write_incoming();
-        cmd.stderr(Stdio::inherit());
-    }
-
-    let output = cmd.output().wrap_err("failed to spawn cargo")?;
-
-    if !output.status.success() {
-        if cli.quiet {
-            bail!("you shouldn't be able to see this :/");
-        } else {
-            bail!("Failed to build rustdoc JSON (see stderr above)");
+    for message in cargo_metadata::Message::parse_stream(&stdout[..]) {
+        if let cargo_metadata::Message::CompilerArtifact(artifact) = message?
+            && artifact.package_id == pkg.id
+            && same_package_target(&artifact.target, &pkg.cargo_target)
+        {
+            json_files.extend(
+                artifact.filenames.into_iter().filter(|path| path.extension() == Some("json")),
+            );
         }
     }
 
-    let mut eligible_artifacts = Vec::new();
-
-    for message in cargo_metadata::Message::parse_stream(&output.stdout[..]) {
-        let cargo_metadata::Message::CompilerArtifact(artifact) = message? else {
-            continue;
-        };
-
-        if artifact.package_id != pkg.id {
-            continue;
-        }
-
-        if artifact.target != pkg.cargo_target {
-            continue;
-        }
-
-        eligible_artifacts.push(artifact);
-    }
-
-    if eligible_artifacts.len() > 1 {
+    if json_files.len() > 1 {
         bail!(
-            "rustdoc json produced multiple compiler artifacts; there are probably multiple build targets configured; choose one with `--target`"
+            "rustdoc produced multiple json artifacts:\n{}",
+            json_files.iter().map(|p| p.as_str()).collect::<Vec<_>>().join("\n"),
         );
     }
 
-    let Some(artifact) = eligible_artifacts.into_iter().next() else {
-        bail!("rustdoc json compiler artifact was not created");
+    let Some(json_file) = json_files.into_iter().next() else {
+        bail!("rustdoc did not produce a json artifact");
     };
 
-    let path = artifact
-        .filenames
-        .into_iter()
-        .next()
-        .map(|p| p.into_std_path_buf())
-        .ok_or_eyre("rustdoc json compiler artifact did not produce files")?;
+    Ok(json_file.into_std_path_buf())
+}
+
+/// When using a custom build-dir, cargo may reuse the cached rustdoc json file and copy it to
+/// `doc/` in the target directory. Currently in such cases the `doc/` directory may not have
+/// been created and cargo errors with (paraphrased):
+///
+/// ```txt
+/// error: failed to link or copy `$BUILD_DIR/**/out/$PACKAGE.json` to `$TARGET_DIR/**/doc/$PACKAGE.json`
+/// ```
+///
+/// So we create that directory ourselves for now. We should find or open an issue about this in cargo.
+fn create_doc_directory(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result {
+    let doc = doc_directory(log, cli, pkg)?;
+
+    let _span = error_span!("", path = %doc.display()).entered();
+    std::fs::create_dir_all(doc).wrap_err("failed to create rustdoc output directory")?;
+
+    Ok(())
+}
+
+/// Constructs the assumed path of the `doc` directory using the build graph.
+fn doc_directory(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result<PathBuf> {
+    let stdout = cargo_rustdoc::command().cargo_arg("--unit-graph").run(log, cli, pkg)?;
+    let graph = unit_graph::parse(&stdout)?;
+
+    let matching_units = graph
+        .roots
+        .iter()
+        .filter_map(|&root| graph.units.get(root))
+        .filter(|unit| {
+            unit.mode == "doc"
+                && unit.pkg_id == pkg.id
+                && same_package_target(&unit.target, &pkg.cargo_target)
+        })
+        .collect::<Vec<_>>();
+
+    if matching_units.len() > 1 {
+        let _span = error_span!(
+            "",
+            targets = matching_units
+                .iter()
+                .map(|u| u.target.name.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+        .entered();
+
+        bail!("multiple build targets, choose one with `--target`");
+    }
+
+    let unit = matching_units.into_iter().next().ok_or_eyre("no build target found")?;
+
+    let mut path = pkg.target_dir.clone();
+
+    if let Some(platform) = unit.platform.as_deref() {
+        path.push(platform);
+    }
+
+    path.push("doc");
 
     Ok(path)
+}
+
+fn same_package_target(a: &Target, b: &Target) -> bool {
+    a.name == b.name && a.kind == b.kind && a.src_path == b.src_path
 }
 
 fn parse(rustdoc_json: &str, toolchain: &str) -> Result<Crate> {

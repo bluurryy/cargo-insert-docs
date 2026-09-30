@@ -1,0 +1,6 @@
+[package]
+name = "test-custom-build-dir"
+edition = "2024"
+
+[package.metadata.insert-docs]
+feature-into-crate = false

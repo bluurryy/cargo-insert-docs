@@ -25,7 +25,7 @@ pre-release-replacements = [
 
 [workspace]
 members = ["tests/*", "xtask"]
-exclude = ["tests/test-config", "tests/test-custom-build-target", "tests/test-custom-build-target-multiple", "tests/test-bin-multiple"]
+exclude = ["tests/test-config", "tests/test-custom-build-target", "tests/test-custom-build-target-multiple", "tests/test-bin-multiple", "tests/test-custom-build-dir"]
 
 [workspace.dependencies]
 anstream = { version = "1.0.0", default-features = false, features = ["auto", "wincon"] }

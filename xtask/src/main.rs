@@ -264,6 +264,17 @@ fn main() -> Result {
         .run()
     });
 
+    // regression test for https://github.com/bluurryy/cargo-insert-docs/issues/33
+    reg.add("test-custom-build-dir", || {
+        let dir = "tests/test-custom-build-dir";
+
+        cmd!("cargo clean").current_dir(dir).run()?;
+        cargo_insert_docs!("--check --target-dir target/first").current_dir(dir).run()?;
+        cargo_insert_docs!("--check --target-dir target/second").current_dir(dir).run()?;
+
+        OK
+    });
+
     reg.run(args.filter.as_deref());
 
     OK
