@@ -31,4 +31,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: rustup +$(cargo run -- --print-supported-toolchain) target add wasm32-unknown-unknown wasm32-wasip3
+      # for -Zbuild-std in custom target spec test
+      - run: rustup component add rust-src --toolchain $(cargo run -- --print-supported-toolchain)-x86_64-unknown-linux-gnu
       - run: cargo xtask
