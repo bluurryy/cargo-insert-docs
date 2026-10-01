@@ -57,7 +57,7 @@ Target Selection:
       --bin [<NAME>]  Document only the specified binary
 
 Compilation Options:
-      --toolchain <TOOLCHAIN>   Which rustup toolchain to use when invoking rustdoc [default: "nightly-2026-09-24"]
+      --toolchain <TOOLCHAIN>   Which rustup toolchain to use when invoking rustdoc [default: "nightly-2026-10-01"]
       --target <TRIPLE>         Target triple to document
       --target-dir <DIRECTORY>  Directory for all generated artifacts
 

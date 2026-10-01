@@ -302,7 +302,7 @@ struct Args {
     #[command(flatten)]
     target_selection: TargetSelection,
 
-    /// Which rustup toolchain to use when invoking rustdoc [default: "nightly-2026-09-24"]
+    /// Which rustup toolchain to use when invoking rustdoc [default: "nightly-2026-10-01"]
     ///
     /// The default value is a toolchain that is known to be compatible with
     /// this version of `cargo-insert-docs`.

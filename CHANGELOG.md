@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `-Z` cli option for unstable cargo flags
 - Add support for custom build target specifications
 
+### Changed
+
+- Update default nightly toolchain to `nightly-2026-10-01`
+
 ## [1.12.3] - 2026-10-01
 
 ### Fixed
