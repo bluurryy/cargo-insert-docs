@@ -112,6 +112,12 @@ fn main() -> Result {
             .run()
     });
 
+    reg.add("test-custom-build-target-custom-spec", || {
+        cargo_insert_docs!("crate-into-readme -Zjson-target-spec -Zbuild-std --check")
+            .current_dir("tests/test-custom-build-target-custom-spec")
+            .run()
+    });
+
     reg.add("test-custom-build-target-multiple", || {
         cargo_insert_docs!("crate-into-readme --check --target wasm32-unknown-unknown")
             .current_dir("tests/test-custom-build-target-multiple")
