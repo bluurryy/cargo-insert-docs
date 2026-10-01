@@ -41,12 +41,9 @@ impl CargoRustdocCommand {
 
         cmd.args([
             "rustdoc",
-            "-Z",
-            "unstable-options",
-            "--output-format",
-            "json",
-            "--message-format",
-            "json-render-diagnostics",
+            "-Zunstable-options",
+            "--output-format=json",
+            "--message-format=json-render-diagnostics",
         ]);
 
         for z_flag in &cli.z_flags {
