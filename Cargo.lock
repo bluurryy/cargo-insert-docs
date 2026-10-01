@@ -194,7 +194,7 @@ dependencies = [
 
 [[package]]
 name = "cargo-insert-docs"
-version = "1.12.3"
+version = "1.13.0"
 dependencies = [
  "anstream",
  "anstyle",
