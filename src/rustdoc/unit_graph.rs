@@ -1,7 +1,8 @@
 use cargo_metadata::{PackageId, Target};
 use color_eyre::eyre::{Context as _, Result, bail};
 use serde::Deserialize;
-use tracing::error_span;
+
+use crate::util::context;
 
 /// Parses cargo's `--unit-graph` output.
 pub fn parse(bytes: &[u8]) -> Result<UnitGraph> {
@@ -14,7 +15,7 @@ pub fn parse(bytes: &[u8]) -> Result<UnitGraph> {
     let actual = graph_stub.version;
 
     if actual != expected {
-        let _span = error_span!("", help = "use a supported nightly toolchain");
+        context!(help = "use a supported nightly toolchain");
         bail!("expected cargo unit graph version {expected}, got {actual}");
     }
 

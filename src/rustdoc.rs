@@ -3,12 +3,16 @@ mod unit_graph;
 
 use std::path::PathBuf;
 
-use crate::{PackageContext, package_context::CliContext, pretty_log::PrettyLog, util};
+use crate::{
+    PackageContext,
+    package_context::CliContext,
+    pretty_log::PrettyLog,
+    util::{self, context},
+};
 use cargo_metadata::Target;
 use color_eyre::eyre::{Context, OptionExt, Result, bail};
 use rustdoc_types::Crate;
 use serde::Deserialize;
-use tracing::error_span;
 
 pub fn generate(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result<Crate> {
     create_doc_directory(log, cli, pkg)?;
@@ -63,7 +67,7 @@ fn generate_and_get_path(
 fn create_doc_directory(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Result {
     let doc = doc_directory(log, cli, pkg)?;
 
-    let _span = error_span!("", path = %doc.display()).entered();
+    context!(path = %doc.display());
     std::fs::create_dir_all(doc).wrap_err("failed to create rustdoc output directory")?;
 
     Ok(())
@@ -86,15 +90,13 @@ fn doc_directory(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Res
         .collect::<Vec<_>>();
 
     if matching_units.len() > 1 {
-        let _span = error_span!(
-            "",
+        context!(
             targets = matching_units
                 .iter()
                 .map(|u| u.target.name.as_str())
                 .collect::<Vec<_>>()
                 .join(", ")
-        )
-        .entered();
+        );
 
         bail!("multiple build targets, choose one with `--target`");
     }
@@ -129,12 +131,11 @@ fn parse(rustdoc_json: &str, toolchain: &str) -> Result<Crate> {
         let expected = rustdoc_types::FORMAT_VERSION;
         let actual = krate.format_version;
 
-        let _span = error_span!("",
+        context!(
             %toolchain,
             expected = format!("rustdoc json version {expected}"),
             actual = format!("rustdoc json version {actual}"),
-        )
-        .entered();
+        );
 
         bail!("the chosen rust toolchain is not compatible");
     }

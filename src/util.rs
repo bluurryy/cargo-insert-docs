@@ -4,11 +4,10 @@ use std::path::PathBuf;
 use color_eyre::eyre::Context as _;
 use color_eyre::eyre::OptionExt as _;
 use color_eyre::eyre::Result;
-use tracing::error_span;
 
 /// Better error reporting version of [`std::fs::read_to_string`].
 pub fn read_to_string(path: &Path) -> Result<String> {
-    let _span = error_span!("", path = %path.display()).entered();
+    context!(path = %path.display());
 
     let file_name = path
         .file_name()
@@ -21,7 +20,7 @@ pub fn read_to_string(path: &Path) -> Result<String> {
 
 /// Better error reporting version of [`std::fs::write`].
 pub fn write(path: &Path, content: &[u8]) -> Result<()> {
-    let _span = error_span!("", path = %path.display()).entered();
+    context!(path = %path.display());
 
     let file_name = path
         .file_name()
@@ -52,16 +51,28 @@ impl RelativePath {
     }
 
     pub fn read_to_string(&self) -> Result<String> {
-        let _span = error_span!("", path = %self.full_path.display()).entered();
+        context!(path = %self.full_path.display());
 
         std::fs::read_to_string(&self.full_path)
             .with_context(|| format!("failed to read {}", self.relative.display()))
     }
 
     pub fn write(&self, contents: &str) -> Result<()> {
-        let _span = error_span!("", path = %self.full_path.display()).entered();
+        context!(path = %self.full_path.display());
 
         std::fs::write(&self.full_path, contents)
             .with_context(|| format!("failed to write {}", self.relative.display()))
     }
 }
+
+/// Provide context via an `tracing::info_span!`'s fields.
+/// Returns an entered span that needs to be kept alive.
+///
+/// Just a shorthand for `let _span = tracing::info_span!("", ...).entered()`.
+macro_rules! context {
+    ($($tt:tt)*) => {
+        let _span = ::tracing::info_span!("", $($tt)*).entered();
+    };
+}
+
+pub(crate) use context;

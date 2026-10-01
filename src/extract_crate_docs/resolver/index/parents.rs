@@ -8,7 +8,8 @@ use std::collections::{HashMap, hash_map::Entry};
 
 use color_eyre::eyre::{Result, bail};
 use rustdoc_types::Id;
-use tracing::error_span;
+
+use crate::util::context;
 
 use super::simple::{SimpleItem, SimpleItemKind};
 
@@ -37,7 +38,7 @@ fn parents_recurse<'a>(
             .collect::<Vec<_>>()
             .join("::");
 
-        let _span = error_span!("", item_path).entered();
+        context!(item_path);
         bail!("recursed too deep while resolving item paths ({RECURSION_LIMIT})");
     }
 

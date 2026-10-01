@@ -37,7 +37,7 @@ use color_eyre::eyre::{Result, WrapErr as _, bail, eyre};
 use mimalloc::MiMalloc;
 use relative_path::PathExt;
 use serde::Serialize;
-use tracing::{Level, error_span, info_span, trace};
+use tracing::{Level, error_span, trace};
 
 use pretty_log::{PrettyLog, WithResultSeverity as _};
 
@@ -47,6 +47,7 @@ use crate::{
     package_context::{CliContext, PackageContext},
     pretty_log::AnyWrite,
     string_replacer::StringReplacer,
+    util::context,
 };
 
 #[global_allocator]
@@ -167,7 +168,7 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
     let package_config_and_patches = packages
         .iter()
         .map(|package| {
-            let _span = info_span!("", package = package.name.as_str()).entered();
+            context!(package = package.name.as_str());
 
             let toml = util::RelativePath::relative_to_parent(package.manifest_path.as_ref())?
                 .read_to_string()?;
@@ -230,7 +231,7 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
         for (package, PackageConfigAndPatch { config, patch }) in
             packages.iter().zip(package_config_and_patches)
         {
-            let _span = info_span!("", package = package.name.as_str()).entered();
+            context!(package = package.name.as_str());
             let name = package.name.as_str();
 
             out.push('\n');
@@ -258,7 +259,7 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
         .iter()
         .zip(&package_config_and_patches)
         .map(|(pkg, PackageConfigAndPatch { config: cfg, .. })| {
-            let _span = info_span!("", package = pkg.name.as_str()).entered();
+            context!(package = pkg.name.as_str());
             PackageContext::resolve(pkg, cfg)
         })
         .filter_map(|r| r.transpose())
@@ -439,7 +440,7 @@ fn task(
         format!("insert {from} into {to}")
     };
 
-    let _span = info_span!("", task = task_name).entered();
+    context!(task = task_name);
 
     trace!("starting task");
 
@@ -476,11 +477,10 @@ fn insert_features_into_docs(
             .map(|n| Path::new(n).display().to_string())
             .unwrap_or_else(|| "crate docs".into());
 
-        let _span = info_span!("",
+        context!(
             path = %target_path.display(),
             section_name = pkg.feature_section_name,
-        )
-        .entered();
+        );
 
         return Err(eyre!("section not found in {target_name}")).with_severity(not_found_level);
     };
@@ -547,11 +547,10 @@ fn insert_docs_into_readme(log: &PrettyLog, cli: &CliContext, pkg: &PackageConte
         new_readme.replace_range(section.content_span, &format!("\n{crate_docs}\n"));
         new_readme
     } else {
-        let _span = info_span!("",
+        context!(
             path = %readme_path.full_path.display(),
             section_name = pkg.crate_section_name,
-        )
-        .entered();
+        );
 
         return Err(eyre!("section not found in {}", readme_path.relative.display()))
             .with_severity(not_found_level);
