@@ -222,7 +222,7 @@ fn main() -> Result {
     reg.add("compare-links-with-html", || {
         // run cargo-insert-docs
         let stderr =
-            cmd!("cargo run -q -- --check -p test-crate --quiet-cargo").stderr()?.strip_ansi();
+            cmd!("cargo run -q -- --check -p test-crate --color=never --quiet-cargo").stderr()?;
         expect_file("tests/test-crate/stderr.txt", &stderr)?;
 
         // create html
