@@ -171,7 +171,7 @@ mod heading {
     pub const ERROR_BEHAVIOR: &str = "Error Behavior";
     pub const MESSAGE_OPTIONS: &str = "Message Options";
     pub const MODE_SELECTION: &str = "Mode Selection";
-    pub const CARGO_DOC_OPTIONS: &str = "Cargo Doc Options";
+    pub const RUSTDOC_OPTIONS: &str = "Rustdoc Options";
 }
 
 #[derive(Parser)]
@@ -226,7 +226,7 @@ struct Args {
     print_config: bool,
 
     /// Document private items
-    #[arg(global = true, help_heading = heading::CARGO_DOC_OPTIONS, long)]
+    #[arg(global = true, help_heading = heading::RUSTDOC_OPTIONS, long)]
     document_private_items: bool,
 
     /// Runs in 'check' mode, not writing to files but erroring if something is out of date
