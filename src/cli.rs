@@ -13,6 +13,7 @@ pub struct Cli {
     pub print_supported_toolchain: bool,
     pub print_config: bool,
     pub manifest_path: Option<PathBuf>,
+    pub z_flags: Vec<String>,
 
     /// Configuration flags that are affect stderr.
     pub color: anstream::ColorChoice,
@@ -64,6 +65,7 @@ impl Cli {
             ref target,
             ref target_dir,
             ref readme_path,
+            ref z_flags,
             ..
         } = *args;
 
@@ -79,6 +81,7 @@ impl Cli {
             quiet,
             quiet_cargo: quiet || quiet_cargo,
             manifest_path: manifest_path.clone(),
+            z_flags: z_flags.clone(),
             workspace_config_patch: WorkspaceConfigPatch {
                 package: (!package.is_empty()).then(|| package.clone()),
                 workspace: workspace.then_some(true),
@@ -224,6 +227,10 @@ struct Args {
     /// Prints configuration values and their sources for debugging
     #[arg(global = true, long)]
     print_config: bool,
+
+    /// Unstable (nightly-only) flags to Cargo, see 'cargo -Z help' for details
+    #[arg(global = true, short = 'Z', value_name = "FLAG")]
+    z_flags: Vec<String>,
 
     /// Document private items
     #[arg(global = true, help_heading = heading::RUSTDOC_OPTIONS, long)]

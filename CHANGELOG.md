@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Add `-Z` cli option for unstable cargo flags
+
 ## [1.12.3] - 2026-10-01
 
 ### Fixed

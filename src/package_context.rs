@@ -19,6 +19,7 @@ pub struct CliContext {
     pub verbose: u8,
     pub quiet: bool,
     pub quiet_cargo: bool,
+    pub z_flags: Vec<String>,
 }
 
 pub struct PackageContext {

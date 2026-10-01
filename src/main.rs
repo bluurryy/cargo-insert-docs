@@ -285,6 +285,7 @@ fn try_main(cli: &Cli, log: &PrettyLog) -> Result<()> {
         verbose: cli.verbose,
         quiet: cli.quiet,
         quiet_cargo: cli.quiet_cargo,
+        z_flags: cli.z_flags.clone(),
     };
 
     for pkg in &pkgs {

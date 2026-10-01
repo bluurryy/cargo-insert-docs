@@ -1,7 +1,7 @@
 mod cargo_rustdoc;
 mod unit_graph;
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::{
     PackageContext,
@@ -106,7 +106,14 @@ fn doc_directory(log: &PrettyLog, cli: &CliContext, pkg: &PackageContext) -> Res
     let mut path = pkg.target_dir.clone();
 
     if let Some(platform) = unit.platform.as_deref() {
-        path.push(platform);
+        // cargo uses the platform spec json's file stem as the target dir name
+        let dir = if platform.ends_with(".json") {
+            Path::new(platform).file_stem().expect("we checked that a dot is in the platform name")
+        } else {
+            platform.as_ref()
+        };
+
+        path.push(dir);
     }
 
     path.push("doc");

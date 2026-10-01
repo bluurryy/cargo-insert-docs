@@ -49,6 +49,10 @@ impl CargoRustdocCommand {
             "json-render-diagnostics",
         ]);
 
+        for z_flag in &cli.z_flags {
+            cmd.arg(format!("-Z{z_flag}"));
+        }
+
         if is_lib_like(&pkg.cargo_target) {
             cmd.arg("--lib");
         } else if pkg.cargo_target.is_bin() {

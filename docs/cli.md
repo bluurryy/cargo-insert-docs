@@ -20,10 +20,11 @@ Options:
       --link-to-latest                 Link to the "latest" version on docs.rs
       --print-supported-toolchain      Prints a supported nightly toolchain
       --print-config                   Prints configuration values and their sources for debugging
+  -Z <FLAG>                            Unstable (nightly-only) flags to Cargo, see 'cargo -Z help' for details
   -h, --help                           Print help (see more with '--help')
   -V, --version                        Print version
 
-Cargo Doc Options:
+Rustdoc Options:
       --document-private-items  Document private items
 
 Mode Selection:

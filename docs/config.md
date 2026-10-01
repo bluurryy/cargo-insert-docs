@@ -83,6 +83,7 @@ These fields can only be set in the cli.
 |manifest-path|path||Path to Cargo.toml
 |print-supported-toolchain|bool|false|Print the supported toolchain and quits|
 |print-config|bool|false|Prints configuration values and their sources and quits|
+|Z|string list||Unstable (nightly-only) flags to Cargo, see 'cargo -Z help' for details
 |color|`"auto"`, `"always"`, `"never"`|`"auto"`|Printed messages coloring|
 |verbose|u8|0|Set the verbosity level (`-v` for level 1 or `-vv` for level 2)|
 |quiet|bool|false|Do not print anything|
