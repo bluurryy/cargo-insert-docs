@@ -6,6 +6,7 @@ mod util;
 
 use std::env;
 
+use cargo_metadata::Message;
 use clap::Parser;
 use color_eyre::eyre::bail;
 
@@ -236,7 +237,7 @@ fn main() -> Result {
 
         // diff links
         {
-            let html = read("target/doc/test_crate/index.html")?;
+            let html = test_crate_html_docs()?;
             let mut html_links = compare_links::extract_links_from_html(&html);
 
             let md = read("tests/test-crate/MEREAD.md")?;
@@ -244,7 +245,12 @@ fn main() -> Result {
 
             for (html, href) in &mut html_links {
                 *html = html.replace("…", "...");
+
                 *href = href.replace("/nightly/", "/");
+
+                // replace foreign crate links
+                *href =
+                    re!(r#"https:\/\/docs\.rs\/[^\/]+\/[^\/]+\/"#).replace(href, "../").to_string()
             }
 
             for (_html, href) in &mut md_links {
@@ -284,4 +290,36 @@ fn main() -> Result {
     reg.run(args.filter.as_deref());
 
     OK
+}
+
+fn test_crate_html_docs() -> Result<String> {
+    let stdout = cmd!(
+        "cargo +nightly-2026-10-01 doc -p test-crate --lib --message-format=json-render-diagnostics"
+    )
+    .stdout()?;
+
+    let mut html_files = Vec::new();
+
+    for message in Message::parse_stream(stdout.as_bytes()) {
+        if let Message::CompilerArtifact(artifact) = message?
+            && artifact.target.name == "test_crate"
+            && artifact.target.is_lib()
+        {
+            html_files.extend(
+                artifact
+                    .filenames
+                    .into_iter()
+                    .filter(|path| path.ends_with("test_crate/index.html")),
+            );
+        }
+    }
+
+    if html_files.len() > 1 {
+        bail!(
+            "rustdoc produced multiple html artifacts:\n{}",
+            html_files.iter().map(|p| p.as_str()).collect::<Vec<_>>().join("\n"),
+        );
+    }
+
+    util::read(&html_files[0])
 }
