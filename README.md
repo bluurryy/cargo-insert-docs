@@ -25,6 +25,7 @@ This tool can:
 - [Known Issues](#known-issues)
 - [Acknowledgements](#acknowledgements)
 - [Similar projects](#similar-projects)
+- [Contributing](#contributing)
 
 ## Installation
 
@@ -261,6 +262,11 @@ The crate documentation into readme part was inspired by [`cargo-rdme`](https://
   Inserts crate documentation, title and badges into readme sections.
 - [**`cargo-readme`**](https://crates.io/crates/cargo-readme), [**`cargo-doc2readme`**](https://crates.io/crates/cargo-doc2readme) — 
   Creates a readme from a template with various fields including crate documentation.
+
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 
