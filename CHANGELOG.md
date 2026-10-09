@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+## [1.14.0] - 2026-10-09
+
 ### Added
 
 - Add `skip-doc-links` option, to skip creating links for the given paths
@@ -414,7 +416,8 @@ _This release does not make any breaking changes. The version is bumped to `1.0.
 ## [0.1.0] - 2025-07-09
 
 <!-- next-url -->
-[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v1.13.0...HEAD
+[Unreleased]: https://github.com/bluurryy/cargo-insert-docs/compare/v1.14.0...HEAD
+[1.14.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.14.0
 [1.13.0]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.13.0
 [1.12.3]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.12.3
 [1.12.2]: https://github.com/bluurryy/cargo-insert-docs/releases/tag/v1.12.2
