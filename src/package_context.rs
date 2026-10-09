@@ -52,6 +52,7 @@ pub struct PackageContext {
     pub link_to_latest: bool,
     pub shrink_headings: i8,
     pub feature_label: String,
+    pub skip_doc_links: Vec<String>,
 }
 
 impl PackageContext {
@@ -153,6 +154,7 @@ impl PackageContext {
             link_to_latest: cfg.link_to_latest,
             shrink_headings: cfg.shrink_headings,
             feature_label: cfg.feature_label.clone(),
+            skip_doc_links: cfg.skip_doc_links.clone(),
         }))
     }
 

@@ -148,8 +148,12 @@ fn main() -> Result {
     });
 
     reg.add("test-config", || {
-        let out = cargo_insert_docs!("--manifest-path tests/test-config/Cargo.toml --print-config")
-            .stdout()?;
+        let out = cargo_insert_docs!(
+            "--manifest-path tests/test-config/Cargo.toml",
+            "--skip-doc-links from_cli",
+            "--print-config"
+        )
+        .stdout()?;
 
         if env::var("UPDATE_EXPECT").as_deref() == Ok("1") {
             write("tests/test-config/print-config.toml", &out)?;
@@ -283,6 +287,17 @@ fn main() -> Result {
         cmd!("cargo clean").current_dir(dir).run()?;
         cargo_insert_docs!("--check --target-dir target/first").current_dir(dir).run()?;
         cargo_insert_docs!("--check --target-dir target/second").current_dir(dir).run()?;
+
+        OK
+    });
+
+    reg.add("test-skip-doc-links", || {
+        let dir = "tests/test-custom-build-dir";
+
+        cmd!("cargo clean").current_dir(dir).run()?;
+        cargo_insert_docs!("--check --skip-doc-links dep::skipped_by_cli,std")
+            .current_dir(dir)
+            .run()?;
 
         OK
     });

@@ -1,0 +1,14 @@
+[package]
+name = "test-skip-doc-links"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dep = { path = "./crates/dep" }
+
+[workspace.metadata.insert-docs]
+blacklist = ["dep::blacklisted_by_workspace"]
+
+[package.metadata.insert-docs]
+feature-into-crate = false
+blacklist = ["dep::blacklisted_by_package"]

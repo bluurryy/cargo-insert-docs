@@ -38,8 +38,7 @@ impl<'a> Resolver<'a> {
         })
     }
 
-    pub fn item_url(&self, id: Id) -> Result<String> {
-        let path = self.item_path(id)?;
+    pub fn item_url_from_path(&self, path: &[PathItem]) -> String {
         let mut url = String::new();
 
         for (i, item) in path.iter().rev().enumerate() {
@@ -55,10 +54,10 @@ impl<'a> Resolver<'a> {
             url.push_str("index.html");
         }
 
-        Ok(url)
+        url
     }
 
-    fn item_path(&self, id: Id) -> Result<Vec<PathItem<'a>>> {
+    pub fn item_path(&self, id: Id) -> Result<Vec<PathItem<'a>>> {
         if let Some(path) = self.index.path_to(id) {
             return Ok(path);
         }
@@ -97,8 +96,8 @@ impl<'a> Resolver<'a> {
 }
 
 #[derive(Debug)]
-struct PathItem<'a> {
-    name: &'a str,
+pub struct PathItem<'a> {
+    pub name: &'a str,
     kind: Kind,
 }
 

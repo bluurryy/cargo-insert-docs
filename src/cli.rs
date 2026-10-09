@@ -51,6 +51,7 @@ impl Cli {
             ref crate_section_name,
             shrink_headings,
             link_to_latest,
+            ref skip_doc_links,
             document_private_items,
             check,
             allow_missing_section,
@@ -95,6 +96,7 @@ impl Cli {
                 crate_section_name: crate_section_name.clone(),
                 shrink_headings,
                 link_to_latest: link_to_latest.then_some(true),
+                skip_doc_links: skip_doc_links.clone(),
                 document_private_items: document_private_items.then_some(true),
                 check: check.then_some(true),
                 allow_missing_section: allow_missing_section.then_some(true),
@@ -219,6 +221,12 @@ struct Args {
     /// This only affects workspace crates.
     #[arg(global = true, long, verbatim_doc_comment)]
     link_to_latest: bool,
+
+    /// List of paths to skip creating links for
+    ///
+    /// Items that start with a path in this list won't become a link.
+    #[arg(global = true, long, value_name = "PATH", value_delimiter = ',')]
+    skip_doc_links: Vec<String>,
 
     /// Prints a supported nightly toolchain
     #[arg(global = true, long)]

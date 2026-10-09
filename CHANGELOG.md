@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <!-- next-header -->
 ## [Unreleased]
 
+### Added
+
+- Add `skip-doc-links` option, to skip creating links for the given paths
+
 ## [1.13.0] - 2026-10-01
 
 ### Added

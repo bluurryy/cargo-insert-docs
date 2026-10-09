@@ -18,6 +18,7 @@ Options:
       --crate-section-name <NAME>      Crate documentation section name [default: "crate documentation"]
       --shrink-headings <AMOUNT>       Shrink headings by this amount [default: 1]
       --link-to-latest                 Link to the "latest" version on docs.rs
+      --skip-doc-links <PATH>          List of paths to skip creating links for
       --print-supported-toolchain      Prints a supported nightly toolchain
       --print-config                   Prints configuration values and their sources for debugging
   -Z <FLAG>                            Unstable (nightly-only) flags to Cargo, see 'cargo -Z help' for details

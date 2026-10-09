@@ -129,6 +129,7 @@ pub struct PackageConfig {
     pub target: Option<String>,
     pub target_dir: Option<PathBuf>,
     pub readme_path: Option<PathBuf>,
+    pub skip_doc_links: Vec<String>,
 }
 
 /// Parsed configuration parameters for packages.
@@ -157,6 +158,7 @@ pub struct PackageConfigPatch {
     pub target: Option<String>,
     pub target_dir: Option<PathBuf>,
     pub readme_path: Option<PathBuf>,
+    pub skip_doc_links: Vec<String>,
 }
 
 impl PackageConfigPatch {
@@ -184,6 +186,7 @@ impl PackageConfigPatch {
         if let Some(link_to_latest) = overwrite.link_to_latest {
             this.link_to_latest = Some(link_to_latest);
         }
+        this.skip_doc_links.extend(overwrite.skip_doc_links.iter().cloned());
         if let Some(document_private_items) = overwrite.document_private_items {
             this.document_private_items = Some(document_private_items);
         }
@@ -240,6 +243,7 @@ impl PackageConfigPatch {
             crate_section_name,
             shrink_headings,
             link_to_latest,
+            skip_doc_links,
             document_private_items,
             check,
             allow_missing_section,
@@ -267,6 +271,7 @@ impl PackageConfigPatch {
                 .unwrap_or_else(|| DEFAULT_CRATE_SECTION_NAME.to_string()),
             shrink_headings: shrink_headings.unwrap_or(DEFAULT_SHRINK_HEADINGS),
             link_to_latest: link_to_latest.unwrap_or_default(),
+            skip_doc_links,
             document_private_items: document_private_items.unwrap_or_default(),
             check: check.unwrap_or_default(),
             allow_missing_section: allow_missing_section.unwrap_or_default(),

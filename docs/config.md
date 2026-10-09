@@ -8,6 +8,8 @@ Configuration fields are read in the following order (with decreasing precedence
 - `[package.metadata.insert-docs]`
 - `[workspace.metadata.insert-docs]`
 
+Configuration fields overwrite each other with the exception of `skip-doc-links`, which gets concatenated.
+
 ## Cli, Workspace and Package fields
 
 These fields can be set in the cli, `[workspace.metadata.insert-docs]` and `[package.metadata.insert-docs]`.
@@ -30,6 +32,7 @@ For the cli, these are not arguments but subcommands instead and calling the sub
 |crate-section-name|string|`"crate documentation"`|Crate documentation section name|
 |shrink-headings|i8|1|Shrinks headings when inserting documentation into the readme by the given amount. This increases the heading level (the amount of `#`).|
 |link-to-latest|bool|false|Link to the "latest" version on docs.rs. This only affects workspace crates.|
+|skip_doc_links|string list||List of paths to skip creating links for|
 
 #### Mode Selection
 |Field|Type|Default|Description|
