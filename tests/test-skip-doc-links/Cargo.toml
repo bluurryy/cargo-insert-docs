@@ -11,4 +11,4 @@ skip-doc-links = ["dep::skipped_by_workspace"]
 
 [package.metadata.insert-docs]
 feature-into-crate = false
-skip-doc-links = ["dep::skipped_by_package"]
+skip-doc-links = ["dep::skipped_by_package", "dep::nested::skipped_by_package"]
