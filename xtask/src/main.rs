@@ -292,7 +292,7 @@ fn main() -> Result {
     });
 
     reg.add("test-skip-doc-links", || {
-        let dir = "tests/test-custom-build-dir";
+        let dir = "tests/test-skip-doc-links";
 
         cmd!("cargo clean").current_dir(dir).run()?;
         cargo_insert_docs!("--check --skip-doc-links dep::skipped_by_cli,std")

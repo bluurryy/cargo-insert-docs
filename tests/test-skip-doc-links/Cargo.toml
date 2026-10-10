@@ -7,8 +7,8 @@ edition = "2024"
 dep = { path = "./crates/dep" }
 
 [workspace.metadata.insert-docs]
-blacklist = ["dep::blacklisted_by_workspace"]
+skip-doc-links = ["dep::skipped_by_workspace"]
 
 [package.metadata.insert-docs]
 feature-into-crate = false
-blacklist = ["dep::blacklisted_by_package"]
+skip-doc-links = ["dep::skipped_by_package"]
