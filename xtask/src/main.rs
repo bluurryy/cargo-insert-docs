@@ -295,9 +295,14 @@ fn main() -> Result {
         let dir = "tests/test-skip-doc-links";
 
         cmd!("cargo clean").current_dir(dir).run()?;
-        cargo_insert_docs!("--check --skip-doc-links dep::skipped_by_cli,std")
-            .current_dir(dir)
-            .run()?;
+
+        let mut args = "--skip-doc-links dep::skipped_by_cli,std".to_string();
+
+        if env::var("UPDATE_EXPECT").as_deref() != Ok("1") {
+            args.push_str(" --check");
+        }
+
+        cargo_insert_docs!(args.as_str()).current_dir(dir).run()?;
 
         OK
     });
