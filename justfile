@@ -20,9 +20,9 @@ update-cli-md:
     | str replace --regex '(?<=```console\n)[\s\S]*?(?=```)' ("$ cargo insert-docs -h\n\n" ++ $s ++ "\n") 
     | save -f docs/cli.md
 
-update-expect:
+update-expect args:
     cargo run -- -p test-crate
-    UPDATE_EXPECT=1 cargo xtask
+    UPDATE_EXPECT=1 cargo xtask {{ args }}
 
 get-json crate:
     cat ./target/insert-docs/doc/{{ crate }}.json
