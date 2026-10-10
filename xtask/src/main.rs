@@ -296,7 +296,7 @@ fn main() -> Result {
 
         cmd!("cargo clean").current_dir(dir).run()?;
 
-        let mut args = "--skip-doc-links dep::skipped_by_cli,std".to_string();
+        let mut args = "--skip-doc-links=dep::skipped_by_cli,std".to_string();
 
         if env::var("UPDATE_EXPECT").as_deref() != Ok("1") {
             args.push_str(" --check");

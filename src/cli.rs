@@ -224,7 +224,9 @@ struct Args {
 
     /// List of paths to skip creating links for
     ///
-    /// Items that start with a path in this list won't become a link.
+    /// Items that start with a module path in this list won't become a link.
+    ///
+    /// Example: --skip-doc-links=std,core::process,core::net::IpAddr
     #[arg(global = true, long, value_name = "PATH", value_delimiter = ',')]
     skip_doc_links: Vec<String>,
 

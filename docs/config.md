@@ -32,7 +32,7 @@ For the cli, these are not arguments but subcommands instead and calling the sub
 |crate-section-name|string|`"crate documentation"`|Crate documentation section name|
 |shrink-headings|i8|1|Shrinks headings when inserting documentation into the readme by the given amount. This increases the heading level (the amount of `#`).|
 |link-to-latest|bool|false|Link to the "latest" version on docs.rs. This only affects workspace crates.|
-|skip_doc_links|string list||List of paths to skip creating links for|
+|skip_doc_links|string list||List of paths to skip creating links for. Items that start with a module path in this list won't become a link.<br />Example: --skip-doc-links=std,core::process,core::net::IpAddr|
 
 #### Mode Selection
 |Field|Type|Default|Description|
